@@ -1,2 +1,2 @@
 # esphome-mi-remote
-Bluetooth remote controller for XIAOMI MI TV
+Bluetooth remote controller for Xaomi MI TV
