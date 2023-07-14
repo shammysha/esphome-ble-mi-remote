@@ -96,7 +96,12 @@ async def adding_special_keys(var: MockObj) -> None:
 
     for key in SPECIAL_KEY:
         new_key: MockObj = await button.new_button(
-            key | {CONF_ID: cv.declare_id(BleMiRemoteButton)(key[CONF_ID])}
+            {
+                CONF_ID: cv.declare_id(BLEMiRemoteButton)(key[CONF_ID]),
+                CONF_NAME: DOMAIN.replace("_", "-") + "-" + key[CONF_NAME],
+                CONF_ICON: key[CONF_ICON],
+                CONF_DISABLED_BY_DEFAULT: False
+            }        
         )
         cg.add(new_key.set_parent(var))
 
