@@ -87,9 +87,6 @@ public:
   size_t pressSpecial(uint8_t k);
   size_t release(uint8_t k);
   size_t releaseSpecial(uint8_t k);
-  size_t write(uint8_t c);
-  size_t write(const SpecialKeyReport c);
-  size_t write(const uint8_t *buffer, size_t size);
   void releaseAll(void);
   bool isConnected(void);
   void setBatteryLevel(uint8_t level);
