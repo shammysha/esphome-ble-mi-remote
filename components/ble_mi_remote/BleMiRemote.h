@@ -65,7 +65,7 @@ private:
   BLECharacteristic*	inputSpecialKeys;
   BLEAdvertising*		advertising;
   KeyReport				_keyReport;
-  SpecialKeReport		_specialKeyReport;
+  SpecialKeyReport		_specialKeyReport;
   std::string			deviceName;
   std::string			deviceManufacturer;
   uint8_t				batteryLevel;
