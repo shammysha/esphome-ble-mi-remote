@@ -1,6 +1,8 @@
 
 #ifdef USE_ESP32
 
+#include "esphome/core/log.h"
+#include "esphome/core/esp_log.h"
 #include "ble_mi_remote.h"
 #include <NimBLEServer.h>
 #include <NimBLEDevice.h>
@@ -15,7 +17,7 @@
 #include <string>
 #include <list>
 
-#define LOG_TAG "MiRemote"
+#define SERVICE_UUID_DEVICE_INFORMATION		"180A"      // Service - Device information
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
@@ -141,14 +143,12 @@ namespace esphome {
 			pServer->setCallbacks(this);
 
 			hid = new BLEHIDDevice(pServer);
+			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
 			inputKeyboard = hid->inputReport(KEYBOARD_ID);
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
-			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
-
 			outputKeyboard->setCallbacks(this);
 
 			hid->manufacturer()->setValue(deviceManufacturer);
-
 			hid->pnp(0x02, vid, pid, version);
 			hid->hidInfo(0x00, 0x01);
 
@@ -164,6 +164,7 @@ namespace esphome {
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 			advertising->setScanResponse(false);
 			advertising->start();
+
 			hid->setBatteryLevel(batteryLevel);
 
 			ESP_LOGD(LOG_TAG, "Advertising started!");

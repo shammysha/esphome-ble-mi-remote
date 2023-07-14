@@ -76,7 +76,7 @@ async def to_code(config: dict) -> None:
         config[CONF_NAME],
         config[CONF_MANUFACTURER_ID],
         config[CONF_BATTERY_LEVEL],
-        config[CONF_RECONNECT],
+        config[CONF_RECONNECT]
     )
 
     await cg.register_component(var, config)
