@@ -190,7 +190,6 @@ namespace esphome {
 				void press(uint8_t key, bool with_timer = true);
 				void pressSpecial(uint8_t key, bool with_timer = true);
 				void release();
-				void releaseAll();
 
 				void start();
 				void stop();
@@ -199,9 +198,6 @@ namespace esphome {
 				void end(void);
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
-				size_t release(uint8_t k);
-				size_t releaseSpecial(uint8_t k);
-				void releaseAll(void);
 
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;

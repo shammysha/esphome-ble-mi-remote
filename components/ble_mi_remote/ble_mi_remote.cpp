@@ -59,7 +59,7 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->reconnect_);
 
-			BleMiRemote.releaseAll();
+			BleMiRemote.release();
 		}
 
 		void BleMiRemote::stop() {
