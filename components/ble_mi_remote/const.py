@@ -65,7 +65,7 @@ BINARY_SENSOR_STATE: Final = {
     CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
     CONF_NAME: "Connected",
     CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
-    CONF_DISABLED_BY_DEFAULT: False,
+    CONF_DISABLED_BY_DEFAULT: False
 }
 
 """Special buttons"""
