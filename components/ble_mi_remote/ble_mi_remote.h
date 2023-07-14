@@ -21,8 +21,6 @@
 #define KEYBOARD_ID 0x02
 #define CONSUMER_ID 0x01
 
-#define LOG_TAG "MiRemote"
-
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
 const uint8_t SPECIAL_MENU_PICK = 0;
@@ -61,114 +59,7 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
-static const uint8_t _hidReportDescriptor[] = {
-		USAGE_PAGE(1),			0x0C,			// Consumer
-		USAGE(1),				0x01,			// Consumer Control
 
-		COLLECTION(1),			CONSUMER_ID,	// Application
-
-		REPORT_ID(1),			0x01,			//
-		LOGICAL_MINIMUM(1),		0x00,			//
-		LOGICAL_MAXIMUM(1),		0x01,			//
-		REPORT_SIZE(1),			0x01,			//
-		REPORT_COUNT(1),		0x18,			// 24
-		USAGE(1),				0x41,			// Menu Pick
-		USAGE(1),				0x42,			// Menu Up
-		USAGE(1),				0x43,			// Menu Down
-		USAGE(1),				0x44,			// Menu Left
-		USAGE(1),				0x45,			// Menu Right
-		USAGE(1),				0x30,			// Power
-		USAGE(1),				0xCF,			// Voice Command
-		USAGE(1),				0xE9,			// Volume Increment
-		USAGE(1),				0xEA,			// Volume Decrement
-		USAGE(2),				0xA2, 0x01,		// Instance 41473 (Select Task/Application)
-		USAGE(2),				0xB8, 0x01,		// Instance 47105 (Movie Browser)
-		USAGE(1),				0x6A,			// Green Menu Button
-		USAGE(1),				0x6B,			// Blue Menu Button
-		USAGE(1),				0x6C,			// Yellow Menu Button
-		USAGE(2),				0x8A, 0x01,		// Instance 35329 (Email reader??)
-		USAGE(2),				0x92, 0x01,		// Instance 37377 (Calculator)
-		USAGE(2),				0x94, 0x01,		// Instance 37889 (Local Machine Browser)
-		USAGE(1),				0xCF,			// Voice Command
-		USAGE(2),				0x23, 0x02,		// Instance 8962 (Home)
-		USAGE(2),				0x24, 0x02,		// Instance 9218 (Back)
-		USAGE(2),				0x25, 0x02,		// Instance 9474 (Forward)
-		USAGE(2),				0x26, 0x02,		// Instance 9730 (Stop)
-		USAGE(2),				0x27, 0x02,		// Instance 9986 (Refresh)
-		USAGE(2),				0x2A, 0x02,		// Instance 10754 (Bookmarks)
-		HIDINPUT(1),			0x02,			// In bytes
-
-		USAGE_PAGE(2),			0x00, 0xFF,		// Vendor ??? переставить местами байты?
-		USAGE(1),				0x00,			// Vendor
-		COLLECTION(1),			0x01,			// Application
-		REPORT_ID(1),			0x06,			//
-		REPORT_SIZE(1),			0x08,			//
-		REPORT_COUNT(1),		0x78,			// 120
-		LOGICAL_MINIMUM(1),		0x00,			//
-		LOGICAL_MAXIMUM(1),		0xFF,			// -1
-		USAGE_MINIMUM(1),		0x00,			//
-		USAGE_MAXIMUM(1),		0xFF,			//
-		HIDINPUT(1),			0x00,			//
-
-		REPORT_ID(1),			0x07,			//
-		REPORT_SIZE(1),			0x08,			//
-		REPORT_COUNT(1),		0x78,			// 120
-		LOGICAL_MINIMUM(1),		0x00,			//
-		LOGICAL_MAXIMUM(1),		0xFF,			// -1
-		USAGE_MINIMUM(1),		0x00,			//
-		USAGE_MAXIMUM(1),		0xFF,			//
-		HIDINPUT(1),			0x00,			//
-
-		REPORT_ID(1),			0x08,			//
-		REPORT_SIZE(1),			0x08,			//
-		REPORT_COUNT(1),		0x78,			// 120
-		LOGICAL_MINIMUM(1),		0x00,			//
-		LOGICAL_MAXIMUM(1),		0xFF,			// 255
-		USAGE_MINIMUM(1),		0x00,			//
-		USAGE_MAXIMUM(1),		0xFF,			//
-		HIDINPUT(1),			0x00,			//
-
-		END_COLLECTION(0),
-
-		USAGE_PAGE(1),			0x01,			// Generic Desktop Controls
-		USAGE(1),				0x06,			// Keyboard
-
-		COLLECTION(1),			0x01,			// Application
-
-		REPORT_ID(1),			KEYBOARD_ID,	//
-		USAGE_PAGE(1),			0x07,			// Keyboard/Keypad
-		USAGE_MINIMUM(1),		0xE0,			// Ctrl, Shift, Alt, GUI
-		USAGE_MAXIMUM(1),		0xE7,			// Ctrl, Shift, Alt, GUI
-		LOGICAL_MINIMUM(1),		0x00,			//
-		LOGICAL_MAXIMUM(1),		0x01,			//
-		REPORT_SIZE(1),			0x01,			//
-		REPORT_COUNT(1),		0x08,			//
-		HIDINPUT(1),			0x02,			//
-		REPORT_COUNT(1),		0x01,			//
-		REPORT_SIZE(1),			0x08,			//
-		HIDINPUT(1),			0x01,			//
-
-		REPORT_COUNT(1),		0x05,			//
-		REPORT_SIZE(1),			0x01,			//
-		USAGE_PAGE(1),			0x08,			// LED
-		USAGE_MINIMUM(1),		0x01,			//
-		USAGE_MAXIMUM(1),		0x05,			//
-		HIDOUTPUT(1),			0x02,			//
-		REPORT_COUNT(1),		0x01,			//
-		REPORT_SIZE(1),			0x03,			//
-		HIDOUTPUT(1),			0x01,			//
-
-		REPORT_COUNT(1),		0x06,			//
-		REPORT_SIZE(1),			0x08,			//
-		LOGICAL_MINIMUM(1),		0x28,			// 40
-		LOGICAL_MAXIMUM(1),		0xFE,			// 254
-		USAGE_PAGE(1),			0x07,			// Keyboard/Keypad
-		USAGE_MINIMUM(1),		0x28,			// 40
-		USAGE_MAXIMUM(1),		0xFE,			// 254
-		HIDINPUT(1),			0x00,			//
-
-		END_COLLECTION(0)
-};
 
 namespace esphome {
 	namespace ble_mi_remote {
