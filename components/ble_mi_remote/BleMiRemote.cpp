@@ -468,9 +468,9 @@ void BleMiRemote::releaseAll(void) {
 	_keyReport.keys[4] = 0;
 	_keyReport.keys[5] = 0;
 	_keyReport.modifiers = 0;
-	_specialKeyReport[0] = 0;
-	_specialKeyReport[1] = 0;
-	_specialKeyReport[2] = 0;
+	_specialKeyReport.keys[0] = 0;
+	_specialKeyReport.keys[1] = 0;
+	_specialKeyReport.keys[2] = 0;
 	sendReport (&_keyReport);
 	sendReport (&_specialKeyReport);
 }
