@@ -12,15 +12,9 @@ from esphome.components import binary_sensor, button, number
 from esphome.const import (
     CONF_BATTERY_LEVEL,
     CONF_CODE,
-    CONF_DELAY,
     CONF_ID,
-    CONF_INITIAL_VALUE,
     CONF_MANUFACTURER_ID,
-    CONF_MAX_VALUE,
-    CONF_MIN_VALUE,
     CONF_NAME,
-    CONF_STEP,
-    CONF_TYPE,
     CONF_VALUE,
     CONF_DISABLED_BY_DEFAULT,
     CONF_RESTORE_MODE    
