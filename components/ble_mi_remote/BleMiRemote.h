@@ -46,14 +46,15 @@ const uint8_t SPECIAL_BOOKMARK = 23;
 
 
 //  Low level key report: up to 6 keys and shift, ctrl etc at once
-typedef struct
-{
+typedef struct {
   uint8_t modifiers;
   uint8_t reserved;
   uint8_t keys[6];
 } KeyReport;
 
-typedef uint8_t SpecialKeReport[3];
+typedef struct {
+	uint8_t keys[3];
+} SpecialKeReport;
 
 class BleMiRemote : public Print, public BLEServerCallbacks, public BLECharacteristicCallbacks
 {

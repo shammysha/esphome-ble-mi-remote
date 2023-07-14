@@ -411,7 +411,7 @@ size_t BleMiRemote::pressSpecial(uint8_t k) {
     uint8_t bit = k % 8;
     uint8_t byte = int(k / 8);
 
-    _specialKeyReport[byte] |= (1 << bit);
+    _specialKeyReport.keys[byte] |= (1 << bit);
 
     sendReport (&_specialKeyReport);
 	return 1;
