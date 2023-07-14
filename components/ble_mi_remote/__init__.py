@@ -22,6 +22,8 @@ from esphome.const import (
     CONF_STEP,
     CONF_TYPE,
     CONF_VALUE,
+    CONF_DISABLED_BY_DEFAULT,
+    CONF_RESTORE_MODE    
 )
 from esphome.core import CORE, ID
 from esphome.cpp_generator import LambdaExpression, MockObj, TemplateArguments
