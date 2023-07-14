@@ -411,7 +411,7 @@ size_t BleMiRemote::pressSpecial(uint8_t k) {
     uint8_t bit = k % 8;
     uint8_t byte = int(k / 8);
 
-    _specialKeyReport.keys[byte] |= (1 << bit);
+    _specialKeyReport[byte] |= (1 << bit);
 
     sendReport (&_specialKeyReport);
 	return 1;
@@ -454,7 +454,7 @@ size_t BleMiRemote::releaseSpecial(uint8_t k) {
     uint8_t bit = k % 8;
     uint8_t byte = int(k / 8);
 
-    _specialKeyReport.keys[byte] &= ~(1 << bit);
+    _specialKeyReport[byte] &= ~(1 << bit);
 
     sendReport (&_specialKeyReport);
 	return 1;
@@ -468,11 +468,38 @@ void BleMiRemote::releaseAll(void) {
 	_keyReport.keys[4] = 0;
 	_keyReport.keys[5] = 0;
 	_keyReport.modifiers = 0;
-	_specialKeyReport.keys[0] = 0;
-	_specialKeyReport.keys[1] = 0;
-	_specialKeyReport.keys[2] = 0;
+	_specialKeyReport[0] = 0;
+	_specialKeyReport[1] = 0;
+	_specialKeyReport[2] = 0;
 	sendReport (&_keyReport);
 	sendReport (&_specialKeyReport);
+}
+
+size_t BleMiRemote::write(uint8_t c) {
+	uint8_t p = press(c);  // Keydown
+	release(c);            // Keyup
+	return p;              // just return the result of press() since release() almost always returns 1
+}
+
+size_t BleMiRemote::write(const SpecialKeyReport c) {
+	uint16_t p = press(c);  // Keydown
+	release(c);            // Keyup
+	return p;              // just return the result of press() since release() almost always returns 1
+}
+
+size_t BleMiRemote::write(const uint8_t *buffer, size_t size) {
+	size_t n = 0;
+	while (size--) {
+		if (*buffer != '\r') {
+			if (write(*buffer)) {
+				n++;
+			} else {
+				break;
+			}
+		}
+		buffer++;
+	}
+	return n;
 }
 
 void BleMiRemote::onConnect(BLEServer *pServer) {

@@ -13,7 +13,7 @@ namespace esphome {
 			public:
 				void set_parent(BleMiRemote *parent) { parent_ = parent; }
 
-				void set_value(int8_t value) { value_ = value;	}
+				void set_value(int8_t value) { value_ = value; }
 
 			protected:
 				void press_action() override;

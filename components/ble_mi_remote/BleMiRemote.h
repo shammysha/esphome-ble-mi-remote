@@ -46,15 +46,14 @@ const uint8_t SPECIAL_BOOKMARK = 23;
 
 
 //  Low level key report: up to 6 keys and shift, ctrl etc at once
-typedef struct {
+typedef struct
+{
   uint8_t modifiers;
   uint8_t reserved;
   uint8_t keys[6];
 } KeyReport;
 
-typedef struct {
-	uint8_t keys[3];
-} SpecialKeyReport;
+typedef uint8_t SpecialKeReport[3];
 
 class BleMiRemote : public Print, public BLEServerCallbacks, public BLECharacteristicCallbacks
 {
@@ -65,7 +64,7 @@ private:
   BLECharacteristic*	inputSpecialKeys;
   BLEAdvertising*		advertising;
   KeyReport				_keyReport;
-  SpecialKeyReport		_specialKeyReport;
+  SpecialKeReport		_specialKeyReport;
   std::string			deviceName;
   std::string			deviceManufacturer;
   uint8_t				batteryLevel;
@@ -87,10 +86,13 @@ public:
   size_t pressSpecial(uint8_t k);
   size_t release(uint8_t k);
   size_t releaseSpecial(uint8_t k);
+  size_t write(uint8_t c);
+  size_t write(const SpecialKeyReport c);
+  size_t write(const uint8_t *buffer, size_t size);
   void releaseAll(void);
   bool isConnected(void);
   void setBatteryLevel(uint8_t level);
-  void setName(std::string deviceName);  
+  void setName(std::string deviceName);
   void setDelay(uint32_t ms);
 
   void set_vendor_id(uint16_t vid);
