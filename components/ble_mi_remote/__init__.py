@@ -16,6 +16,7 @@ from esphome.const import (
     CONF_MANUFACTURER_ID,
     CONF_NAME,
     CONF_VALUE,
+    CONF_ICON,
     CONF_DISABLED_BY_DEFAULT,
     CONF_RESTORE_MODE    
 )
