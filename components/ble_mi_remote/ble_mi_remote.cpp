@@ -277,7 +277,7 @@ namespace esphome {
 				} else {				// it's a printing key
 					k = pgm_read_byte(_asciimap + k);
 					if (!k) {
-						setWriteError();
+
 						return;
 					}
 					if (k & 0x80) {						// it's a capital letter or other character reached with shift
@@ -297,7 +297,6 @@ namespace esphome {
 						}
 					}
 					if (i == 6) {
-						setWriteError();
 						return;
 					}
 				}
