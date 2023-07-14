@@ -134,12 +134,14 @@ namespace esphome {
 		BleMiRemote::BleMiRemote(
 				std::string deviceName,
 				std::string deviceManufacturer,
-				uint8_t batteryLevel
+				uint8_t batteryLevel,
+				bool reconnect
 			) : 	hid(0),
 					deviceName(std::string(deviceName).substr(0, 15)),
 					deviceManufacturer(std::string(deviceManufacturer).substr(0, 15)),
-					batteryLevel(batteryLevel
-			) {
+					batteryLevel(batteryLevel) {
+
+			reconnect_ = reconnect;
 		}
 
 		void BleMiRemote::setup() {
