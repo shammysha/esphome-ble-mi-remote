@@ -18,9 +18,6 @@
 #define BLEAdvertising             NimBLEAdvertising
 #define BLEServer                  NimBLEServer
 
-#define KEYBOARD_ID 0x02
-#define CONSUMER_ID 0x01
-
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
 const uint8_t SPECIAL_MENU_PICK = 0;

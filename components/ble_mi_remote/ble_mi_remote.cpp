@@ -17,6 +17,9 @@
 
 #define LOG_TAG "MiRemote"
 
+#define CONSUMER_ID 0x01
+#define KEYBOARD_ID 0x02
+
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
 		USAGE(1),				0x01,			// Consumer Control
@@ -138,7 +141,7 @@ namespace esphome {
 			pServer->setCallbacks(this);
 
 			hid = new BLEHIDDevice(pServer);
-			inputKeyboard = hid->inputReport(KEYBOARD_ID);  // <-- input REPORTID from report map
+			inputKeyboard = hid->inputReport(KEYBOARD_ID);
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
 
