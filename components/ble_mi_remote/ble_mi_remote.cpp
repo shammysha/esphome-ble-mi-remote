@@ -15,9 +15,12 @@
 #include <string>
 #include <list>
 
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+
 #include "esp_log.h"
 #include "esphome/core/log.h"
+
+#define ESPHOME_LOG_LEVEL_ERROR = 5
+
 
 #define SERVICE_UUID_DEVICE_INFORMATION		"180A"      // Service - Device information
 
