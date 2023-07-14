@@ -4,7 +4,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/button/button.h"
-#include "../ble_ble_mi_remote/ble_mi_remote.h"
+#include "ble_mi_remote.h"
 #include <string>
 
 namespace esphome {
