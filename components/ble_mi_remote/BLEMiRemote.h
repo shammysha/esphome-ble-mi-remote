@@ -55,7 +55,7 @@ typedef struct
 
 typedef uint8_t SpecialKeReport[3];
 
-class BLEMiRemote : public Print, public BLEServerCallbacks, public BLECharacteristicCallbacks
+class BleMiRemote : public Print, public BLEServerCallbacks, public BLECharacteristicCallbacks
 {
 private:
   BLEHIDDevice*			hid;
@@ -77,7 +77,7 @@ private:
   uint16_t version		= 0x0210;
 
 public:
-  BLEMiRemote(std::string deviceName = "MiRemote", std::string deviceManufacturer = "Shammysha", uint8_t batteryLevel = 100);
+  BleMiRemote(std::string deviceName = "BleMiRemote", std::string deviceManufacturer = "Shammysha", uint8_t batteryLevel = 100);
   void begin(void);
   void end(void);
   void sendReport(KeyReport* keys);

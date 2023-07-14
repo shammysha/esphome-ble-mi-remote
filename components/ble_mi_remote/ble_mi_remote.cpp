@@ -1,7 +1,7 @@
 
 #ifdef USE_ESP32
 
-#include "mi_remote.h"
+#include "ble_mi_remote.h"
 #include "esphome/core/log.h"
 #include <NimBLEServer.h>
 #include <NimBLEDevice.h>
@@ -12,22 +12,22 @@
 #include <list>
 
 namespace esphome {
-	namespace mi_remote {
-		static const char *const TAG = "mi_remote";
+	namespace ble_mi_remote {
+		static const char *const TAG = "ble_mi_remote";
 
-		void MiRemote::setup() {
+		void BleMiRemote::setup() {
 			ESP_LOGI(TAG, "Setting up...");
 
-			BLEMiRemote.begin();
+			BleMiRemote.begin();
 
 			pServer = BLEDevice::getServer();
 
 			pServer->advertiseOnDisconnect(this->reconnect_);
 
-			BLEMiRemote.releaseAll();
+			BleMiRemote.releaseAll();
 		}
 
-		void MiRemote::stop() {
+		void BleMiRemote::stop() {
 			if (this->reconnect_) {
 				pServer->advertiseOnDisconnect(false);
 			}
@@ -43,7 +43,7 @@ namespace esphome {
 			}
 		}
 
-		void MiRemote::start() {
+		void BleMiRemote::start() {
 			if (this->reconnect_) {
 				pServer->advertiseOnDisconnect(true);
 			}
@@ -51,10 +51,10 @@ namespace esphome {
 			pServer->startAdvertising();
 		}
 
-		void MiRemote::update() { state_sensor_->publish_state(BLEMiRemote.isConnected()); }
+		void BleMiRemote::update() { state_sensor_->publish_state(BleMiRemote.isConnected()); }
 
-		bool MiRemote::is_connected() {
-			if (!BLEMiRemote.isConnected()) {
+		bool BleMiRemote::is_connected() {
+			if (!BleMiRemote.isConnected()) {
 				ESP_LOGI(TAG, "Disconnected");
 
 				return false;
@@ -63,38 +63,38 @@ namespace esphome {
 			return true;
 		}
 
-		void MiRemote::update_timer() {
+		void BleMiRemote::update_timer() {
 			this->cancel_timeout((const std::string) TAG);
 			this->set_timeout((const std::string) TAG, release_delay_, [this]() { this->release(); });
 		}
 
-		void MiRemote::press(uint8_t key, bool with_timer) {
+		void BleMiRemote::press(uint8_t key, bool with_timer) {
 			if (this->is_connected()) {
 				if (with_timer) {
 					this->update_timer();
 				}
 
-				BLEMiRemote.press(key);
+				BleMiRemote.press(key);
 			}
 		}
 
-		void MiRemote::pressSpecial(uint8_t key, bool with_timer) {
+		void BleMiRemote::pressSpecial(uint8_t key, bool with_timer) {
 			if (this->is_connected()) {
 				if (with_timer) {
 					this->update_timer();
 				}
-				BLEMiRemote.pressSpecial(key);
+				BleMiRemote.pressSpecial(key);
 			}
 		}
 
-		void MiRemote::release() {
+		void BleMiRemote::release() {
 			if (this->is_connected()) {
 				this->cancel_timeout((const std::string) TAG);
-				BLEMiRemote.releaseAll();
+				BleMiRemote.releaseAll();
 			}
 		}
 
-	}  // namespace mi_remote
+	}  // namespace ble_mi_remote
 }  // namespace esphome
 
 #endif

@@ -1,4 +1,4 @@
-#include "BLEMiRemote.h"
+#include "BleMiRemote.h"
 
 #include <NimBLEDevice.h>
 #include <NimBLEServer.h>
@@ -128,7 +128,7 @@ static const uint8_t _hidReportDescriptor[] = {
 		END_COLLECTION(0)
 };
 
-BLEMiRemote::BLEMiRemote(
+BleMiRemote::BleMiRemote(
 		std::string deviceName,
 		std::string deviceManufacturer,
 		uint8_t batteryLevel
@@ -139,7 +139,7 @@ BLEMiRemote::BLEMiRemote(
 	) {
 }
 
-void BLEMiRemote::begin(void) {
+void BleMiRemote::begin(void) {
 	BLEDevice::init (deviceName);
 	BLEServer *pServer = BLEDevice::createServer();
 	pServer->setCallbacks(this);
@@ -173,21 +173,21 @@ void BLEMiRemote::begin(void) {
 	ESP_LOGD(LOG_TAG, "Advertising started!");
 }
 
-void BLEMiRemote::end(void) {
+void BleMiRemote::end(void) {
 }
 
-bool BLEMiRemote::isConnected(void) {
+bool BleMiRemote::isConnected(void) {
 	return this->connected;
 }
 
-void BLEMiRemote::setBatteryLevel(uint8_t level) {
+void BleMiRemote::setBatteryLevel(uint8_t level) {
 	this->batteryLevel = level;
 	if (hid != 0)
 		this->hid->setBatteryLevel(this->batteryLevel);
 }
 
 //must be called before begin in order to set the name
-void BLEMiRemote::setName(std::string deviceName) {
+void BleMiRemote::setName(std::string deviceName) {
 	this->deviceName = deviceName;
 }
 
@@ -196,23 +196,23 @@ void BLEMiRemote::setName(std::string deviceName) {
  * 
  * @param ms Time in milliseconds
  */
-void BLEMiRemote::setDelay(uint32_t ms) {
+void BleMiRemote::setDelay(uint32_t ms) {
 	this->_delay_ms = ms;
 }
 
-void BLEMiRemote::set_vendor_id(uint16_t vid) {
+void BleMiRemote::set_vendor_id(uint16_t vid) {
 	this->vid = vid;
 }
 
-void BLEMiRemote::set_product_id(uint16_t pid) {
+void BleMiRemote::set_product_id(uint16_t pid) {
 	this->pid = pid;
 }
 
-void BLEMiRemote::set_version(uint16_t version) {
+void BleMiRemote::set_version(uint16_t version) {
 	this->version = version;
 }
 
-void BLEMiRemote::sendReport(KeyReport *keys) {
+void BleMiRemote::sendReport(KeyReport *keys) {
 	if (this->isConnected()) {
 		this->inputKeyboard->setValue((uint8_t*) keys, sizeof(KeyReport));
 		this->inputKeyboard->notify();
@@ -220,7 +220,7 @@ void BLEMiRemote::sendReport(KeyReport *keys) {
 	}
 }
 
-void BLEMiRemote::sendReport(SpecialKeyReport *keys) {
+void BleMiRemote::sendReport(SpecialKeyReport *keys) {
 	if (this->isConnected()) {
 		this->inputSpecialKeys->setValue((uint8_t*) keys, sizeof(SpecialKeyReport));
 		this->inputSpecialKeys->notify();
@@ -369,7 +369,7 @@ uint8_t USBPutChar(uint8_t c);
 // to the persistent key report and sends the report.  Because of the way
 // USB HID works, the host acts like the key remains pressed until we
 // call release(), releaseAll(), or otherwise clear the report and resend.
-size_t BLEMiRemote::press(uint8_t k) {
+size_t BleMiRemote::press(uint8_t k) {
 	uint8_t i;
 	if (k >= 136) {			// it's a non-printing key (not a modifier)
 		k = k - 136;
@@ -407,7 +407,7 @@ size_t BLEMiRemote::press(uint8_t k) {
 	return 1;
 }
 
-size_t BLEMiRemote::pressSpecial(uint8_t k) {
+size_t BleMiRemote::pressSpecial(uint8_t k) {
     uint8_t bit = k % 8;
     uint8_t byte = int(k / 8);
 
@@ -420,7 +420,7 @@ size_t BLEMiRemote::pressSpecial(uint8_t k) {
 // release() takes the specified key out of the persistent key report and
 // sends the report.  This tells the OS the key is no longer pressed and that
 // it shouldn't be repeated any more.
-size_t BLEMiRemote::release(uint8_t k) {
+size_t BleMiRemote::release(uint8_t k) {
 	uint8_t i;
 	if (k >= 136) {			// it's a non-printing key (not a modifier)
 		k = k - 136;
@@ -450,7 +450,7 @@ size_t BLEMiRemote::release(uint8_t k) {
 	return 1;
 }
 
-size_t BLEMiRemote::releaseSpecial(uint8_t k) {
+size_t BleMiRemote::releaseSpecial(uint8_t k) {
     uint8_t bit = k % 8;
     uint8_t byte = int(k / 8);
 
@@ -460,7 +460,7 @@ size_t BLEMiRemote::releaseSpecial(uint8_t k) {
 	return 1;
 }
 
-void BLEMiRemote::releaseAll(void) {
+void BleMiRemote::releaseAll(void) {
 	_keyReport.keys[0] = 0;
 	_keyReport.keys[1] = 0;
 	_keyReport.keys[2] = 0;
@@ -475,19 +475,19 @@ void BLEMiRemote::releaseAll(void) {
 	sendReport (&_specialKeyReport);
 }
 
-size_t BLEMiRemote::write(uint8_t c) {
+size_t BleMiRemote::write(uint8_t c) {
 	uint8_t p = press(c);  // Keydown
 	release(c);            // Keyup
 	return p;              // just return the result of press() since release() almost always returns 1
 }
 
-size_t BLEMiRemote::write(const SpecialKeyReport c) {
+size_t BleMiRemote::write(const SpecialKeyReport c) {
 	uint16_t p = press(c);  // Keydown
 	release(c);            // Keyup
 	return p;              // just return the result of press() since release() almost always returns 1
 }
 
-size_t BLEMiRemote::write(const uint8_t *buffer, size_t size) {
+size_t BleMiRemote::write(const uint8_t *buffer, size_t size) {
 	size_t n = 0;
 	while (size--) {
 		if (*buffer != '\r') {
@@ -502,21 +502,21 @@ size_t BLEMiRemote::write(const uint8_t *buffer, size_t size) {
 	return n;
 }
 
-void BLEMiRemote::onConnect(BLEServer *pServer) {
+void BleMiRemote::onConnect(BLEServer *pServer) {
 	this->connected = true;
 }
 
-void BLEMiRemote::onDisconnect(BLEServer *pServer) {
+void BleMiRemote::onDisconnect(BLEServer *pServer) {
 	this->connected = false;
 }
 
-void BLEMiRemote::onWrite(BLECharacteristic *me) {
+void BleMiRemote::onWrite(BLECharacteristic *me) {
 	uint8_t *value = (uint8_t*) (me->getValue().c_str());
 	(void) value;
 	ESP_LOGI(LOG_TAG, "special keys: %d", *value);
 }
 
-void BLEMiRemote::delay_ms(uint64_t ms) {
+void BleMiRemote::delay_ms(uint64_t ms) {
 	uint64_t m = esp_timer_get_time();
 	if (ms) {
 		uint64_t e = (m + (ms * 1000));

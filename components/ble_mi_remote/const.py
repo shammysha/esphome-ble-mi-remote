@@ -1,4 +1,4 @@
-"""MiRemote component const."""
+"""BleMiRemote component const."""
 
 # pylint: disable=line-too-long
 
@@ -32,7 +32,7 @@ from esphome.const import (
     UNIT_PERCENT,
 )
 
-DOMAIN: Final = "mi_remote"
+DOMAIN: Final = "ble_mi_remote"
 
 CONF_TEXT: Final = "text"
 CONF_KEYS: Final = "keys"
@@ -40,16 +40,16 @@ CONF_RECONNECT: Final = "reconnect"
 CONF_BUTTONS: Final = "buttons"
 CONF_USE_DEFAULT_LIBS: Final = "use_default_libs"
 
-COMPONENT_CLASS: Final = "MiRemote"
-COMPONENT_NUMBER_CLASS: Final = "MiRemoteNumber"
-COMPONENT_BUTTON_CLASS: Final = "MiRemoteButton"
+COMPONENT_CLASS: Final = "BleMiRemote"
+COMPONENT_NUMBER_CLASS: Final = "BleMiRemoteNumber"
+COMPONENT_BUTTON_CLASS: Final = "BleMiRemoteButton"
 
-ACTION_START_CLASS: Final = "MiRemoteStartAction"
-ACTION_STOP_CLASS: Final = "MiRemoteStopAction"
-ACTION_PRINT_CLASS: Final = "MiRemotePrintAction"
-ACTION_PRESS_CLASS: Final = "MiRemotePressAction"
-ACTION_RELEASE_CLASS: Final = "MiRemoteReleaseAction"
-ACTION_COMBINATION_CLASS: Final = "MiRemoteCombinationAction"
+ACTION_START_CLASS: Final = "BleMiRemoteStartAction"
+ACTION_STOP_CLASS: Final = "BleMiRemoteStopAction"
+ACTION_PRINT_CLASS: Final = "BleMiRemotePrintAction"
+ACTION_PRESS_CLASS: Final = "BleMiRemotePressAction"
+ACTION_RELEASE_CLASS: Final = "BleMiRemoteReleaseAction"
+ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 
 """Libraries"""
 LIBS_ADDITIONAL: Final = [

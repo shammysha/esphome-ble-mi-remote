@@ -4,14 +4,14 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/button/button.h"
-#include "mi_remote.h"
+#include "../ble_ble_mi_remote/ble_mi_remote.h"
 #include <string>
 
 namespace esphome {
-	namespace mi_remote {
-		class MiRemoteButton : public button::Button, public Component {
+	namespace ble_mi_remote {
+		class BleMiRemoteButton : public button::Button, public Component {
 			public:
-				void set_parent(MiRemote *parent) { parent_ = parent; }
+				void set_parent(BleMiRemote *parent) { parent_ = parent; }
 
 				void set_value(int8_t value) { value_ = value;	}
 
@@ -20,9 +20,9 @@ namespace esphome {
 
 				int8_t value_{-1};
 
-				MiRemote *parent_;
+				BleMiRemote *parent_;
 		};
-	}  // namespace mi_remote
+	}  // namespace ble_mi_remote
 }  // namespace esphome
 
 #endif

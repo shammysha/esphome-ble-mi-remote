@@ -1,4 +1,4 @@
-"""MiRemote component."""
+"""BleMiRemote component."""
 
 from __future__ import annotations
 
@@ -46,14 +46,14 @@ from .const import (
 CODEOWNERS: Final = ["@shammysha"]
 AUTO_LOAD: Final = ["binary_sensor", "button"]
 
-mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
+ble_mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
 
-MiRemote = mi_remote_ns.class_(COMPONENT_CLASS, cg.PollingComponent)
-MiRemoteButton = mi_remote_ns.class_(COMPONENT_BUTTON_CLASS, cg.Component)
+BleMiRemote = ble_mi_remote_ns.class_(COMPONENT_CLASS, cg.PollingComponent)
+BleMiRemoteButton = ble_mi_remote_ns.class_(COMPONENT_BUTTON_CLASS, cg.Component)
 
 CONFIG_SCHEMA: Final = cv.Schema(
     {
-        cv.GenerateID(): cv.declare_id(MiRemote),
+        cv.GenerateID(): cv.declare_id(BleMiRemote),
         cv.Optional(CONF_NAME, default=COMPONENT_CLASS): cv.Length(min=1),
         cv.Optional(CONF_MANUFACTURER_ID, default=COMPONENT_CLASS): cv.Length(min=1),
         cv.Optional(CONF_BATTERY_LEVEL, default=100): cv.int_range(min=0, max=100),
@@ -100,7 +100,7 @@ async def adding_special_keys(var: MockObj) -> None:
 
     for key in SPECIAL_KEY:
         new_key: MockObj = await button.new_button(
-            key | {CONF_ID: cv.declare_id(MiRemoteButton)(key[CONF_ID])}
+            key | {CONF_ID: cv.declare_id(BleMiRemoteButton)(key[CONF_ID])}
         )
         cg.add(new_key.set_parent(var))
 
@@ -123,21 +123,21 @@ async def adding_binary_sensors(var: MockObj) -> None:
 
 OPERATION_BASE_SCHEMA: Final = cv.Schema(
     {
-        cv.Required(CONF_ID): cv.use_id(MiRemote),
+        cv.Required(CONF_ID): cv.use_id(BleMiRemote),
     }
 )
 
-MiRemoteReleaseAction = mi_remote_ns.class_(
+BleMiRemoteReleaseAction = ble_mi_remote_ns.class_(
     ACTION_RELEASE_CLASS, automation.Action
 )
 
 
 @automation.register_action(
     f"{DOMAIN}.release",
-    MiRemoteReleaseAction,
+    BleMiRemoteReleaseAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
 )
-async def mi_remote_release_to_code(
+async def ble_mi_remote_release_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
 ) -> MockObj:
     """Action release
@@ -154,12 +154,12 @@ async def mi_remote_release_to_code(
     return cg.new_Pvariable(action_id, template_arg, paren)
 
 
-MiRemotePressAction = mi_remote_ns.class_(ACTION_PRESS_CLASS, automation.Action)
+BleMiRemotePressAction = ble_mi_remote_ns.class_(ACTION_PRESS_CLASS, automation.Action)
 
 
 @automation.register_action(
     f"{DOMAIN}.press",
-    MiRemotePressAction,
+    BleMiRemotePressAction,
     OPERATION_BASE_SCHEMA.extend(
         {
             cv.Required(CONF_CODE): cv.Any(
@@ -170,7 +170,7 @@ MiRemotePressAction = mi_remote_ns.class_(ACTION_PRESS_CLASS, automation.Action)
     )
 )
 
-async def mi_remote_press_to_code(
+async def ble_mi_remote_press_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
 ) -> MockObj:
     """Action press
@@ -209,15 +209,15 @@ async def mi_remote_press_to_code(
     return var
 
 
-MiRemoteStartAction = mi_remote_ns.class_(ACTION_START_CLASS, automation.Action)
+BleMiRemoteStartAction = ble_mi_remote_ns.class_(ACTION_START_CLASS, automation.Action)
 
 
 @automation.register_action(
     f"{DOMAIN}.start",
-    MiRemoteStartAction,
+    BleMiRemoteStartAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
 )
-async def mi_remote_start_to_code(
+async def ble_mi_remote_start_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
 ) -> MockObj:
     """Action start
@@ -234,15 +234,15 @@ async def mi_remote_start_to_code(
     return cg.new_Pvariable(action_id, template_arg, paren)
 
 
-MiRemoteStopAction = mi_remote_ns.class_(ACTION_STOP_CLASS, automation.Action)
+BleMiRemoteStopAction = ble_mi_remote_ns.class_(ACTION_STOP_CLASS, automation.Action)
 
 
 @automation.register_action(
     f"{DOMAIN}.stop",
-    MiRemoteStopAction,
+    BleMiRemoteStopAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
 )
-async def mi_remote_stop_to_code(
+async def ble_mi_remote_stop_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
 ) -> MockObj:
     """Action stop
