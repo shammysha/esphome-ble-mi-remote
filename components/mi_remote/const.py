@@ -1,4 +1,4 @@
-"""BleKeyboard component const."""
+"""MiRemote component const."""
 
 # pylint: disable=line-too-long
 

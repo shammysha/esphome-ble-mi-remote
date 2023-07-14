@@ -1,4 +1,4 @@
-"""BleKeyboard component."""
+"""MiRemote component."""
 
 from __future__ import annotations
 
