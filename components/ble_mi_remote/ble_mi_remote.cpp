@@ -169,7 +169,7 @@ namespace esphome {
 
 			hid->setBatteryLevel(batteryLevel);
 
-			ESP_LOGD(LOG_TAG, "Advertising started!");
+			ESP_LOGD(TAG, "Advertising started!");
 
 			pServer = BLEDevice::getServer();
 
