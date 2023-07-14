@@ -207,7 +207,6 @@ namespace esphome {
 				void update_timer();
 
 				BLEServer *pServer;
-				BleMiRemote BleMiRemote;
 
 				bool reconnect_{true};
 				uint32_t default_delay_{100};
