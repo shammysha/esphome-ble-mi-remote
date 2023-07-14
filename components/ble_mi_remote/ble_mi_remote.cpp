@@ -125,82 +125,6 @@ namespace esphome {
 			}
 		}
 
-		void BleMiRemote::press(uint8_t k, bool with_timer) {
-			if (this->is_connected()) {
-				if (with_timer) {
-					this->update_timer();
-				}
-
-				uint8_t i;
-				if (k >= 136) {			// it's a non-printing key (not a modifier)
-					k = k - 136;
-				} else if (k >= 128) {	// it's a modifier key
-					_keyReport.modifiers |= (1 << (k - 128));
-					k = 0;
-				} else {				// it's a printing key
-					k = pgm_read_byte(_asciimap + k);
-					if (!k) {
-						setWriteError();
-						return;
-					}
-					if (k & 0x80) {						// it's a capital letter or other character reached with shift
-						_keyReport.modifiers |= 0x02;	// the left shift modifier
-						k &= 0x7F;
-					}
-				}
-
-				// Add k to the key report only if it's not already present
-				// and if there is an empty slot.
-				if (_keyReport.keys[0] != k && _keyReport.keys[1] != k && _keyReport.keys[2] != k && _keyReport.keys[3] != k && _keyReport.keys[4] != k && _keyReport.keys[5] != k) {
-
-					for (i = 0; i < 6; i++) {
-						if (_keyReport.keys[i] == 0x00) {
-							_keyReport.keys[i] = k;
-							break;
-						}
-					}
-					if (i == 6) {
-						setWriteError();
-						return;
-					}
-				}
-				sendReport (&_keyReport);
-			}
-		}
-
-		void BleMiRemote::pressSpecial(uint8_t k, bool with_timer) {
-			if (this->is_connected()) {
-				if (with_timer) {
-					this->update_timer();
-				}
-			    uint8_t bit = k % 8;
-			    uint8_t byte = int(k / 8);
-
-			    _specialKeyReport.keys[byte] |= (1 << bit);
-
-			    sendReport (&_specialKeyReport);
-			}
-		}
-
-		void BleMiRemote::release() {
-			if (this->is_connected()) {
-				this->cancel_timeout((const std::string) TAG);
-
-				_keyReport.keys[0] = 0;
-				_keyReport.keys[1] = 0;
-				_keyReport.keys[2] = 0;
-				_keyReport.keys[3] = 0;
-				_keyReport.keys[4] = 0;
-				_keyReport.keys[5] = 0;
-				_keyReport.modifiers = 0;
-				_specialKeyReport.keys[0] = 0;
-				_specialKeyReport.keys[1] = 0;
-				_specialKeyReport.keys[2] = 0;
-				sendReport (&_keyReport);
-				sendReport (&_specialKeyReport);
-			}
-		}
-
 		extern
 		const uint8_t _asciimap[128] PROGMEM;
 
@@ -379,6 +303,84 @@ namespace esphome {
 			sendReport (&_keyReport);
 			return 1;
 		}
+
+		void BleMiRemote::press(uint8_t k, bool with_timer) {
+			if (this->is_connected()) {
+				if (with_timer) {
+					this->update_timer();
+				}
+
+				uint8_t i;
+				if (k >= 136) {			// it's a non-printing key (not a modifier)
+					k = k - 136;
+				} else if (k >= 128) {	// it's a modifier key
+					_keyReport.modifiers |= (1 << (k - 128));
+					k = 0;
+				} else {				// it's a printing key
+					k = pgm_read_byte(_asciimap + k);
+					if (!k) {
+						setWriteError();
+						return;
+					}
+					if (k & 0x80) {						// it's a capital letter or other character reached with shift
+						_keyReport.modifiers |= 0x02;	// the left shift modifier
+						k &= 0x7F;
+					}
+				}
+
+				// Add k to the key report only if it's not already present
+				// and if there is an empty slot.
+				if (_keyReport.keys[0] != k && _keyReport.keys[1] != k && _keyReport.keys[2] != k && _keyReport.keys[3] != k && _keyReport.keys[4] != k && _keyReport.keys[5] != k) {
+
+					for (i = 0; i < 6; i++) {
+						if (_keyReport.keys[i] == 0x00) {
+							_keyReport.keys[i] = k;
+							break;
+						}
+					}
+					if (i == 6) {
+						setWriteError();
+						return;
+					}
+				}
+				sendReport (&_keyReport);
+			}
+		}
+
+		void BleMiRemote::pressSpecial(uint8_t k, bool with_timer) {
+			if (this->is_connected()) {
+				if (with_timer) {
+					this->update_timer();
+				}
+			    uint8_t bit = k % 8;
+			    uint8_t byte = int(k / 8);
+
+			    _specialKeyReport.keys[byte] |= (1 << bit);
+
+			    sendReport (&_specialKeyReport);
+			}
+		}
+
+		void BleMiRemote::release() {
+			if (this->is_connected()) {
+				this->cancel_timeout((const std::string) TAG);
+
+				_keyReport.keys[0] = 0;
+				_keyReport.keys[1] = 0;
+				_keyReport.keys[2] = 0;
+				_keyReport.keys[3] = 0;
+				_keyReport.keys[4] = 0;
+				_keyReport.keys[5] = 0;
+				_keyReport.modifiers = 0;
+				_specialKeyReport.keys[0] = 0;
+				_specialKeyReport.keys[1] = 0;
+				_specialKeyReport.keys[2] = 0;
+				sendReport (&_keyReport);
+				sendReport (&_specialKeyReport);
+			}
+		}
+
+
 
 		void BleMiRemote::onConnect(BLEServer *pServer) {
 			this->connected = true;
