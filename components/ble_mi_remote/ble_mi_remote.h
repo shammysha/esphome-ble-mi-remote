@@ -2,8 +2,9 @@
 
 #ifdef USE_ESP32
 
-#include "esphome/core/component.h"
-#include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome.h"
+// #include "esphome/core/component.h"
+// #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"

@@ -2,7 +2,6 @@
 #ifdef USE_ESP32
 
 #include "ble_mi_remote.h"
-#include "esphome/core/log.h"
 #include <NimBLEServer.h>
 #include <NimBLEDevice.h>
 #include <NimBLEService.h>
