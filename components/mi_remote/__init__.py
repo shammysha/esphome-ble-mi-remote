@@ -123,7 +123,7 @@ async def adding_binary_sensors(var: MockObj) -> None:
 
 OPERATION_BASE_SCHEMA: Final = cv.Schema(
     {
-        cv.Required(CONF_ID): cv.use_id(BLEMiRemote),
+        cv.Required(CONF_ID): cv.use_id(MiRemote),
     }
 )
 
