@@ -21,6 +21,8 @@
 #define KEYBOARD_ID 0x02
 #define CONSUMER_ID 0x01
 
+#define LOG_TAG "MiRemote"
+
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
 const uint8_t SPECIAL_MENU_PICK = 0;
