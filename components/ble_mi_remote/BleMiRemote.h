@@ -54,7 +54,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t keys[3];
-} SpecialKeReport;
+} SpecialKeyReport;
 
 class BleMiRemote : public Print, public BLEServerCallbacks, public BLECharacteristicCallbacks
 {
