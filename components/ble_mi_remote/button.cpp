@@ -10,7 +10,7 @@ namespace esphome {
 		static const char *const TAG = "ble_mi_remote";
 
 		void BleMiRemoteButton::press_action() {
-			if (value > -1) {
+			if (value_ > -1) {
 				parent_->pressSpecial((uint8_t) value_);
 			} else {
 				parent_->release();
