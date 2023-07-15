@@ -62,7 +62,7 @@ namespace esphome {
 	namespace ble_mi_remote {
 		class BleMiRemote : public PollingComponent, public BLEServerCallbacks, public BLECharacteristicCallbacks {
 			public:
-				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level, bool reconnect);
+				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
 				void setup() override;
 				void update() override;
