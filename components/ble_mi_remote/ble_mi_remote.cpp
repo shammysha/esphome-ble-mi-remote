@@ -132,7 +132,7 @@ namespace esphome {
 	namespace ble_mi_remote {
 		static const char *const TAG = "ble_mi_remote";
 
-		BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level, bool reconnect)
+		BleMiRemote::BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level, bool reconnect)
 			:
 				PollingComponent(1000),
 				hid(0),
