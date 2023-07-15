@@ -151,9 +151,9 @@ namespace esphome {
 			pServer->setCallbacks(this);
 
 			hid = new BLEHIDDevice(pServer);
+			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
 			inputKeyboard = hid->inputReport(KEYBOARD_ID);
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
-			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
 			outputKeyboard->setCallbacks(this);
 
 
