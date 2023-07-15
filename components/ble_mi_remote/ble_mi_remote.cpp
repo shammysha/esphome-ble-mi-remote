@@ -454,6 +454,7 @@ namespace esphome {
 
 		void BleMiRemote::onConnect(BLEServer *pServer) {
 			this->connected = true;
+			release();
 		}
 
 		void BleMiRemote::onDisconnect(BLEServer *pServer) {
