@@ -16,10 +16,6 @@
 #include <list>
 #include "esphome/core/log.h"
 
-#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
-
-#define SERVICE_UUID_DEVICE_INFORMATION		"180A"      // Service - Device information
-
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
 
@@ -465,7 +461,7 @@ namespace esphome {
 		void BleMiRemote::onWrite(BLECharacteristic *me) {
 			uint8_t *value = (uint8_t*) (me->getValue().c_str());
 			(void) value;
-			NIMBLE_LOGD(TAG, "special keys: %d", *value);
+			esphome::ESP_LOGD(TAG, "special keys: %d", *value);
 		}
 
 		void BleMiRemote::delay_ms(uint64_t ms) {
