@@ -14,6 +14,9 @@
 #include "sdkconfig.h"
 #include <string>
 #include <list>
+#include "esphome/core/log.h"
+
+#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
 
 #define SERVICE_UUID_DEVICE_INFORMATION		"180A"      // Service - Device information
 
@@ -462,7 +465,7 @@ namespace esphome {
 		void BleMiRemote::onWrite(BLECharacteristic *me) {
 			uint8_t *value = (uint8_t*) (me->getValue().c_str());
 			(void) value;
-			ESP_LOGI(TAG, "special keys: %d", *value);
+			NIMBLE_LOGD(TAG, "special keys: %d", *value);
 		}
 
 		void BleMiRemote::delay_ms(uint64_t ms) {
