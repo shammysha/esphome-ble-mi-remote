@@ -425,6 +425,8 @@ namespace esphome {
 
 			    _specialKeyReport.keys[byte] |= (1 << bit);
 
+			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
+
 			    sendReport (&_specialKeyReport);
 			}
 		}
@@ -461,7 +463,7 @@ namespace esphome {
 		void BleMiRemote::onWrite(BLECharacteristic *me) {
 			uint8_t *value = (uint8_t*) (me->getValue().c_str());
 			(void) value;
-			esphome::ESP_LOGD(TAG, "special keys: %d", *value);
+			ESP_LOGD(TAG, "special keys: %d", *value);
 		}
 
 		void BleMiRemote::delay_ms(uint64_t ms) {
