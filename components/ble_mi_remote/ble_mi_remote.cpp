@@ -27,9 +27,9 @@ static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
 		USAGE(1),				0x01,			// Consumer Control
 
-		COLLECTION(1),			CONSUMER_ID,	// Application
+		COLLECTION(1),			0x01,			// Application
 
-		REPORT_ID(1),			0x01,			//
+		REPORT_ID(1),			CONSUMER_ID,	//
 		LOGICAL_MINIMUM(1),		0x00,			//
 		LOGICAL_MAXIMUM(1),		0x01,			//
 		REPORT_SIZE(1),			0x01,			//
