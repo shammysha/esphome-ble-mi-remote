@@ -190,7 +190,7 @@ async def ble_mi_remote_press_to_code(
 
     template_: LambdaExpression = await cg.templatable(config[CONF_CODE], args, cv.string)
     
-    is_number = true;
+    is_number = True;
 
     try:
         config[CONF_CODE] = int(template_)
@@ -198,7 +198,7 @@ async def ble_mi_remote_press_to_code(
         try:
             config[CONF_CODE] = int(template_, 16)
         except:
-            is_number = false
+            is_number = False
     
     if is_number:
         cg.add(var.set_key(template_))
