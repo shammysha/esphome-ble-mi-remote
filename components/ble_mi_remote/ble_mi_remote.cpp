@@ -10,6 +10,7 @@
 #include <NimBLECharacteristic.h>
 #include <NimBLEAdvertising.h>
 #include "HIDTypes.h"
+#include "HIDKeyboardTypes.h"
 #include <driver/adc.h>
 #include "sdkconfig.h"
 #include <string>
@@ -159,7 +160,7 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(0x02, vid, pid, version);
-			hid->hidInfo(0x00, 0x01);
+			hid->hidInfo(0x00, 0x05);
 
 			BLEDevice::setSecurityAuth(true, true, true);
 
