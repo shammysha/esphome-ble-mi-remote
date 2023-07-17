@@ -96,6 +96,9 @@ namespace esphome {
 				NimBLECharacteristic*	inputKeyboard;
 				NimBLECharacteristic*	outputKeyboard;
 				NimBLECharacteristic*	inputSpecialKeys;
+				NimBLECharacteristic*	vendorReport_06;
+				NimBLECharacteristic*	vendorReport_07;
+				NimBLECharacteristic*	vendorReport_08;
 				NimBLEAdvertising*		advertising;
 				KeyReport			_keyReport;
 				SpecialKeyReport	_specialKeyReport;

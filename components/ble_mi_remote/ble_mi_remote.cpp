@@ -157,11 +157,16 @@ namespace esphome {
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
 			outputKeyboard->setCallbacks(this);
 
+			vendorReport_06 = hid->inputReport(0x06);
+			vendorReport_07 = hid->inputReport(0x07);
+			vendorReport_08 = hid->inputReport(0x08);
+
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
 			hid->hidInfo(0x00, 0x01);
 
-
+			NimBLECharacteristic* cHid_2a2a = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a2a, NIMBLE_PROPERTY::READ);
+			cHid_2a2a->setValue((std::string) "RTKBeeIEEEDatalist.");
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
