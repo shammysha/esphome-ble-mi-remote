@@ -155,21 +155,6 @@ namespace esphome {
 			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic((uint16_t) 0x6487, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic((uint16_t) 0x6387, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor((uint16_t) 0x2902);
-			cVendor_6287_6487->setValue((uint16_t) 0x0000);
-
-			NimBLEService* sVendor_d1ff = pServer->createService((uint16_t) 0xd1ff);
-			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic((uint16_t) 0xa001, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor((uint16_t) 0x2902);
-
-			NimBLEService* sVendor_d0ff = pServer->createService((uint16_t) 0xd0ff);
-			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff2, NIMBLE_PROPERTY::WRITE);
-			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff1, NIMBLE_PROPERTY::WRITE);
-			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd8, NIMBLE_PROPERTY::WRITE_NR);
-			NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd5, NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd4, NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd3, NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd2, NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd1, NIMBLE_PROPERTY::WRITE_NR);
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
