@@ -151,7 +151,7 @@ namespace esphome {
 			NimBLEServer *pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
-			NimBLEService* sVendor_6287 = pServer->createService((uint16_t) 0x6287);
+			NimBLEService* sVendor_6287 = pServer->createService((std::string) "00006387-3c18-d293-8e48-14fe2e4da212");
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
