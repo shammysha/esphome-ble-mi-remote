@@ -128,7 +128,7 @@ static const uint8_t _hidReportDescriptor[] = {
 		USAGE_MAXIMUM(1),		0xFE,			// 254
 		HIDINPUT(1),			0x00,			//
 
-		END_COLLECTION(0)
+		END_COLLECTION(0),
 		END_COLLECTION(0)
 };
 
