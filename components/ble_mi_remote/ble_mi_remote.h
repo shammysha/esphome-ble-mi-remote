@@ -10,14 +10,6 @@
 #include "NimBLEHIDDevice.h"
 #include <string>
 
-#define BLEDevice                  NimBLEDevice
-#define BLEServerCallbacks         NimBLEServerCallbacks
-#define BLECharacteristicCallbacks NimBLECharacteristicCallbacks
-#define BLEHIDDevice               NimBLEHIDDevice
-#define BLECharacteristic          NimBLECharacteristic
-#define BLEAdvertising             NimBLEAdvertising
-#define BLEServer                  NimBLEServer
-
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
 const uint8_t SPECIAL_MENU_PICK = 0;
@@ -60,7 +52,7 @@ typedef struct {
 
 namespace esphome {
 	namespace ble_mi_remote {
-		class BleMiRemote : public PollingComponent, public BLEServerCallbacks, public BLECharacteristicCallbacks {
+		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks {
 			public:
 				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
@@ -94,17 +86,17 @@ namespace esphome {
 				bool is_connected();
 				void update_timer();
 
-				BLEServer *pServer;
+				NimBLEServer *pServer;
 
 				bool reconnect_{true};
 				uint32_t default_delay_{100};
 				uint32_t release_delay_{8};
 
-				BLEHIDDevice*		hid;
-				BLECharacteristic*	inputKeyboard;
-				BLECharacteristic*	outputKeyboard;
-				BLECharacteristic*	inputSpecialKeys;
-				BLEAdvertising*		advertising;
+				NimBLEHIDDevice*		hid;
+				NimBLECharacteristic*	inputKeyboard;
+				NimBLECharacteristic*	outputKeyboard;
+				NimBLECharacteristic*	inputSpecialKeys;
+				NimBLEAdvertising*		advertising;
 				KeyReport			_keyReport;
 				SpecialKeyReport	_specialKeyReport;
 				std::string			deviceName;
@@ -120,10 +112,10 @@ namespace esphome {
 				uint16_t version	= 0x4a4f;
 
 			protected:
-				virtual void onStarted(BLEServer *pServer) { };
-				virtual void onConnect(BLEServer* pServer) override;
-				virtual void onDisconnect(BLEServer* pServer) override;
-				virtual void onWrite(BLECharacteristic* me) override;
+				virtual void onStarted(NimBLEServer *pServer) { };
+				virtual void onConnect(NimBLEServer* pServer) override;
+				virtual void onDisconnect(NimBLEServer* pServer) override;
+				virtual void onWrite(NimBLECharacteristic* me) override;
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome
