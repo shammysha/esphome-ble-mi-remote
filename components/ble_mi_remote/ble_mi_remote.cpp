@@ -152,9 +152,6 @@ namespace esphome {
 			pServer->setCallbacks(this);
 
 			NimBLEService* sVendor_6287 = pServer->createService((uint16_t) 0x6287);
-			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic((uint16_t) 0x6487, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic((uint16_t) 0x6387, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor((uint16_t) 0x2902);
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
