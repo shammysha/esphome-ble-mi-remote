@@ -59,7 +59,9 @@ static const uint8_t _hidReportDescriptor[] = {
 
 		USAGE_PAGE(2),			0x00, 0xFF,		// Vendor ??? переставить местами байты?
 		USAGE(1),				0x00,			// Vendor
+
 		COLLECTION(1),			0x01,			// Application
+
 		REPORT_ID(1),			0x06,			//
 		REPORT_SIZE(1),			0x08,			//
 		REPORT_COUNT(1),		0x78,			// 120
@@ -126,6 +128,7 @@ static const uint8_t _hidReportDescriptor[] = {
 		USAGE_MAXIMUM(1),		0xFE,			// 254
 		HIDINPUT(1),			0x00,			//
 
+		END_COLLECTION(0)
 		END_COLLECTION(0)
 };
 
