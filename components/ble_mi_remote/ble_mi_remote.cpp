@@ -167,11 +167,11 @@ namespace esphome {
 			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor((uint16_t) 0x2902);
 			cVendor_6287_6487->setValue((uint16_t) 0x0000);
 
-			NimBLEService* sVendor_d1ff = pServer->createService(uint16_t) 0xd1ff);
+			NimBLEService* sVendor_d1ff = pServer->createService((uint16_t) 0xd1ff);
 			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic((uint16_t) 0xa001, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
 			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor((uint16_t) 0x2902);
 
-			NimBLEService* sVendor_d0ff = pServer->createService(uint16_t) 0xd0ff);
+			NimBLEService* sVendor_d0ff = pServer->createService((uint16_t) 0xd0ff);
 			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff2, NIMBLE_PROPERTY::WRITE);
 			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff1, NIMBLE_PROPERTY::WRITE);
 			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd8, NIMBLE_PROPERTY::WRITE_NR);
