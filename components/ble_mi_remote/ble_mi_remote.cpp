@@ -171,13 +171,6 @@ namespace esphome {
 			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd2, NIMBLE_PROPERTY::READ);
 			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd1, NIMBLE_PROPERTY::WRITE_NR);
 
-			cVendor_d0ff_fff1->setValue((uint8_t) 0x01);
-			cVendor_d0ff_ffd5->setValue((uint16_t) 0x0000);
-			cVendor_d0ff_ffd4->setValue((uint16_t) 0x1420);
-			cVendor_d0ff_ffd3->setValue((uint16_t) 0xd74b);
-			uint8_t value_ffd2[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
-			cVendor_d0ff_ffd2->setValue( value_ffd2, sizeof(value_ffd2));
-
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
 			inputKeyboard = hid->inputReport(KEYBOARD_ID);
