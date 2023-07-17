@@ -173,9 +173,13 @@ namespace esphome {
 			uint8_t value_2a23[] = { 0x00, 0x01, 0x02, 0x00, 0x00, 0x03, 0x04, 0x05 };
 			cHid_2a23->setValue(value_2a23, sizeof(value_2a23));
 
-			NimBLECharacteristic* cHid_2a28 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a28, NIMBLE_PROPERTY::READ);  // 2.0.1.4
-			uint8_t value_2a28[] = { 0x32, 0x2e, 0x30, 0x2e, 0x31, 0x2e, 0x34, 0x00 };
-			cHid_2a28->setValue(value_2a28, sizeof(value_2a28));
+			NimBLECharacteristic* cHid_2a24 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a24, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a24[] = { 0x52, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x20, 0x4e, 0x62, 0x72, 0x20, 0x30, 0x2e, 0x39, 0x00 }; // Model Nbr 0.9
+			cHid_2a24->setValue(value_2a24, sizeof(value_2a24));
+
+			NimBLECharacteristic* cHid_2a25 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a25, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a25[] = { 0x52, 0x54, 0x4b, 0x42, 0x65, 0x65, 0x53, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x4e, 0x75, 0x6d, 0x00 }; // RTKBeeSerialNum
+			cHid_2a25->setValue(value_2a25, sizeof(value_2a25));
 
 			NimBLECharacteristic* cHid_2a26 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a26, NIMBLE_PROPERTY::READ);
 			uint8_t value_2a26[] = { 0x31, 0x39, 0x34, 0x31, 0x35 }; // 19415
@@ -185,17 +189,9 @@ namespace esphome {
 			uint8_t value_2a27[] = { 0x32, 0x2e, 0x33 };
 			cHid_2a27->setValue(value_2a27, sizeof(value_2a27));
 
-			NimBLECharacteristic* cHid_2a27 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a27, NIMBLE_PROPERTY::READ);
-			uint8_t value_2a27[] = { 0x32, 0x2e, 0x33 };
-			cHid_2a27->setValue(value_2a27, sizeof(value_2a27));
-
-			NimBLECharacteristic* cHid_2a25 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a25, NIMBLE_PROPERTY::READ);
-			uint8_t value_2a25[] = { 0x52, 0x54, 0x4b, 0x42, 0x65, 0x65, 0x53, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x4e, 0x75, 0x6d, 0x00 }; // RTKBeeSerialNum
-			cHid_2a25->setValue(value_2a25, sizeof(value_2a25));
-
-			NimBLECharacteristic* cHid_2a24 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a24, NIMBLE_PROPERTY::READ);
-			uint8_t value_2a24[] = { 0x52, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x20, 0x4e, 0x62, 0x72, 0x20, 0x30, 0x2e, 0x39, 0x00 }; // Model Nbr 0.9
-			cHid_2a24->setValue(value_2a24, sizeof(value_2a24));
+			NimBLECharacteristic* cHid_2a28 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a28, NIMBLE_PROPERTY::READ);  // 2.0.1.4
+			uint8_t value_2a28[] = { 0x32, 0x2e, 0x30, 0x2e, 0x31, 0x2e, 0x34, 0x00 };
+			cHid_2a28->setValue(value_2a28, sizeof(value_2a28));
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
