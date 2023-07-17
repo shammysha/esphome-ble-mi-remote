@@ -157,10 +157,38 @@ namespace esphome {
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
 			outputKeyboard->setCallbacks(this);
 
-
 			hid->manufacturer()->setValue(deviceManufacturer);
-			hid->pnp(0x02, vid, pid, version);
-			hid->hidInfo(0x00, 0x05);
+			hid->pnp(sid, vid, pid, version);
+			hid->hidInfo(0x00, 0x01);
+
+			sVendor_6287 = hid->service()->createService((uint16_t) 0x6287);
+			cVendor_6287_6487 = sVendor_6287->createCharacteristic((uint16_t) 0x6487, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+			cVendor_6287_6387 = sVendor_6287->createCharacteristic((uint16_t) 0x6387, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+			dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor((uint16_t) 0x2902);
+			cVendor_6287_6487->setValue((uint16_t) 0x0000);
+
+			sVendor_d1ff = hid->service()->createService(uint16_t) 0xd1ff);
+			cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic((uint16_t) 0xa001, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
+			dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor((uint16_t) 0x2902);
+
+			sVendor_d0ff = hid->service()->createService(uint16_t) 0xd0ff);
+			cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff2, NIMBLE_PROPERTY::WRITE);
+			cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff1, NIMBLE_PROPERTY::WRITE);
+			cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd8, NIMBLE_PROPERTY::WRITE_NR);
+			cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd5, NIMBLE_PROPERTY::READ);
+			cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd4, NIMBLE_PROPERTY::READ);
+			cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd3, NIMBLE_PROPERTY::READ);
+			cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd2, NIMBLE_PROPERTY::READ);
+			cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd1, NIMBLE_PROPERTY::WRITE_NR);
+
+			cVendor_d0ff_fff1->setValue((uint8_t) 0x01);
+			cVendor_d0ff_ffd5->setValue((uint16_t) 0x0000);
+			cVendor_d0ff_ffd4->setValue((uint16_t) 0x1420);
+			cVendor_d0ff_ffd3->setValue((uint16_t) 0xd74b);
+			uint8_t value_ffd2[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
+			cVendor_d0ff_ffd2->setValue( value_ffd2, sizeof(value_ffd2));
+
+			sVendor_d1ff = hid->service()->createService(uint16_t) 0xd1ff);
 
 			BLEDevice::setSecurityAuth(true, true, true);
 

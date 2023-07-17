@@ -114,9 +114,10 @@ namespace esphome {
 				uint32_t			_delay_ms = 7;
 				void				delay_ms(uint64_t ms);
 
-				uint16_t vid		= 0x05ac;
-				uint16_t pid		= 0x820a;
-				uint16_t version	= 0x0210;
+				uint16_t sid		= 0x01;
+				uint16_t vid		= 0x2717;
+				uint16_t pid		= 0x32b9;
+				uint16_t version	= 0x4a4f;
 
 			protected:
 				virtual void onStarted(BLEServer *pServer) { };
