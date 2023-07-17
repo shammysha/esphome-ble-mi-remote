@@ -174,7 +174,7 @@ namespace esphome {
 			cHid_2a23->setValue(value_2a23, sizeof(value_2a23));
 
 			NimBLECharacteristic* cHid_2a24 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a24, NIMBLE_PROPERTY::READ);
-			uint8_t value_2a24[] = { 0x52, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x20, 0x4e, 0x62, 0x72, 0x20, 0x30, 0x2e, 0x39, 0x00 }; // Model Nbr 0.9
+			uint8_t value_2a24[] = { 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x20, 0x4e, 0x62, 0x72, 0x20, 0x30, 0x2e, 0x39, 0x00 }; // Model Nbr 0.9
 			cHid_2a24->setValue(value_2a24, sizeof(value_2a24));
 
 			NimBLECharacteristic* cHid_2a25 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a25, NIMBLE_PROPERTY::READ);
@@ -203,6 +203,8 @@ namespace esphome {
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
+			std::vector<uint8_t> advManufacturerData = { 0x00, 0x00 };
+			advertising->setManufacturerData(advManufacturerData);
 			advertising->setScanResponse(false);
 			advertising->start();
 
