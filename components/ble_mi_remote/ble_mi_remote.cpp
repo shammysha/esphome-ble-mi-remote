@@ -203,7 +203,7 @@ namespace esphome {
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
-			std::vector<uint8_t> advManufacturerData = { 0x00, 0x00 };
+			uint8_t advManufacturerData[] = { 0x00, 0x00 };
 			advertising->setManufacturerData(advManufacturerData);
 			advertising->setScanResponse(false);
 			advertising->start();
