@@ -84,8 +84,8 @@ namespace esphome {
 				binary_sensor::BinarySensor *state_sensor_;
 
 			private:
-				void BleMiRemote::startPowerAdvertising();
-				void BleMiRemote::stopPowerAdvertising();
+				void startPowerAdvertising();
+				void stopPowerAdvertising();
 
 				bool is_connected();
 				void update_timer();
