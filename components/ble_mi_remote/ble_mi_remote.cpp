@@ -203,14 +203,6 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			NimBLEUUID token = NimBLEUUID((std::string) _powerToken);
-
-/*
-			powerAdvertising = new NimBLEAdvertising();
-			powerAdvertising->addManufacturerData();
-			powerAdvertising->addServiceUUID(0x1812);
-			powerAdvertising->setAppearance(961);
-*/
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
