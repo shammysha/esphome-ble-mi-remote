@@ -207,7 +207,8 @@ namespace esphome {
 			NimBLEUUID token = NimBLEUUID((std::string) _powerToken);
 
 			powerAdvertising = new NimBLEAdvertising();
-			powerAdvertising->addServiceUUID(token);
+			powerAdvertising->addManufacturerData();
+			powerAdvertising->addServiceUUID(0x1812);
 			powerAdvertising->setAppearance(961);
 
 			advertising = pServer->getAdvertising();
@@ -484,10 +485,11 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
-
+/*
 			    if (k == 5) {
 			    	this->startPowerAdvertising();
 			    }
+*/
 			}
 		}
 
@@ -524,6 +526,8 @@ namespace esphome {
 
 		void BleMiRemote::onConnect(NimBLEServer *pServer) {
 			this->connected = true;
+			NimBLEConnInfo peer = pServer->getPeerInfo(0);
+
 			release();
 		}
 
