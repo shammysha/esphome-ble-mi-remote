@@ -16,3 +16,7 @@ ble_mi_remote:
   battery_level: 100 
   reconnect: true # auto reconnect after reboot
 ```
+
+Code based on source from repositories...
+* https://github.com/dmamontov/esphome-blekeyboard
+* https://github.com/T-vK/ESP32-BLE-Keyboard
