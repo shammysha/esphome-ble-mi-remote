@@ -10,6 +10,7 @@
 #include "NimBLEHIDDevice.h"
 #include <string>
 
+
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
 const uint8_t SPECIAL_MENU_PICK = 0;
@@ -62,7 +63,7 @@ namespace esphome {
 				float get_setup_priority() const override { return setup_priority::AFTER_BLUETOOTH; }
 
 				void set_delay(uint32_t delay_ms = 8) { this->_delay_ms = delay_ms; };
-				void set_release_delay(uint32_t delay_ms = 8) { release_delay_ = delay_ms; };
+				void set_release_delay(uint32_t delay_ms = 8) { _release_delay = delay_ms; };
 				void set_battery_level(uint8_t level = 100);
 
 				void set_state_sensor(binary_sensor::BinarySensor *state_sensor) { state_sensor_ = state_sensor; }
@@ -83,15 +84,13 @@ namespace esphome {
 				binary_sensor::BinarySensor *state_sensor_;
 
 			private:
+				void BleMiRemote::startPowerAdvertising();
+				void BleMiRemote::stopPowerAdvertising();
+
 				bool is_connected();
 				void update_timer();
 
 				NimBLEServer *pServer;
-
-				bool reconnect_{true};
-				uint32_t default_delay_{100};
-				uint32_t release_delay_{8};
-
 				NimBLEHIDDevice*		hid;
 				NimBLECharacteristic*	inputKeyboard;
 				NimBLECharacteristic*	outputKeyboard;
@@ -100,6 +99,12 @@ namespace esphome {
 				NimBLECharacteristic*	vendorReport_07;
 				NimBLECharacteristic*	vendorReport_08;
 				NimBLEAdvertising*		advertising;
+				NimBLEAdvertising*		powerAdvertising;
+
+				bool 				_reconnect{true};
+				uint32_t 			_default_delay{100};
+				uint32_t 			_release_delay{8};
+				std::string			_powerToken;
 				KeyReport			_keyReport;
 				SpecialKeyReport	_specialKeyReport;
 				std::string			deviceName;
