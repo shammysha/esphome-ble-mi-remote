@@ -497,9 +497,6 @@ namespace esphome {
 			} else {
 				ESP_LOGD(TAG, "Failed to start Power Advertising");
 			}
-
-			this->cancel_timeout((const std::string) TAG);
-			this->set_timeout((const std::string) TAG, 1000, [this]() { this->stopPowerAdvertising(); });
 		}
 
 		void BleMiRemote::stopPowerAdvertising() {
