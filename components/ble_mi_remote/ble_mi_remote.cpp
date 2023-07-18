@@ -215,9 +215,6 @@ namespace esphome {
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 			advertising->setScanResponse(false);
 
-			char cdata[] = { 0x04, 0x0d, 0x04, 0x05, 0x00 }; // class of device
-			advertising->addData(std::string(cdata, 5), 5);
-
 			advertising->start();
 
 			hid->setBatteryLevel(batteryLevel);
