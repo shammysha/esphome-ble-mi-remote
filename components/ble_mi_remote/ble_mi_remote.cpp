@@ -145,6 +145,7 @@ namespace esphome {
 			    batteryLevel(battery_level)
 		{
 			_reconnect = reconnect;
+			_powerToken = "cbbfe0e1-f7f3-4206-84e084cbb3d09dfc";
 		}
 
 		void BleMiRemote::setup() {
