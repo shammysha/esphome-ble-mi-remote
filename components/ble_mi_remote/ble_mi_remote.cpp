@@ -144,11 +144,7 @@ namespace esphome {
 			    deviceManufacturer(std::string(manufacturer_id).substr(0,15)),
 			    batteryLevel(battery_level)
 		{
-<<<<<<< main
-			_reconnect = reconnect;
-=======
 			reconnect_ = reconnect;
->>>>>>> 1fd645c Power On Advertising
 		}
 
 		void BleMiRemote::setup() {
@@ -183,10 +179,6 @@ namespace esphome {
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 			advertising->setScanResponse(false);
-<<<<<<< main
-
-=======
->>>>>>> 1fd645c Power On Advertising
 			advertising->start();
 
 			hid->setBatteryLevel(batteryLevel);
@@ -481,8 +473,6 @@ namespace esphome {
 
 		void BleMiRemote::onConnect(NimBLEServer *pServer) {
 			this->connected = true;
-			NimBLEConnInfo peer = pServer->getPeerInfo(0);
-
 			release();
 		}
 
