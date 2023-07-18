@@ -484,15 +484,17 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
-			} else if (k == 5) {
-				this->startPowerAdvertising();
+
+			    if (k == 5) {
+			    	this->startPowerAdvertising();
+			    }
 			}
 		}
 
 		void BleMiRemote::startPowerAdvertising() {
-			pServer->stopAdvertising();
-
-			if (!this->powerAdvertising->start(1000)) {
+			if (this->powerAdvertising->start(1000)) {
+				ESP_LOGD(TAG, "Starting Power Advertising");
+			} else {
 				ESP_LOGD(TAG, "Failed to start Power Advertising");
 			}
 
@@ -502,8 +504,6 @@ namespace esphome {
 
 		void BleMiRemote::stopPowerAdvertising() {
 			this->powerAdvertising->stop();
-
-			pServer->startAdvertising();
 		}
 
 		void BleMiRemote::release() {
