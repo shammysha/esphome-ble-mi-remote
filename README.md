@@ -1,6 +1,8 @@
 # esphome-mi-remote
 Bluetooth remote controller for Xiaomi MI TV
 
+![image](https://github.com/shammysha/esphome-ble-mi-remote/assets/65885873/acd9d0e0-b6f6-47c7-aa71-7ea0387eae70)
+
 Usage:
 
 ```
