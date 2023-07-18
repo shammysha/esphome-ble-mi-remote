@@ -5,7 +5,7 @@ Usage:
 
 ```
 external_components:
-  - source: github://shammysha/esphome-mi-remote
+  - source: github://shammysha/esphome-ble-mi-remote
 
 ble_mi_remote:
   id: mi_remote
