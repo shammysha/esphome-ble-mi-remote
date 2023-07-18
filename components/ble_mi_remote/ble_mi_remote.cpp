@@ -481,6 +481,24 @@ namespace esphome {
 			}
 		}
 
+<<<<<<< main
+=======
+		void BleMiRemote::startPowerAdvertising() {
+			if (this->powerAdvertising->start(1000)) {
+				ESP_LOGD(TAG, "Starting Power Advertising");
+			} else {
+				ESP_LOGD(TAG, "Failed to start Power Advertising");
+			}
+
+			this->cancel_timeout((const std::string) TAG);
+			this->set_timeout((const std::string) TAG, 1000, [this]() { this->stopPowerAdvertising(); });
+		}
+
+		void BleMiRemote::stopPowerAdvertising() {
+			this->powerAdvertising->stop();
+		}
+
+>>>>>>> 2b7daa2 Power On advertising
 		void BleMiRemote::release() {
 			if (this->is_connected()) {
 				this->cancel_timeout((const std::string) TAG);
