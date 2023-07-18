@@ -495,7 +495,7 @@ namespace esphome {
 			this->powerAdvertising->start(1000);
 
 			this->cancel_timeout((const std::string) TAG);
-			this->set_timeout((const std::string) TAG, 1000, [this]() { this->stopPowerAdvertising(); });
+			this->set_timeout((const std::string) TAG, 5000, [this]() { this->stopPowerAdvertising(); });
 		}
 
 		void BleMiRemote::stopPowerAdvertising() {
