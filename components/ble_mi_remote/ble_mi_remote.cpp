@@ -144,7 +144,8 @@ namespace esphome {
 			    deviceManufacturer(std::string(manufacturer_id).substr(0,15)),
 			    batteryLevel(battery_level)
 		{
-			reconnect_ = reconnect;
+			_reconnect = reconnect;
+			_powerToken = "cbbfe0e1-f7f3-4206-84e084cbb3d09dfc";
 		}
 
 		void BleMiRemote::setup() {
@@ -166,7 +167,35 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x01);
+			hid->hidInfo(0x00, 0x00);
+
+			NimBLECharacteristic* cHid_2a2a = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a2a, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a2a[] = { 0x52, 0x54, 0x4b, 0x42, 0x65, 0x65, 0x49, 0x45, 0x45, 0x45, 0x44, 0x61, 0x74, 0x61, 0x6c, 0x69, 0x73, 0x74, 0x00 }; // RTKBeeIEEEDatalist
+			cHid_2a2a->setValue(value_2a2a, sizeof(value_2a2a));
+
+			NimBLECharacteristic* cHid_2a23 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a23, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a23[] = { 0x00, 0x01, 0x02, 0x00, 0x00, 0x03, 0x04, 0x05 };
+			cHid_2a23->setValue(value_2a23, sizeof(value_2a23));
+
+			NimBLECharacteristic* cHid_2a24 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a24, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a24[] = { 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x20, 0x4e, 0x62, 0x72, 0x20, 0x30, 0x2e, 0x39, 0x00 }; // Model Nbr 0.9
+			cHid_2a24->setValue(value_2a24, sizeof(value_2a24));
+
+			NimBLECharacteristic* cHid_2a25 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a25, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a25[] = { 0x52, 0x54, 0x4b, 0x42, 0x65, 0x65, 0x53, 0x65, 0x72, 0x69, 0x61, 0x6c, 0x4e, 0x75, 0x6d, 0x00 }; // RTKBeeSerialNum
+			cHid_2a25->setValue(value_2a25, sizeof(value_2a25));
+
+			NimBLECharacteristic* cHid_2a26 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a26, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a26[] = { 0x31, 0x39, 0x34, 0x31, 0x35 }; // 19415
+			cHid_2a26->setValue(value_2a26, sizeof(value_2a26));
+
+			NimBLECharacteristic* cHid_2a27 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a27, NIMBLE_PROPERTY::READ);
+			uint8_t value_2a27[] = { 0x32, 0x2e, 0x33 };
+			cHid_2a27->setValue(value_2a27, sizeof(value_2a27));
+
+			NimBLECharacteristic* cHid_2a28 = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a28, NIMBLE_PROPERTY::READ);  // 2.0.1.4
+			uint8_t value_2a28[] = { 0x32, 0x2e, 0x30, 0x2e, 0x31, 0x2e, 0x34, 0x00 };
+			cHid_2a28->setValue(value_2a28, sizeof(value_2a28));
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
@@ -175,10 +204,20 @@ namespace esphome {
 
 			onStarted(pServer);
 
+			NimBLEUUID token = NimBLEUUID((std::string) );
+
+			powerAdvertise = new NimBLEAdvertising();
+			powerAdvertise->addServiceUUID(token);
+			powerAdvertise->setAppearance(961);
+
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 			advertising->setScanResponse(false);
+
+			char cdata[] = { 0x04, 0x0d, 0x04, 0x05, 0x00 }; // class of device
+			advertising->addData(std::string(cdata, 5), 5);
+
 			advertising->start();
 
 			hid->setBatteryLevel(batteryLevel);
@@ -187,13 +226,13 @@ namespace esphome {
 
 			pServer = NimBLEDevice::getServer();
 
-			pServer->advertiseOnDisconnect(this->reconnect_);
+			pServer->advertiseOnDisconnect(this->_reconnect);
 
 			release();
 		}
 
 		void BleMiRemote::stop() {
-			if (this->reconnect_) {
+			if (this->_reconnect) {
 				pServer->advertiseOnDisconnect(false);
 			}
 
@@ -209,7 +248,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::start() {
-			if (this->reconnect_) {
+			if (this->_reconnect) {
 				pServer->advertiseOnDisconnect(true);
 			}
 
@@ -236,8 +275,9 @@ namespace esphome {
 
 		void BleMiRemote::update_timer() {
 			this->cancel_timeout((const std::string) TAG);
-			this->set_timeout((const std::string) TAG, release_delay_, [this]() { this->release(); });
+			this->set_timeout((const std::string) TAG, _release_delay, [this]() { this->release(); });
 		}
+
 
 		void BleMiRemote::sendReport(KeyReport *keys) {
 			if (this->is_connected()) {
@@ -447,7 +487,24 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
+			} else if (k == 5) {
+				this->startPowerAdvertising();
 			}
+		}
+
+		void BleMiRemote::startPowerAdvertising() {
+			pServer->stopAdvertising();
+
+			this->powerAdvertise->start(1000);
+
+			this->cancel_timeout((const std::string) TAG);
+			this->set_timeout((const std::string) TAG, 1000, [this]() { this->stopPowerAdvertising(); });
+		}
+
+		void BleMiRemote::stopPowerAdvertising() {
+			this->powerAdvertise->stop();
+
+			pServer->startAdvertising();
 		}
 
 		void BleMiRemote::release() {
@@ -468,8 +525,6 @@ namespace esphome {
 				sendReport (&_specialKeyReport);
 			}
 		}
-
-
 
 		void BleMiRemote::onConnect(NimBLEServer *pServer) {
 			this->connected = true;
