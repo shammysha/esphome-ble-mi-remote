@@ -206,9 +206,9 @@ namespace esphome {
 
 			NimBLEUUID token = NimBLEUUID((std::string) _powerToken);
 
-			powerAdvertise = new NimBLEAdvertising();
-			powerAdvertise->addServiceUUID(token);
-			powerAdvertise->setAppearance(961);
+			powerAdvertising = new NimBLEAdvertising();
+			powerAdvertising->addServiceUUID(token);
+			powerAdvertising->setAppearance(961);
 
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
@@ -495,14 +495,14 @@ namespace esphome {
 		void BleMiRemote::startPowerAdvertising() {
 			pServer->stopAdvertising();
 
-			this->powerAdvertise->start(1000);
+			this->powerAdvertising->start(1000);
 
 			this->cancel_timeout((const std::string) TAG);
 			this->set_timeout((const std::string) TAG, 1000, [this]() { this->stopPowerAdvertising(); });
 		}
 
 		void BleMiRemote::stopPowerAdvertising() {
-			this->powerAdvertise->stop();
+			this->powerAdvertising->stop();
 
 			pServer->startAdvertising();
 		}
