@@ -206,11 +206,12 @@ namespace esphome {
 
 			NimBLEUUID token = NimBLEUUID((std::string) _powerToken);
 
+/*
 			powerAdvertising = new NimBLEAdvertising();
 			powerAdvertising->addManufacturerData();
 			powerAdvertising->addServiceUUID(0x1812);
 			powerAdvertising->setAppearance(961);
-
+*/
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
@@ -485,24 +486,7 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
-/*
-			    if (k == 5) {
-			    	this->startPowerAdvertising();
-			    }
-*/
 			}
-		}
-
-		void BleMiRemote::startPowerAdvertising() {
-			if (this->powerAdvertising->start(1000)) {
-				ESP_LOGD(TAG, "Starting Power Advertising");
-			} else {
-				ESP_LOGD(TAG, "Failed to start Power Advertising");
-			}
-		}
-
-		void BleMiRemote::stopPowerAdvertising() {
-			this->powerAdvertising->stop();
 		}
 
 		void BleMiRemote::release() {

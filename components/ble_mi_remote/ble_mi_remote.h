@@ -84,9 +84,6 @@ namespace esphome {
 				binary_sensor::BinarySensor *state_sensor_;
 
 			private:
-				void startPowerAdvertising();
-				void stopPowerAdvertising();
-
 				bool is_connected();
 				void update_timer();
 
@@ -99,12 +96,10 @@ namespace esphome {
 				NimBLECharacteristic*	vendorReport_07;
 				NimBLECharacteristic*	vendorReport_08;
 				NimBLEAdvertising*		advertising;
-				NimBLEAdvertising*		powerAdvertising;
 
 				bool 				_reconnect{true};
 				uint32_t 			_default_delay{100};
 				uint32_t 			_release_delay{8};
-				std::string			_powerToken;
 				KeyReport			_keyReport;
 				SpecialKeyReport	_specialKeyReport;
 				std::string			deviceName;
