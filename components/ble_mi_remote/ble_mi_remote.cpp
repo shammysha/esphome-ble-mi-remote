@@ -166,7 +166,7 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x01);
+			hid->hidInfo(0x00, 0x00);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
@@ -179,9 +179,6 @@ namespace esphome {
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 			advertising->setScanResponse(false);
-
-			char cdata[] = { 0x04, 0x0d, 0x04, 0x05, 0x00 }; // class of device
-			advertising->addData(std::string(cdata, 5), 5);
 
 			advertising->start();
 
