@@ -204,7 +204,7 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			NimBLEUUID token = NimBLEUUID((std::string) );
+			NimBLEUUID token = NimBLEUUID((std::string) _powerToken);
 
 			powerAdvertise = new NimBLEAdvertising();
 			powerAdvertise->addServiceUUID(token);
