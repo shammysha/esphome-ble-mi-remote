@@ -145,7 +145,6 @@ namespace esphome {
 			    batteryLevel(battery_level)
 		{
 			_reconnect = reconnect;
-			_powerToken = "cbbfe0e1-f7f3-4206-84e084cbb3d09dfc";
 		}
 
 		void BleMiRemote::setup() {
@@ -167,7 +166,7 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x00);
+			hid->hidInfo(0x00, 0x01);
 
 			NimBLECharacteristic* cHid_2a2a = hid->deviceInfo()->createCharacteristic((uint16_t) 0x2a2a, NIMBLE_PROPERTY::READ);
 			uint8_t value_2a2a[] = { 0x52, 0x54, 0x4b, 0x42, 0x65, 0x65, 0x49, 0x45, 0x45, 0x45, 0x44, 0x61, 0x74, 0x61, 0x6c, 0x69, 0x73, 0x74, 0x00 }; // RTKBeeIEEEDatalist
