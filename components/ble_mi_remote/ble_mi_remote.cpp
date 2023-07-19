@@ -557,7 +557,7 @@ namespace esphome {
 			}
 			str += std::string(pCharacteristic->getUUID()).c_str();
 
-			ESP_LOGD(TAG, str);
+			ESP_LOGD(TAG, str.c_str());
 		}
 
 		void BleMiRemote::onWrite(NimBLEDescriptor* pDescriptor) {
