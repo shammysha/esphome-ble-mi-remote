@@ -1,6 +1,8 @@
 
 #ifdef USE_ESP32
 
+#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
+
 #include "ble_mi_remote.h"
 #include <NimBLEServer.h>
 #include <NimBLEDevice.h>
@@ -16,6 +18,7 @@
 #include <string>
 #include <list>
 #include "esphome/core/log.h"
+#include "<NimBLELog.h>"
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
@@ -159,12 +162,6 @@ namespace esphome {
 			inputKeyboard = hid->inputReport(KEYBOARD_ID);
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
 			outputKeyboard->setCallbacks(this);
-
-			NimBLEService* sVendor_6287 = pServer->createService((uint16_t) 0x6287);
-			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic((uint16_t) 0x6487, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic((uint16_t) 0x6387, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor((uint16_t) 0x2902);
-			cVendor_6287_6487->setValue((uint16_t) 0x0000);
 
 			vendorReport_06 = hid->inputReport(0x06);
 			vendorReport_07 = hid->inputReport(0x07);
