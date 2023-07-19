@@ -166,7 +166,7 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x01);
+			hid->hidInfo(0x00, 0x00);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
@@ -261,7 +261,8 @@ namespace esphome {
 		const uint8_t _asciimap[128] PROGMEM;
 
 		#define SHIFT 0x80
-		const uint8_t _asciimap[128] = { 0x00,             // NUL
+		const uint8_t _asciimap[128] = {
+				0x00,             // NUL
 				0x00,             // SOH
 				0x00,             // STX
 				0x00,             // ETX
