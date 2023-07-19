@@ -18,7 +18,6 @@
 #include <string>
 #include <list>
 #include "esphome/core/log.h"
-#include "<NimBLELog.h>"
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
