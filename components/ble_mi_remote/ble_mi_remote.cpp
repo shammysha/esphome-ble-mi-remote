@@ -474,23 +474,6 @@ namespace esphome {
 			}
 		}
 
-		void BleMiRemote::onConnect(NimBLEServer *pServer) {
-			this->_connected = true;
-			NimBLEConnInfo peer = pServer->getPeerInfo(0);
-
-			release();
-		}
-
-		void BleMiRemote::onDisconnect(NimBLEServer *pServer) {
-			this->_connected = false;
-		}
-
-		void BleMiRemote::onWrite(NimBLECharacteristic *me) {
-			uint8_t *value = (uint8_t*) (me->getValue().c_str());
-			(void) value;
-			ESP_LOGD(TAG, "special keys: %d", *value);
-		}
-
 		void BleMiRemote::delay_ms(uint64_t ms) {
 			uint64_t m = esp_timer_get_time();
 			if (ms) {
@@ -503,7 +486,93 @@ namespace esphome {
 				}
 			}
 		}
+
+		void BleMiRemote::onConnect(NimBLEServer *pServer) {
+			this->_connected = true;
+			NimBLEConnInfo peer = pServer->getPeerInfo(0);
+
+			release();
+		}
+
+		void BleMiRemote::onDisconnect(NimBLEServer *pServer) {
+			this->_connected = false;
+		}
+
+		void BleMiRemote::onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) {
+			ESP_LOGD(TAG,"Client address: ");
+			ESP_LOGD(TAG, NimBLEAddress(desc->peer_ota_addr).toString().c_str());
+			/** We can use the connection handle here to ask for different connection parameters.
+			 *  Args: connection handle, min connection interval, max connection interval
+			 *  latency, supervision timeout.
+			 *  Units; Min/Max Intervals: 1.25 millisecond increments.
+			 *  Latency: number of intervals allowed to skip.
+			 *  Timeout: 10 millisecond increments, try for 5x interval time for best results.
+			 */
+		}
+
+		void BleMiRemote::onDisconnect(NimBLEServer* pServer) {
+			ESP_LOGD(TAG, "Client disconnected - start advertising");
+			pServer::startAdvertising();
+		}
+
+		void BleMiRemote::onRead(NimBLECharacteristic* pCharacteristic){
+			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
+			ESP_LOGD(TAG,": onRead(), value: ");
+			ESP_LOGD(TAG, pCharacteristic->getValue().c_str());
+		}
+
+    	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic) {
+			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
+			ESP_LOGD(TAG,": onWrite(), value: ");
+			ESP_LOGD(TAG, pCharacteristic->getValue().c_str());
+    	}
+
+    	void BleMiRemote::onNotify(NimBLECharacteristic* pCharacteristic) {
+    		ESP_LOGD(TAG, "Sending notification to clients");
+    	}
+
+    	void BleMiRemote::onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code) {
+			String str = ("Notification/Indication status code: ");
+			str += status;
+			str += ", return code: ";
+			str += code;
+			str += ", ";
+			str += NimBLEUtils::returnCodeToString(code);
+			ESP_LOGD(TAG, str);
+		}
+
+		void BleMiRemote::onSubscribe(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc, uint16_t subValue) {
+			String str = "Client ID: ";
+			str += desc->conn_handle;
+			str += " Address: ";
+			str += std::string(NimBLEAddress(desc->peer_ota_addr)).c_str();
+			if(subValue == 0) {
+				str += " Unsubscribed to ";
+			}else if(subValue == 1) {
+				str += " Subscribed to notfications for ";
+			} else if(subValue == 2) {
+				str += " Subscribed to indications for ";
+			} else if(subValue == 3) {
+				str += " Subscribed to notifications and indications for ";
+			}
+			str += std::string(pCharacteristic->getUUID()).c_str();
+
+			ESP_LOGD(TAG, str);
+		}
+
+		void BleMiRemote::onWrite(NimBLEDescriptor* pDescriptor) {
+			std::string dscVal = pDescriptor->getValue();
+			ESP_LOGD(TAG,"Descriptor witten value:");
+			ESP_LOGD(TAG, dscVal.c_str());
+		}
+
+		void BleMiRemote::onRead(NimBLEDescriptor* pDescriptor) {
+			ESP_LOGD(TAG, pDescriptor->getUUID().toString().c_str());
+			ESP_LOGD(TAG, " Descriptor read");
+		}
+
 	}  // namespace ble_mi_remote
 }  // namespace esphome
+
 
 #endif

@@ -88,6 +88,8 @@ namespace esphome {
 				void update_timer();
 				void delay_ms(uint64_t ms);
 
+
+
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
 				NimBLECharacteristic*	inputKeyboard;
@@ -118,9 +120,24 @@ namespace esphome {
 			protected:
 				virtual void onStarted(NimBLEServer *pServer) { };
 				virtual void onConnect(NimBLEServer* pServer) override;
+				virtual void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) override;
 				virtual void onDisconnect(NimBLEServer* pServer) override;
-				virtual void onWrite(NimBLECharacteristic* me) override;
+
+				virtual void onWrite(NimBLECharacteristic* pCharacteristic) override;
+			    virtual void onRead(NimBLECharacteristic* pCharacteristic) override;
+			    virtual void onNotify(NimBLECharacteristic* pCharacteristic) override;
+			    virtual void onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code) override;
+			    virtual void onSubscribe(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc, uint16_t subValue) override;
+
+				virtual void onWrite(NimBLEDescriptor* pDescriptor) override;
+			    virtual void onRead(NimBLEDescriptor* pDescriptor) override;
 		};
+
+		class ServerCallbacks: public NimBLEServerCallbacks;
+		class CharacteristicCallbacks: public NimBLECharacteristicCallbacks;
+		class DescriptorCallbacks : public NimBLEDescriptorCallbacks;
+
+
 	}  // namespace ble_mi_remote
 }  // namespace esphome
 
