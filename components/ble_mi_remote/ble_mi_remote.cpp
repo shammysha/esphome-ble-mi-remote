@@ -166,7 +166,7 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x00);
+			hid->hidInfo(0x00, 0x01);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
@@ -217,10 +217,10 @@ namespace esphome {
 			pServer->startAdvertising();
 		}
 
-		void BleMiRemote::update() { state_sensor_->publish_state(this->connected); }
+		void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
 
 		bool BleMiRemote::is_connected() {
-			if (!this->connected) {
+			if (!this->_connected) {
 				ESP_LOGI(TAG, "Disconnected");
 
 				return false;
@@ -472,14 +472,14 @@ namespace esphome {
 		}
 
 		void BleMiRemote::onConnect(NimBLEServer *pServer) {
-			this->connected = true;
+			this->_connected = true;
 			NimBLEConnInfo peer = pServer->getPeerInfo(0);
 
 			release();
 		}
 
 		void BleMiRemote::onDisconnect(NimBLEServer *pServer) {
-			this->connected = false;
+			this->_connected = false;
 		}
 
 		void BleMiRemote::onWrite(NimBLECharacteristic *me) {

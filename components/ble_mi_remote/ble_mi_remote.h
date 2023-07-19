@@ -86,8 +86,9 @@ namespace esphome {
 			private:
 				bool is_connected();
 				void update_timer();
+				void delay_ms(uint64_t ms);
 
-				NimBLEServer *pServer;
+				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
 				NimBLECharacteristic*	inputKeyboard;
 				NimBLECharacteristic*	outputKeyboard;
@@ -105,9 +106,9 @@ namespace esphome {
 				std::string			deviceName;
 				std::string			deviceManufacturer;
 				uint8_t				batteryLevel;
-				bool				connected = false;
+				bool				_connected = false;
 				uint32_t			_delay_ms = 7;
-				void				delay_ms(uint64_t ms);
+
 
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;
