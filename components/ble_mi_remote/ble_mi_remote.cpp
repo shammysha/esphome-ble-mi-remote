@@ -158,13 +158,18 @@ namespace esphome {
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
+			inputSpecialKeys->setCallbacks(this);
 			inputKeyboard = hid->inputReport(KEYBOARD_ID);
+			inputKeyboard->setCallbacks(this);
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
 			outputKeyboard->setCallbacks(this);
 
 			vendorReport_06 = hid->inputReport(0x06);
+			vendorReport_06->setCallbacks(this);
 			vendorReport_07 = hid->inputReport(0x07);
+			vendorReport_07->setCallbacks(this);
 			vendorReport_08 = hid->inputReport(0x08);
+			vendorReport_08->setCallbacks(this);
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
@@ -512,12 +517,12 @@ namespace esphome {
 
 		void BleMiRemote::onRead(NimBLECharacteristic* pCharacteristic){
 			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
-			ESP_LOGD(TAG,": onRead(), value: %s", pCharacteristic->getValue().c_str());
+			ESP_LOGD(TAG,"Chr %s: onRead(), value: %s", pCharacteristic->getUUID().toString().c_str(), pCharacteristic->getValue().c_str());
 		}
 
     	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic) {
 			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
-			ESP_LOGD(TAG,": onWrite(), value: %s", pCharacteristic->getValue().c_str());
+			ESP_LOGD(TAG,"Chr %s onWrite(), value: %s", TAG,pCharacteristic->getUUID().toString().c_str(), pCharacteristic->getValue().c_str());
     	}
 
     	void BleMiRemote::onNotify(NimBLECharacteristic* pCharacteristic) {

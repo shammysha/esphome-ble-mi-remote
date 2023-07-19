@@ -2,6 +2,8 @@
 
 #ifdef USE_ESP32
 
+define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
+
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "sdkconfig.h"
@@ -9,7 +11,6 @@
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
 #include <string>
-
 
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
