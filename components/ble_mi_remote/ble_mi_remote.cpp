@@ -17,6 +17,8 @@
 #include <list>
 #include "esphome/core/log.h"
 
+#define NIMBLE_CPP_DEBUG_LEVEL 4
+
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
 
