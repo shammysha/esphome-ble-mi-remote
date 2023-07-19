@@ -147,8 +147,6 @@ namespace esphome {
 			    batteryLevel(battery_level)
 		{
 			_reconnect = reconnect;
-
-			CONFIG_NIMBLE_CPP_LOG_LEVEL=4
 		}
 
 		void BleMiRemote::setup() {
