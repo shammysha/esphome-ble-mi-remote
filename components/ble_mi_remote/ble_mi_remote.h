@@ -2,7 +2,7 @@
 
 #ifdef USE_ESP32
 
-#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
+#define CORE_DEBUG_LEVEL 4
 
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
