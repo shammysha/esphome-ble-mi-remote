@@ -118,26 +118,20 @@ namespace esphome {
 				uint16_t version	= 0x4a4f;
 
 			protected:
-				virtual void onStarted(NimBLEServer *pServer) { };
-				virtual void onConnect(NimBLEServer* pServer) override;
-				virtual void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) override;
-				virtual void onDisconnect(NimBLEServer* pServer) override;
+				void onStarted(NimBLEServer *pServer) { };
+				void onConnect(NimBLEServer* pServer);
+				void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc);
+				void onDisconnect(NimBLEServer* pServer);
 
-				virtual void onWrite(NimBLECharacteristic* pCharacteristic) override;
-			    virtual void onRead(NimBLECharacteristic* pCharacteristic) override;
-			    virtual void onNotify(NimBLECharacteristic* pCharacteristic) override;
-			    virtual void onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code) override;
-			    virtual void onSubscribe(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc, uint16_t subValue) override;
+				void onWrite(NimBLECharacteristic* pCharacteristic);
+			    void onRead(NimBLECharacteristic* pCharacteristic);
+			    void onNotify(NimBLECharacteristic* pCharacteristic);
+			    void onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code);
+			    void onSubscribe(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc, uint16_t subValue);
 
-				virtual void onWrite(NimBLEDescriptor* pDescriptor) override;
-			    virtual void onRead(NimBLEDescriptor* pDescriptor) override;
+				void onWrite(NimBLEDescriptor* pDescriptor);
+			    void onRead(NimBLEDescriptor* pDescriptor);
 		};
-
-		class ServerCallbacks: public NimBLEServerCallbacks;
-		class CharacteristicCallbacks: public NimBLECharacteristicCallbacks;
-		class DescriptorCallbacks : public NimBLEDescriptorCallbacks;
-
-
 	}  // namespace ble_mi_remote
 }  // namespace esphome
 
