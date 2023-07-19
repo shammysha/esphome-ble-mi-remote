@@ -512,14 +512,12 @@ namespace esphome {
 
 		void BleMiRemote::onRead(NimBLECharacteristic* pCharacteristic){
 			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
-			ESP_LOGD(TAG,": onRead(), value: ");
-			ESP_LOGD(TAG, pCharacteristic->getValue().c_str());
+			ESP_LOGD(TAG,": onRead(), value: %s", pCharacteristic->getValue().c_str());
 		}
 
     	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic) {
 			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
-			ESP_LOGD(TAG,": onWrite(), value: ");
-			ESP_LOGD(TAG, pCharacteristic->getValue().c_str());
+			ESP_LOGD(TAG,": onWrite(), value: %s", pCharacteristic->getValue().c_str());
     	}
 
     	void BleMiRemote::onNotify(NimBLECharacteristic* pCharacteristic) {
@@ -533,7 +531,7 @@ namespace esphome {
 			str += code;
 			str += ", ";
 			str += NimBLEUtils::returnCodeToString(code);
-			ESP_LOGD(TAG, str);
+			ESP_LOGD(TAG, "Status: %s", str.c_str());
 		}
 
 		void BleMiRemote::onSubscribe(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc, uint16_t subValue) {
@@ -552,18 +550,16 @@ namespace esphome {
 			}
 			str += std::string(pCharacteristic->getUUID()).c_str();
 
-			ESP_LOGD(TAG, str.c_str());
+			ESP_LOGD(TAG, "onSubscribe: %s", str.c_str());
 		}
 
 		void BleMiRemote::onWrite(NimBLEDescriptor* pDescriptor) {
 			std::string dscVal = pDescriptor->getValue();
-			ESP_LOGD(TAG,"Descriptor witten value:");
-			ESP_LOGD(TAG, dscVal.c_str());
+			ESP_LOGD(TAG,"Descriptor witten value: %s", dscVal.c_str());
 		}
 
 		void BleMiRemote::onRead(NimBLEDescriptor* pDescriptor) {
-			ESP_LOGD(TAG, pDescriptor->getUUID().toString().c_str());
-			ESP_LOGD(TAG, " Descriptor read");
+			ESP_LOGD(TAG, "Descriptor %s read value", pDescriptor->getUUID().toString().c_str());
 		}
 
 	}  // namespace ble_mi_remote
