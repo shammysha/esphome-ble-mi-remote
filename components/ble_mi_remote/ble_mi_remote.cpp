@@ -17,8 +17,6 @@
 #include <list>
 #include "esphome/core/log.h"
 
-#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
-
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
 
@@ -148,7 +146,7 @@ namespace esphome {
 		{
 			_reconnect = reconnect;
 
-			CONFIG_NIMBLE_CPP_LOG_LEVEL 4
+			CONFIG_NIMBLE_CPP_LOG_LEVEL=4
 		}
 
 		void BleMiRemote::setup() {
