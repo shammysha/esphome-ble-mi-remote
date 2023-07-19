@@ -166,6 +166,29 @@ namespace esphome {
 			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor((uint16_t) 0x2902);
 			cVendor_6287_6487->setValue((uint16_t) 0x0000);
 
+
+			NimBLEService* sVendor_d1ff = pServer->createService((uint16_t) 0xd1ff);
+			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic((uint16_t) 0xa001, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
+			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor((uint16_t) 0x2902);
+
+			NimBLEService* sVendor_d0ff = pServer->createService((uint16_t) 0xd0ff);
+			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff2, NIMBLE_PROPERTY::WRITE);
+			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xfff1, NIMBLE_PROPERTY::WRITE);
+			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd8, NIMBLE_PROPERTY::WRITE_NR);
+			NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd5, NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd4, NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd3, NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd2, NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic((uint16_t) 0xffd1, NIMBLE_PROPERTY::WRITE_NR);
+
+			cVendor_d0ff_fff1->setValue((uint8_t) 0x01);
+			cVendor_d0ff_ffd5->setValue((uint16_t) 0x0000);
+			cVendor_d0ff_ffd4->setValue((uint16_t) 0x1420);
+			cVendor_d0ff_ffd3->setValue((uint16_t) 0xd74b);
+			uint8_t value_ffd2[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
+			cVendor_d0ff_ffd2->setValue( value_ffd2, sizeof(value_ffd2));
+
+
 			vendorReport_06 = hid->inputReport(0x06);
 			vendorReport_07 = hid->inputReport(0x07);
 			vendorReport_08 = hid->inputReport(0x08);
