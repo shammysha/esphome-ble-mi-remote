@@ -147,6 +147,8 @@ namespace esphome {
 			    batteryLevel(battery_level)
 		{
 			_reconnect = reconnect;
+
+			CONFIG_NIMBLE_CPP_LOG_LEVEL 4
 		}
 
 		void BleMiRemote::setup() {
@@ -155,11 +157,6 @@ namespace esphome {
 			NimBLEDevice::init (deviceName);
 			NimBLEServer *pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
-
-			NimBLEService* sVendor_d1ff = pServer->createService((uint16_t) 0xd1ff);
-			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic((uint16_t) 0xa001, NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor((uint16_t) 0x2902);
-
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
