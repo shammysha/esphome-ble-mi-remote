@@ -121,7 +121,7 @@ namespace esphome {
 				void onStarted(NimBLEServer *pServer) { };
 				void onConnect(NimBLEServer* pServer);
 				void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc);
-				virtual void onDisconnect(NimBLEServer* pServer) override;
+				void onDisconnect(NimBLEServer* pServer);
 
 				void onWrite(NimBLECharacteristic* pCharacteristic);
 			    void onRead(NimBLECharacteristic* pCharacteristic);

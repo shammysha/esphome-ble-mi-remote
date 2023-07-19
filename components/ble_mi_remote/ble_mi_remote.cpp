@@ -510,11 +510,6 @@ namespace esphome {
 			 */
 		}
 
-		void BleMiRemote::onDisconnect(NimBLEServer* pServer) {
-			ESP_LOGD(TAG, "Client disconnected - start advertising");
-			pServer::startAdvertising();
-		}
-
 		void BleMiRemote::onRead(NimBLECharacteristic* pCharacteristic){
 			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
 			ESP_LOGD(TAG,": onRead(), value: ");
