@@ -50,6 +50,8 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
+typedef void (*functiontype)  ( void* );
+
 namespace esphome {
 	namespace ble_mi_remote {
 		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEAdvertising {
@@ -91,7 +93,7 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
-				static void powerAdvertisingStop();
+				void powerAdvertisingStop(NimBLEAdvertising* pAdv);
 
 				NimBLEServer 				*pServer;
 				NimBLEHIDDevice*			hid;
