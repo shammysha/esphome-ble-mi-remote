@@ -200,7 +200,7 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
 
-			//powerAdvertisingSetup();
+			powerAdvertisingSetup();
 			release();
 
 		}
@@ -242,9 +242,11 @@ namespace esphome {
 
 		void BleMiRemote::powerAdvertisingStart() {
 			powerAdvertising->start(1);
+			esphome::delay(1000);
+			powerAdvertisingStop();
 		}
 
-		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising* pAdv) {
+		void BleMiRemote::powerAdvertisingStop() {
 			if (!this->_connected) {
 				pServer->startAdvertising();
 			}
