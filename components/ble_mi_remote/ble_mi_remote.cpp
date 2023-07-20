@@ -233,14 +233,14 @@ namespace esphome {
 			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
 			powerAdvData->addData((char*) custData, sizeof(custData));
 
-			ESP_LOGD(TAG, "Power payload is:");
-			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
-
 			NimBLEAdvertising* powerAdvertising = new NimBLEAdvertising();
 			powerAdvertising->setAdvertisementData(*powerAdvData);
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
+			ESP_LOGD(TAG, "Power payload is:");
+			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
+
 			powerAdvertising->start(1);
 			delay(1000);
 			powerAdvertisingStop();
