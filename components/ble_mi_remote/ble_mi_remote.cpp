@@ -210,7 +210,7 @@ namespace esphome {
 
 		void BleMiRemote::vendorServicesSetup() {
 			NimBLEService* sVendor_6287 = pServer->createService("6287");
-			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic(("8487", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("8487", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("6387", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
 			cVendor_6287_6487->setCallbacks(this);
