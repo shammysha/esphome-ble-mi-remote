@@ -206,10 +206,11 @@ namespace esphome {
 			NimBLEUUID* svcUUID = new NimBLEUUID();
 			NimBLEAdvertisementData* advData = new NimBLEAdvertisementData();
 			advData->setFlags(1);
-			advData->setManufacturerData("0100");
+			advData->setManufacturerData(0x0100);
 			advData->setShortName("MI RC");
 			advData->setPartialServices((NimBLEUUID) "1812");
 			advData->addTxPower();
+			advData->addData(0x04feee68c4);
 
 			ESP_LOGD(TAG, "Power payload is:");
 			ESP_LOGD(TAG, advData->getPayload().c_str());
