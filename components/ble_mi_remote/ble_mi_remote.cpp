@@ -15,9 +15,13 @@
 #include "sdkconfig.h"
 #include <string>
 #include <list>
+#include "esp_log.h"
 #include "esphome/core/log.h"
 
+
+#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
 #define NIMBLE_CPP_DEBUG_LEVEL 4
+#define CONFIG_BT_NIMBLE_DEBUG 4
 #define NIMBLE_LOGD( tag, format, ... ) ESP_LOGD( tag, format, ##__VA_ARGS__)
 
 
