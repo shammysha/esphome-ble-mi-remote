@@ -283,14 +283,6 @@ namespace esphome {
 			}
 		}
 
-		void BleMiRemote::sendReport(SpecialKeyReport *keys) {
-			if (this->is_connected()) {
-				this->inputSpecialKeys->setValue((uint8_t*) keys, sizeof(SpecialKeyReport));
-				this->inputSpecialKeys->notify();
-				this->delay_ms(_delay_ms);
-			}
-		}
-
 		extern
 		const uint8_t _asciimap[128] PROGMEM;
 
