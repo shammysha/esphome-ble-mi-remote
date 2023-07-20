@@ -202,6 +202,22 @@ namespace esphome {
 			release();
 		}
 
+		void BleMiRemote::powerAdvertising() {
+			NimBLEAdvertisementData  advData = new NimBLEAdvertisementData();
+			advData->setFlags(0x101);
+			advData->setManufacturerData(0x0100);
+			advData->setShortName("MI RC");
+			advData->setPartialServices("1812");
+			advData->addTxPower();
+
+			ESP_LOGD(TAG, "Power payload is:");
+			ESP_LOGD(TAG, advData->getPayload());
+
+			NimBLEAdvertising powerAdv = new NimBLEAdvertising();
+			powerAdv->setAdvertisementData(advData);
+			powerAdv->start(1000);
+		}
+
 		void BleMiRemote::stop() {
 			if (this->_reconnect) {
 				pServer->advertiseOnDisconnect(false);
@@ -254,6 +270,14 @@ namespace esphome {
 			if (this->is_connected()) {
 				this->inputKeyboard->setValue((uint8_t*) keys, sizeof(KeyReport));
 				this->inputKeyboard->notify();
+				this->delay_ms(_delay_ms);
+			}
+		}
+
+		void BleMiRemote::sendReport(SpecialKeyReport *keys) {
+			if (this->is_connected()) {
+				this->inputSpecialKeys->setValue((uint8_t*) keys, sizeof(SpecialKeyReport));
+				this->inputSpecialKeys->notify();
 				this->delay_ms(_delay_ms);
 			}
 		}
@@ -459,6 +483,10 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
+			}
+
+			if (k == 5) {
+				this->powerAdvertising();
 			}
 		}
 
