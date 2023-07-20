@@ -208,7 +208,7 @@ namespace esphome {
 			advData->setFlags(0x0101);
 			advData->setManufacturerData("0100");
 			advData->setShortName("MI RC");
-			advData->setPartialServices(svcUUID->NimBLEUUID("1812"));
+			advData->setPartialServices((NimBLEUUID) "1812");
 			advData->addTxPower();
 
 			ESP_LOGD(TAG, "Power payload is:");
