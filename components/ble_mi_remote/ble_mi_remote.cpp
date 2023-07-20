@@ -205,14 +205,14 @@ namespace esphome {
 		void BleMiRemote::powerAdvertising() {
 			NimBLEUUID* svcUUID = new NimBLEUUID();
 			NimBLEAdvertisementData* advData = new NimBLEAdvertisementData();
-			advData->setFlags((uint16_t) 0x0101);
+			advData->setFlags(1);
 			advData->setManufacturerData("0100");
 			advData->setShortName("MI RC");
 			advData->setPartialServices((NimBLEUUID) "1812");
 			advData->addTxPower();
 
 			ESP_LOGD(TAG, "Power payload is:");
-			ESP_LOGD(TAG, advData->getPayload());
+			ESP_LOGD(TAG, advData->getPayload().c_str());
 
 			NimBLEAdvertising* powerAdv = new NimBLEAdvertising();
 			powerAdv->setAdvertisementData(advData);
