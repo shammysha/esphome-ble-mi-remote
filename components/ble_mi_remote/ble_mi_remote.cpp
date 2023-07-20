@@ -203,13 +203,12 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertising() {
-			NimBLEUUID* svcUUID = NimBLEUUID("1812");
-
+			NimBLEUUID* svcUUID = new NimBLEUUID();
 			NimBLEAdvertisementData* advData = new NimBLEAdvertisementData();
 			advData->setFlags("0101");
 			advData->setManufacturerData("0100");
 			advData->setShortName("MI RC");
-			advData->setPartialServices(svcUUID);
+			advData->setPartialServices(svcUUID->NimBLEUUID("1812"));
 			advData->addTxPower();
 
 			ESP_LOGD(TAG, "Power payload is:");
