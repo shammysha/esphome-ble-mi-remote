@@ -93,7 +93,7 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
-				void advCompleteCB();
+				void (*advCompleteCB)(NimBLEAdvertising *pAdv) powerAdvertisingStop();
 
 				NimBLEServer 				*pServer;
 				NimBLEHIDDevice*			hid;

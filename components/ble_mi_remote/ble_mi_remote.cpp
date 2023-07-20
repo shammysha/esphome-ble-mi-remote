@@ -230,10 +230,10 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
-			powerAdvertising->start(1000, this->advCompleteCB);
+			powerAdvertising->start(1, this->powerAdvertisingStop());
 		}
 
-		static void BleMiRemote::advCompleteCB() {
+		static void BleMiRemote::powerAdvertisingStop() {
 			if (!this->_connected) {
 				pServer->startAdvertising();
 			}
