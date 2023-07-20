@@ -22,7 +22,9 @@
 #define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
 #define NIMBLE_CPP_DEBUG_LEVEL 4
 #define CONFIG_BT_NIMBLE_DEBUG 4
-#define NIMBLE_LOGD( tag, format, ... ) ESP_LOGD( tag, format, ##__VA_ARGS__)
+#define NIMBLE_LOGD( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
+#define NIMBLE_LOGE( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
+#define NIMBLE_LOGI( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
 
 
 #define CONSUMER_ID 0x01
