@@ -205,7 +205,10 @@ namespace esphome {
 		void BleMiRemote::powerAdvertising() {
 			NimBLEAdvertisementData* advData = new NimBLEAdvertisementData();
 			advData->setFlags(1);
-			advData->setManufacturerData(0x0100);
+
+			char mfgData[] = { 0x01, 0x00 };
+			advData->setManufacturerData(std::string(mfgData, 2));
+
 			advData->setShortName("MI RC");
 			advData->setPartialServices((NimBLEUUID) "1812");
 			advData->addTxPower();
