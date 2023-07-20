@@ -82,6 +82,7 @@ namespace esphome {
 				void sendReport(SpecialKeyReport* keys);
 
 				static void powerAdvertisingStop();
+
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 
