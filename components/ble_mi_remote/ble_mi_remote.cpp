@@ -234,7 +234,7 @@ namespace esphome {
 			powerAdvertising->start(1000, this->powerAdvertisingStop );
 		}
 
-		void BleMiRemote::powerAdvertisingStop() {
+		static void BleMiRemote::powerAdvertisingStop() {
 			powerAdvertising->stop();
 
 			if (!this->_connected) {
