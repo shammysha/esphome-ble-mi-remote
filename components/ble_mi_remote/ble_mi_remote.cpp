@@ -206,11 +206,15 @@ namespace esphome {
 			NimBLEAdvertisementData* advData = new NimBLEAdvertisementData();
 			advData->setFlags(1);
 
-			char mfgData[] = { 0x01, 0x00 };
+			char mfgData[] = { 0x00, 0x01 };
 			advData->setManufacturerData(std::string(mfgData, 2));
 
 			advData->setShortName("MI RC");
 			advData->setPartialServices((NimBLEUUID) "1812");
+
+			char codData[] = { 0x04, 0x0d, 0x04, 0x05, 0x00 };
+			advData->addData((char*) codData, sizeof(codData));
+
 			advData->addTxPower();
 
 			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
