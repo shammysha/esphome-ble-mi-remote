@@ -86,21 +86,25 @@ namespace esphome {
 
 			private:
 				bool is_connected();
-				void powerAdvertising();
 				void update_timer();
 				void delay_ms(uint64_t ms);
 
+				void powerAdvertisingSetup();
+				void powerAdvertisingStart();
+				void powerAdvertisingStop();
 
+				NimBLEServer 				*pServer;
+				NimBLEHIDDevice*			hid;
+				NimBLECharacteristic*		inputKeyboard;
+				NimBLECharacteristic*		outputKeyboard;
+				NimBLECharacteristic*		inputSpecialKeys;
+				NimBLECharacteristic*		vendorReport_06;
+				NimBLECharacteristic*		vendorReport_07;
+				NimBLECharacteristic*		vendorReport_08;
+				NimBLEAdvertisementData* 	powerAdvData;
+				NimBLEAdvertising*			advertising;
+				NimBLEAdvertising*			powerAdvertising;
 
-				NimBLEServer 			*pServer;
-				NimBLEHIDDevice*		hid;
-				NimBLECharacteristic*	inputKeyboard;
-				NimBLECharacteristic*	outputKeyboard;
-				NimBLECharacteristic*	inputSpecialKeys;
-				NimBLECharacteristic*	vendorReport_06;
-				NimBLECharacteristic*	vendorReport_07;
-				NimBLECharacteristic*	vendorReport_08;
-				NimBLEAdvertising*		advertising;
 
 				bool 				_reconnect{true};
 				uint32_t 			_default_delay{100};

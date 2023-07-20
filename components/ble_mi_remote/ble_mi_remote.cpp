@@ -199,33 +199,47 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
 
+			powerAdvertisingSetup();
 			release();
+
 		}
 
-		void BleMiRemote::powerAdvertising() {
-			NimBLEAdvertisementData* advData = new NimBLEAdvertisementData();
-			advData->setFlags(1);
+		void BleMiRemote::powerAdvertisingSetup() {
+			powerAdvData = new NimBLEAdvertisementData();
+			powerAdvData->setFlags(1);
 
 			char mfgData[] = { 0x00, 0x01 };
-			advData->setManufacturerData(std::string(mfgData, 2));
+			powerAdvData->setManufacturerData(std::string(mfgData, 2));
 
-			advData->setShortName("MI RC");
-			advData->setPartialServices((NimBLEUUID) "1812");
+			powerAdvData->setShortName("MI RC");
+			powerAdvData->setPartialServices((NimBLEUUID) "1812");
 
 			char codData[] = { 0x04, 0x0d, 0x04, 0x05, 0x00 };
-			advData->addData((char*) codData, sizeof(codData));
+			powerAdvData->addData((char*) codData, sizeof(codData));
 
-			advData->addTxPower();
+			powerAdvData->addTxPower();
 
 			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
-			advData->addData((char*) custData, sizeof(custData));
+			powerAdvData->addData((char*) custData, sizeof(custData));
 
 			ESP_LOGD(TAG, "Power payload is:");
-			ESP_LOGD(TAG, advData->getPayload().c_str());
+			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
 
-			NimBLEAdvertising* powerAdv = new NimBLEAdvertising();
-			powerAdv->setAdvertisementData(*advData);
-			powerAdv->start(1000);
+			NimBLEAdvertising* powerAdvertising = new NimBLEAdvertising();
+			powerAdvertising->setAdvertisementData(*powerAdvData);
+		}
+
+		void BleMiRemote::powerAdvertisingStart() {
+			pServer->stopAdvertising();
+			powerAdvertising->start(1000, [this]() { this->release(); );
+		}
+
+		void BleMiRemote::powerAdvertisingStop() {
+			powerAdvertising->stop();
+
+			if (!this->_connected) {
+				pServer->startAdvertising();
+			}
 		}
 
 		void BleMiRemote::stop() {
@@ -488,7 +502,7 @@ namespace esphome {
 			}
 
 			if (k == 5) {
-				this->powerAdvertising();
+				this->powerAdvertisingStart();
 			}
 		}
 
