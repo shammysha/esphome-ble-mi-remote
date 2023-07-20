@@ -205,7 +205,7 @@ namespace esphome {
 		void BleMiRemote::powerAdvertising() {
 			NimBLEUUID* svcUUID = new NimBLEUUID();
 			NimBLEAdvertisementData* advData = new NimBLEAdvertisementData();
-			advData->setFlags("0101");
+			advData->setFlags(0x0101);
 			advData->setManufacturerData("0100");
 			advData->setShortName("MI RC");
 			advData->setPartialServices(svcUUID->NimBLEUUID("1812"));
