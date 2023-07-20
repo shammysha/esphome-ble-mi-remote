@@ -86,6 +86,7 @@ namespace esphome {
 
 			private:
 				bool is_connected();
+				void powerAdvertising();
 				void update_timer();
 				void delay_ms(uint64_t ms);
 
