@@ -242,7 +242,7 @@ namespace esphome {
 
 		void BleMiRemote::powerAdvertisingStart() {
 			powerAdvertising->start(1);
-			esphome::delay(1000);
+			delay(1000);
 			powerAdvertisingStop();
 		}
 
