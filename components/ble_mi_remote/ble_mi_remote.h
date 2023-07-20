@@ -93,7 +93,7 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
-				static BleMiRemote::advCompleteCB(NimBLEAdvertising* pAdv);
+				static void powerAdvertisingStop(NimBLEAdvertising* pAdv);
 
 				NimBLEServer 				*pServer;
 				NimBLEHIDDevice*			hid;
