@@ -15,27 +15,8 @@
 #include "sdkconfig.h"
 #include <string>
 #include <list>
-#include "esp_log.h"
+#include "esp32-hal-log.h"
 #include "esphome/core/log.h"
-
-#undef CONFIG_NIMBLE_CPP_LOG_LEVEL
-#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
-
-#undef NIMBLE_CPP_DEBUG_LEVEL
-#define NIMBLE_CPP_DEBUG_LEVEL 4
-
-#undef CONFIG_BT_NIMBLE_DEBUG
-#define CONFIG_BT_NIMBLE_DEBUG 4
-
-#undef NIMBLE_LOGD( tag, format, ... )
-#define NIMBLE_LOGD( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-
-#undef NIMBLE_LOGE( tag, format, ... )
-#define NIMBLE_LOGE( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-
-#undef NIMBLE_LOGI( tag, format, ... )
-#define NIMBLE_LOGI( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
