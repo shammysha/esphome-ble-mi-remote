@@ -81,7 +81,7 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
-				static void powerAdvertisingStop();
+
 
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
@@ -93,6 +93,7 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
+				static void NimBLEAdvertising::powerAdvertisingStop();
 
 				NimBLEServer 				*pServer;
 				NimBLEHIDDevice*			hid;
