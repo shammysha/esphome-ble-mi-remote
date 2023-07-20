@@ -230,7 +230,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
-			powerAdvertising->start(1000, void((NimBLEAdvertising*) this->powerAdvertisingStop );
+			powerAdvertising->start(1000, void((NimBLEAdvertising*) this->powerAdvertisingStop) );
 		}
 
 		static void BleMiRemote::powerAdvertisingStop() {
