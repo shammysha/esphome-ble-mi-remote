@@ -81,8 +81,6 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
-
-
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 

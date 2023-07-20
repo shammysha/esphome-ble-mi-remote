@@ -199,7 +199,7 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
 
-			powerAdvertisingSetup();
+			//powerAdvertisingSetup();
 			release();
 
 		}
@@ -230,7 +230,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
-			powerAdvertising->start(1, BleMiRemote::powerAdvertisingStop);
+			powerAdvertising->start(1);
 		}
 
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising* pAdv) {
@@ -547,8 +547,8 @@ namespace esphome {
 		}
 
 		void BleMiRemote::onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) {
-			ESP_LOGD(TAG,"Client address: ");
-			ESP_LOGD(TAG, NimBLEAddress(desc->peer_ota_addr).toString().c_str());
+			ESP_LOGD(TAG, "Client address: %s", NimBLEAddress(desc->peer_ota_addr).toString().c_str());
+			ESP_LOGD(TAG, "Client id: %s", NimBLEAddress(desc->peer_id_addr).toString().c_str());
 			/** We can use the connection handle here to ask for different connection parameters.
 			 *  Args: connection handle, min connection interval, max connection interval
 			 *  latency, supervision timeout.
@@ -556,6 +556,8 @@ namespace esphome {
 			 *  Latency: number of intervals allowed to skip.
 			 *  Timeout: 10 millisecond increments, try for 5x interval time for best results.
 			 */
+
+
 		}
 
 		void BleMiRemote::onRead(NimBLECharacteristic* pCharacteristic){
