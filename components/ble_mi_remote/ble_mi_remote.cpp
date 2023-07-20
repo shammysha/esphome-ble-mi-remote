@@ -215,7 +215,7 @@ namespace esphome {
 			ESP_LOGD(TAG, advData->getPayload().c_str());
 
 			NimBLEAdvertising* powerAdv = new NimBLEAdvertising();
-			powerAdv->setAdvertisementData(advData);
+			powerAdv->setAdvertisementData(&advData);
 			powerAdv->start(1000);
 		}
 
