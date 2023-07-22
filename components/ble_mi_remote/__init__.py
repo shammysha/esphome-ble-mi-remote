@@ -30,7 +30,6 @@ from .const import (
     ACTION_RELEASE_CLASS,
     ACTION_START_CLASS,
     ACTION_STOP_CLASS,
-    BINARY_SENSOR_STATE,
     SPECIAL_KEY,
     COMPONENT_BUTTON_CLASS,
     COMPONENT_CLASS,
@@ -119,7 +118,14 @@ async def adding_binary_sensors(var: MockObj) -> None:
     """
 
     cg.add(
-        var.set_state_sensor(await binary_sensor.new_binary_sensor(BINARY_SENSOR_STATE))
+        var.set_state_sensor(await binary_sensor.new_binary_sensor(
+            {
+                CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
+                CONF_NAME: DOMAIN.replace("_", "-") + "-connected",
+                CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
+                CONF_DISABLED_BY_DEFAULT: False
+            }            
+        ))
     )
 
 
