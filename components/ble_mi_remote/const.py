@@ -131,7 +131,7 @@ SPECIAL_KEY: Final = [
     },{
         CONF_NAME: "Email",
         CONF_ID: "key_email",
-        CONF_ICON: "mdi:radiobox-marked",
+        CONF_ICON: "mdi:email-outline",
         CONF_VALUE: 14
     },{
         CONF_NAME: "Calculator",
