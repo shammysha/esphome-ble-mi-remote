@@ -10,9 +10,6 @@ import esphome.config_validation as cv
 from esphome.components import binary_sensor
 from esphome.components.number import NumberMode
 from esphome.const import (
-    CONF_DEVICE_CLASS,
-    CONF_DISABLED_BY_DEFAULT,
-    CONF_ENTITY_CATEGORY,
     CONF_ICON,
     CONF_ID,
     CONF_INITIAL_VALUE,
@@ -26,8 +23,6 @@ from esphome.const import (
     CONF_TYPE,
     CONF_UNIT_OF_MEASUREMENT,
     CONF_VALUE,
-    DEVICE_CLASS_CONNECTIVITY,
-    ENTITY_CATEGORY_CONFIG,
     UNIT_MILLISECOND,
     UNIT_PERCENT,
 )

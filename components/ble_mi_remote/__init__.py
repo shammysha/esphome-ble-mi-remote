@@ -10,6 +10,8 @@ from esphome import automation
 from esphome.automation import maybe_simple_id
 from esphome.components import binary_sensor, button, number
 from esphome.const import (
+    CONF_DEVICE_CLASS,
+    DEVICE_CLASS_CONNECTIVITY,
     CONF_BATTERY_LEVEL,
     CONF_CODE,
     CONF_ID,
