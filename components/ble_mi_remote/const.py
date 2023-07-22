@@ -10,9 +10,6 @@ import esphome.config_validation as cv
 from esphome.components import binary_sensor
 from esphome.components.number import NumberMode
 from esphome.const import (
-    CONF_DEVICE_CLASS,
-    CONF_DISABLED_BY_DEFAULT,
-    CONF_ENTITY_CATEGORY,
     CONF_ICON,
     CONF_ID,
     CONF_INITIAL_VALUE,
@@ -26,8 +23,6 @@ from esphome.const import (
     CONF_TYPE,
     CONF_UNIT_OF_MEASUREMENT,
     CONF_VALUE,
-    DEVICE_CLASS_CONNECTIVITY,
-    ENTITY_CATEGORY_CONFIG,
     UNIT_MILLISECOND,
     UNIT_PERCENT,
 )
@@ -59,14 +54,6 @@ LIBS_ADDITIONAL: Final = [
         None,
     )
 ]
-
-"""Binary sensors"""
-BINARY_SENSOR_STATE: Final = {
-    CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
-    CONF_NAME: "Connected",
-    CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
-    CONF_DISABLED_BY_DEFAULT: False
-}
 
 """Special buttons"""
 SPECIAL_KEY: Final = [
@@ -144,7 +131,7 @@ SPECIAL_KEY: Final = [
     },{
         CONF_NAME: "Email",
         CONF_ID: "key_email",
-        CONF_ICON: "mdi:radiobox-marked",
+        CONF_ICON: "mdi:email-outline",
         CONF_VALUE: 14
     },{
         CONF_NAME: "Calculator",
