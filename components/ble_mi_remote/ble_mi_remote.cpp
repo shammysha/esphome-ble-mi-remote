@@ -580,7 +580,7 @@ namespace esphome {
     	}
 
     	void BleMiRemote::onNotify(NimBLECharacteristic* pCharacteristic) {
-    		ESP_LOGD(TAG, "Sending notification to clients");
+    		ESP_LOGD(TAG, "Sending notification to clients for characteristic '%s'" ,pCharacteristic->getUUID().toString().c_str());
     	}
 
     	void BleMiRemote::onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code) {
