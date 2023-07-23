@@ -4,6 +4,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/core/log.h"
 
 #define CONFIG_NIMBLE_CPP_LOG_LEVEL 0
 
@@ -11,7 +12,6 @@
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
-#include "esphome/core/log.h"
 #include <string>
 
 #undef NIMBLE_LOGD
