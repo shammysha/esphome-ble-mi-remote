@@ -12,8 +12,6 @@
 #include "sdkconfig.h"
 #include <string>
 #include <list>
-#include "esp32-hal-log.h"
-#include "esphome/core/log.h"
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02

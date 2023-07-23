@@ -11,6 +11,7 @@
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
+#include "esphome/core/log.h"
 #include <string>
 
 #undef NIMBLE_LOGD
