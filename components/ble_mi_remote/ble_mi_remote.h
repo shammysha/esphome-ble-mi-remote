@@ -7,6 +7,12 @@
 #include "esphome/core/log.h"
 
 #define CONFIG_NIMBLE_CPP_LOG_LEVEL 0
+#define CONFIG_BT_NIMBLE_LOG_LEVEL 0
+#define CONFIG_BT_NIMBLE_LOG_LEVEL
+#define CONFIG_NIMBLE_CPP_ENABLE_GAP_EVENT_CODE_TEXT
+#define CONFIG_NIMBLE_CPP_ENABLE_ADVERTISEMENT_TYPE_TEXT
+
+#define CONFIG_BT_ENABLED
 
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
