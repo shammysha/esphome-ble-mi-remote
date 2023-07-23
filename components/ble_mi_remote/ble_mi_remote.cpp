@@ -2,12 +2,9 @@
 #ifdef USE_ESP32
 
 #include "ble_mi_remote.h"
-#include <NimBLEServer.h>
 #include <NimBLEDevice.h>
 #include <NimBLEService.h>
 #include <NimBLEUtils.h>
-#include <NimBLEHIDDevice.h>
-#include <NimBLECharacteristic.h>
 #include <NimBLEAdvertising.h>
 #include "HIDTypes.h"
 #include "HIDKeyboardTypes.h"
