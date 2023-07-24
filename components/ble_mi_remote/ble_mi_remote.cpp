@@ -2,7 +2,6 @@
 #ifdef USE_ESP32
 
 #include "ble_mi_remote.h"
-#include <NimBLEDevice.h>
 #include <NimBLEService.h>
 #include <NimBLEUtils.h>
 #include <NimBLEAdvertising.h>
@@ -32,7 +31,6 @@
 #define CONFIG_BT_NIMBLE_LOG_LEVEL 0
 #define CONFIG_NIMBLE_CPP_ENABLE_GAP_EVENT_CODE_TEXT
 #define CONFIG_NIMBLE_CPP_ENABLE_ADVERTISEMENT_TYPE_TEXT
-
 
 #define NIMBLE_LOGD ( tag, format, ... ) \
 	esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
