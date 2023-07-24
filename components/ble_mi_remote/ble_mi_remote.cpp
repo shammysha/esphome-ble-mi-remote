@@ -1,6 +1,4 @@
 
-#pragma once
-
 #ifdef USE_ESP32
 
 #include "ble_mi_remote.h"
@@ -164,7 +162,7 @@ namespace esphome {
 			NimBLEServer *pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
-			vendorServicesSetup();
+			// vendorServicesSetup();
 
 
 			hid = new NimBLEHIDDevice(pServer);
