@@ -5,12 +5,14 @@
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/core/log.h"
-
+#include "esp_log.h"
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
 #include <string>
+#include <stdio.h>
+#include <stdarg.h>
 
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
