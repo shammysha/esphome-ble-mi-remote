@@ -187,9 +187,9 @@ namespace esphome {
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
-			advertising->addServiceUUID( (NimBLEUUID) "00006287-3c17-d293-8e48-14fe2e4da213");
-			advertising->addServiceUUID( (NimBLEUUID) "0000d1ff-3c17-d293-8e48-14fe2e4da213");
-			advertising->addServiceUUID( (NimBLEUUID) "0000d0ff-3c17-d293-8e48-14fe2e4da213");
+			advertising->addServiceUUID( sVendor_6287->getUUID() );
+			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
+			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
 			advertising->setScanResponse(false);
 
 			advertising->start();
@@ -231,30 +231,63 @@ namespace esphome {
 //			cVendor_6287_6387->setCallbacks(this);
 //			dVendor_6287_6487_2902->setCallbacks(this);
 
-			NimBLEService* sVendor_6287 = pServer->createService((NimBLEUUID) "00006287-3c17-d293-8e48-14fe2e4da212");
-			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic((NimBLEUUID) "00006487-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic((NimBLEUUID) "00006387-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
+			NimBLEService* sVendor_6287 = pServer->createService("6287");
 
-			NimBLEService* sVendor_d1ff = pServer->createService((NimBLEUUID) "0000d1ff-3c17-d293-8e48-14fe2e4da212");
-			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("a001", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
+				NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("6487", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+				cVendor_6287_6487->setCallbacks(this);
 
-			NimBLEService* sVendor_d0ff = pServer->createService((NimBLEUUID) "0000d0ff-3c17-d293-8e48-14fe2e4da212");
-			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("fff2", NIMBLE_PROPERTY::WRITE);
-			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("fff1", NIMBLE_PROPERTY::WRITE);
-			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("ffd8", NIMBLE_PROPERTY::WRITE_NR);
-			NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("ffd5", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("ffd4", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("ffd3", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("ffd2", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("ffd1", NIMBLE_PROPERTY::WRITE_NR);
+					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
+					char dVendor_6287_6487_2902_data[] = { 0x00, 0x00 };
+					dVendor_6287_6487_2902->setValue( std::string(dVendor_6287_6487_2902_data), sizeof(dVendor_6287_6487_2902_data) );
+					dVendor_6287_6487_2902->setCallbacks(this);
 
-			cVendor_6287_6487->setCallbacks(this);
-			cVendor_6287_6387->setCallbacks(this);
-			dVendor_6287_6487_2902->setCallbacks(this);
+				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("6387", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+				cVendor_6287_6387->setCallbacks(this);
 
-			cVendor_d1ff_a001->setValue(0);
+			NimBLEService* sVendor_d1ff = pServer->createService((NimBLEUUID) "d1ff");
+
+				NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("a001", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
+				cVendor_d1ff_a001->setCallbacks(this);
+
+					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
+					char dVendor_d1ff_a001_2902_data[] = { 0x00, 0x00 };
+					dVendor_d1ff_a001_2902->setValue( std::string(dVendor_d1ff_a001_2902_data), sizeof(dVendor_d1ff_a001_2902_data) );
+					dVendor_d1ff_a001_2902->setCallbacks(this);
+
+			NimBLEService* sVendor_d0ff = pServer->createService((NimBLEUUID) "d0ff");
+
+				NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("fff2", NIMBLE_PROPERTY::WRITE);
+				cVendor_d0ff_fff2->setCallbacks(this);
+
+				NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("fff1", NIMBLE_PROPERTY::WRITE);
+				cVendor_d0ff_fff->setValue(0x01);
+				cVendor_d0ff_fff1->setCallbacks(this);
+
+				NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("ffd8", NIMBLE_PROPERTY::WRITE_NR);
+				cVendor_d0ff_ffd8->setCallbacks(this);
+
+				NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("ffd5", NIMBLE_PROPERTY::READ);
+				char cVendor_d0ff_ffd5_data[] = { 0x00, 0x00 };
+				cVendor_d0ff_ffd5->setValue( std::string(cVendor_d0ff_ffd5_data), sizeof(cVendor_d0ff_ffd5_data) );
+				cVendor_d0ff_ffd5->setCallbacks(this);
+
+				NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("ffd4", NIMBLE_PROPERTY::READ);
+				char cVendor_d0ff_ffd4_data[] = { 0x14, 0x20 };
+				cVendor_d0ff_ffd4->setValue( std::string(cVendor_d0ff_ffd4_data), sizeof(cVendor_d0ff_ffd4_data) );
+				cVendor_d0ff_ffd4->setCallbacks(this);
+
+				NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("ffd3", NIMBLE_PROPERTY::READ);
+				char cVendor_d0ff_ffd3_data[] = { 0xd7, 0x4b };
+				cVendor_d0ff_ffd3->setValue( std::string(cVendor_d0ff_ffd3_data), sizeof(cVendor_d0ff_ffd3_data) );
+				cVendor_d0ff_ffd3->setCallbacks(this);
+
+				NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("ffd2", NIMBLE_PROPERTY::READ);
+				char cVendor_d0ff_ffd2_data[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
+				cVendor_d0ff_ffd3->setValue( std::string(cVendor_d0ff_ffd2_data), sizeof(cVendor_d0ff_ffd2_data) );
+				cVendor_d0ff_ffd2->setCallbacks(this);
+
+				NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("ffd1", NIMBLE_PROPERTY::WRITE_NR);
+				cVendor_d0ff_ffd1->setCallbacks(this);
 		}
 
 		void BleMiRemote::powerAdvertisingSetup() {
