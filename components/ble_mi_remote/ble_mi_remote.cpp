@@ -21,6 +21,8 @@
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
 
+static NimBLEServer*	pServer;
+
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
 		USAGE(1),				0x01,			// Consumer Control
