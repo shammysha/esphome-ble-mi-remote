@@ -205,7 +205,7 @@ namespace esphome {
 
 			hid->reportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
 
-			// vendorServicesSetup();
+			vendorServicesSetup();
 
 			hid->startServices();
 
