@@ -168,7 +168,7 @@ namespace esphome {
 		                                              );
 
 		    pBeefCharacteristic->setValue("Burger");
-		    pBeefCharacteristic->setCallbacks(&chrCallbacks);
+		    pBeefCharacteristic->setCallbacks(this);
 
 //			sVendor_6287 = pServer->createService("DEAD");
 //
