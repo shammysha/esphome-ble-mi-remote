@@ -100,6 +100,10 @@ namespace esphome {
 				NimBLECharacteristic*		vendorReport_06;
 				NimBLECharacteristic*		vendorReport_07;
 				NimBLECharacteristic*		vendorReport_08;
+				NimBLEService*				sVendor_6287;
+				NimBLEService*				sVendor_d1ff;
+				NimBLEService*				sVendor_d0ff;
+
 				NimBLEAdvertisementData* 	powerAdvData;
 				NimBLEAdvertising*			advertising;
 				NimBLEAdvertising*			powerAdvertising;
@@ -115,7 +119,6 @@ namespace esphome {
 				uint8_t				batteryLevel;
 				bool				_connected = false;
 				uint32_t			_delay_ms = 7;
-
 
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;
@@ -136,6 +139,7 @@ namespace esphome {
 
 				void onWrite(NimBLEDescriptor* pDescriptor);
 			    void onRead(NimBLEDescriptor* pDescriptor);
+
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome
