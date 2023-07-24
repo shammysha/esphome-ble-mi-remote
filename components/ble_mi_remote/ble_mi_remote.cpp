@@ -238,7 +238,7 @@ namespace esphome {
 
 					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
 					char dVendor_6287_6487_2902_data[] = { 0x00, 0x00 };
-					dVendor_6287_6487_2902->setValue( std::string(dVendor_6287_6487_2902_data), sizeof(dVendor_6287_6487_2902_data) );
+					dVendor_6287_6487_2902->setValue( (char*) dVendor_6287_6487_2902_data, sizeof(dVendor_6287_6487_2902_data) );
 					dVendor_6287_6487_2902->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("6387", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
@@ -251,7 +251,7 @@ namespace esphome {
 
 					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
 					char dVendor_d1ff_a001_2902_data[] = { 0x00, 0x00 };
-					dVendor_d1ff_a001_2902->setValue( std::string(dVendor_d1ff_a001_2902_data), sizeof(dVendor_d1ff_a001_2902_data) );
+					dVendor_d1ff_a001_2902->setValue( (char*) dVendor_d1ff_a001_2902_data, sizeof(dVendor_d1ff_a001_2902_data) );
 					dVendor_d1ff_a001_2902->setCallbacks(this);
 
 			NimBLEService* sVendor_d0ff = pServer->createService((NimBLEUUID) "d0ff");
@@ -268,22 +268,22 @@ namespace esphome {
 
 				NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("ffd5", NIMBLE_PROPERTY::READ);
 				char cVendor_d0ff_ffd5_data[] = { 0x00, 0x00 };
-				cVendor_d0ff_ffd5->setValue( std::string(cVendor_d0ff_ffd5_data), sizeof(cVendor_d0ff_ffd5_data) );
+				cVendor_d0ff_ffd5->setValue( (char*) cVendor_d0ff_ffd5_data, sizeof(cVendor_d0ff_ffd5_data) );
 				cVendor_d0ff_ffd5->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("ffd4", NIMBLE_PROPERTY::READ);
 				char cVendor_d0ff_ffd4_data[] = { 0x14, 0x20 };
-				cVendor_d0ff_ffd4->setValue( std::string(cVendor_d0ff_ffd4_data), sizeof(cVendor_d0ff_ffd4_data) );
+				cVendor_d0ff_ffd4->setValue( (char*) cVendor_d0ff_ffd4_data, sizeof(cVendor_d0ff_ffd4_data) );
 				cVendor_d0ff_ffd4->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("ffd3", NIMBLE_PROPERTY::READ);
 				char cVendor_d0ff_ffd3_data[] = { 0xd7, 0x4b };
-				cVendor_d0ff_ffd3->setValue( std::string(cVendor_d0ff_ffd3_data), sizeof(cVendor_d0ff_ffd3_data) );
+				cVendor_d0ff_ffd3->setValue( (char*) cVendor_d0ff_ffd3_data, sizeof(cVendor_d0ff_ffd3_data) );
 				cVendor_d0ff_ffd3->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("ffd2", NIMBLE_PROPERTY::READ);
 				char cVendor_d0ff_ffd2_data[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
-				cVendor_d0ff_ffd3->setValue( std::string(cVendor_d0ff_ffd2_data), sizeof(cVendor_d0ff_ffd2_data) );
+				cVendor_d0ff_ffd3->setValue( (char*) cVendor_d0ff_ffd2_data, sizeof(cVendor_d0ff_ffd2_data) );
 				cVendor_d0ff_ffd2->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("ffd1", NIMBLE_PROPERTY::WRITE_NR);
