@@ -157,63 +157,76 @@ namespace esphome {
 
 //			vendorServicesSetup();
 
-			sVendor_6287 = pServer->createService("6287");
+		    NimBLEService* pDeadService = pServer->createService("DEAD");
+		    NimBLECharacteristic* pBeefCharacteristic = pDeadService->createCharacteristic(
+		                                               "BEEF",
+		                                               NIMBLE_PROPERTY::READ |
+		                                               NIMBLE_PROPERTY::WRITE |
+		                               /** Require a secure connection for read and write access */
+		                                               NIMBLE_PROPERTY::READ_ENC |  // only allow reading if paired / encrypted
+		                                               NIMBLE_PROPERTY::WRITE_ENC   // only allow writing if paired / encrypted
+		                                              );
 
-				NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("6487", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-				cVendor_6287_6487->setCallbacks(this);
+		    pBeefCharacteristic->setValue("Burger");
+		    pBeefCharacteristic->setCallbacks(&chrCallbacks);
 
-					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
-					uint8_t dVendor_6287_6487_2902_data[] = { 0x00, 0x00 };
-					dVendor_6287_6487_2902->setValue( (uint8_t*) dVendor_6287_6487_2902_data, sizeof(dVendor_6287_6487_2902_data) );
-					dVendor_6287_6487_2902->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("6387", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-				cVendor_6287_6387->setCallbacks(this);
-
-			sVendor_d1ff = pServer->createService((NimBLEUUID) "d1ff");
-
-				NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("a001", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
-				cVendor_d1ff_a001->setCallbacks(this);
-
-					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
-					uint8_t dVendor_d1ff_a001_2902_data[] = { 0x00, 0x00 };
-					dVendor_d1ff_a001_2902->setValue( (uint8_t*) dVendor_d1ff_a001_2902_data, sizeof(dVendor_d1ff_a001_2902_data) );
-					dVendor_d1ff_a001_2902->setCallbacks(this);
-
-			sVendor_d0ff = pServer->createService((NimBLEUUID) "d0ff");
-
-				NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("fff2", NIMBLE_PROPERTY::WRITE);
-				cVendor_d0ff_fff2->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("fff1", NIMBLE_PROPERTY::WRITE);
-				cVendor_d0ff_fff1->setValue(0x01);
-				cVendor_d0ff_fff1->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("ffd8", NIMBLE_PROPERTY::WRITE_NR);
-				cVendor_d0ff_ffd8->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("ffd5", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd5_data[] = { 0x00, 0x00 };
-				cVendor_d0ff_ffd5->setValue( (uint8_t*) cVendor_d0ff_ffd5_data, sizeof(cVendor_d0ff_ffd5_data) );
-				cVendor_d0ff_ffd5->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("ffd4", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd4_data[] = { 0x14, 0x20 };
-				cVendor_d0ff_ffd4->setValue( (uint8_t*) cVendor_d0ff_ffd4_data, sizeof(cVendor_d0ff_ffd4_data) );
-				cVendor_d0ff_ffd4->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("ffd3", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd3_data[] = { 0xd7, 0x4b };
-				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd3_data, sizeof(cVendor_d0ff_ffd3_data) );
-				cVendor_d0ff_ffd3->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("ffd2", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd2_data[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
-				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd2_data, sizeof(cVendor_d0ff_ffd2_data) );
-				cVendor_d0ff_ffd2->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("ffd1", NIMBLE_PROPERTY::WRITE_NR);
-				cVendor_d0ff_ffd1->setCallbacks(this);
+//			sVendor_6287 = pServer->createService("DEAD");
+//
+//				NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("6487", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+//				cVendor_6287_6487->setCallbacks(this);
+//
+//					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
+//					uint8_t dVendor_6287_6487_2902_data[] = { 0x00, 0x00 };
+//					dVendor_6287_6487_2902->setValue( (uint8_t*) dVendor_6287_6487_2902_data, sizeof(dVendor_6287_6487_2902_data) );
+//					dVendor_6287_6487_2902->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("6387", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+//				cVendor_6287_6387->setCallbacks(this);
+//
+//			sVendor_d1ff = pServer->createService((NimBLEUUID) "d1ff");
+//
+//				NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("a001", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
+//				cVendor_d1ff_a001->setCallbacks(this);
+//
+//					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
+//					uint8_t dVendor_d1ff_a001_2902_data[] = { 0x00, 0x00 };
+//					dVendor_d1ff_a001_2902->setValue( (uint8_t*) dVendor_d1ff_a001_2902_data, sizeof(dVendor_d1ff_a001_2902_data) );
+//					dVendor_d1ff_a001_2902->setCallbacks(this);
+//
+//			sVendor_d0ff = pServer->createService((NimBLEUUID) "d0ff");
+//
+//				NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("fff2", NIMBLE_PROPERTY::WRITE);
+//				cVendor_d0ff_fff2->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("fff1", NIMBLE_PROPERTY::WRITE);
+//				cVendor_d0ff_fff1->setValue(0x01);
+//				cVendor_d0ff_fff1->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("ffd8", NIMBLE_PROPERTY::WRITE_NR);
+//				cVendor_d0ff_ffd8->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("ffd5", NIMBLE_PROPERTY::READ);
+//				uint8_t cVendor_d0ff_ffd5_data[] = { 0x00, 0x00 };
+//				cVendor_d0ff_ffd5->setValue( (uint8_t*) cVendor_d0ff_ffd5_data, sizeof(cVendor_d0ff_ffd5_data) );
+//				cVendor_d0ff_ffd5->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("ffd4", NIMBLE_PROPERTY::READ);
+//				uint8_t cVendor_d0ff_ffd4_data[] = { 0x14, 0x20 };
+//				cVendor_d0ff_ffd4->setValue( (uint8_t*) cVendor_d0ff_ffd4_data, sizeof(cVendor_d0ff_ffd4_data) );
+//				cVendor_d0ff_ffd4->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("ffd3", NIMBLE_PROPERTY::READ);
+//				uint8_t cVendor_d0ff_ffd3_data[] = { 0xd7, 0x4b };
+//				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd3_data, sizeof(cVendor_d0ff_ffd3_data) );
+//				cVendor_d0ff_ffd3->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("ffd2", NIMBLE_PROPERTY::READ);
+//				uint8_t cVendor_d0ff_ffd2_data[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
+//				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd2_data, sizeof(cVendor_d0ff_ffd2_data) );
+//				cVendor_d0ff_ffd2->setCallbacks(this);
+//
+//				NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("ffd1", NIMBLE_PROPERTY::WRITE_NR);
+//				cVendor_d0ff_ffd1->setCallbacks(this);
 
 
 			hid = new NimBLEHIDDevice(pServer);
