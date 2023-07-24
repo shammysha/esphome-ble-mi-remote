@@ -92,6 +92,7 @@ namespace esphome {
 
 				void vendorServicesSetup();
 
+				NimBLEServer* 				pServer;
 				NimBLEHIDDevice*			hid;
 				NimBLECharacteristic*		inputKeyboard;
 				NimBLECharacteristic*		outputKeyboard;
