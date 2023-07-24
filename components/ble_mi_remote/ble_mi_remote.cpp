@@ -236,10 +236,10 @@ namespace esphome {
 				NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("6487", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 				cVendor_6287_6487->setCallbacks(this);
 
-					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
-					uint8_t dVendor_6287_6487_2902_data[] = { 0x00, 0x00 };
-					dVendor_6287_6487_2902->setValue( (uint8_t*) dVendor_6287_6487_2902_data, sizeof(dVendor_6287_6487_2902_data) );
-					dVendor_6287_6487_2902->setCallbacks(this);
+//					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
+//					uint8_t dVendor_6287_6487_2902_data[] = { 0x00, 0x00 };
+//					dVendor_6287_6487_2902->setValue( (uint8_t*) dVendor_6287_6487_2902_data, sizeof(dVendor_6287_6487_2902_data) );
+//					dVendor_6287_6487_2902->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("6387", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 				cVendor_6287_6387->setCallbacks(this);
@@ -249,10 +249,10 @@ namespace esphome {
 				NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("a001", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
 				cVendor_d1ff_a001->setCallbacks(this);
 
-					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
-					uint8_t dVendor_d1ff_a001_2902_data[] = { 0x00, 0x00 };
-					dVendor_d1ff_a001_2902->setValue( (uint8_t*) dVendor_d1ff_a001_2902_data, sizeof(dVendor_d1ff_a001_2902_data) );
-					dVendor_d1ff_a001_2902->setCallbacks(this);
+//					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
+//					uint8_t dVendor_d1ff_a001_2902_data[] = { 0x00, 0x00 };
+//					dVendor_d1ff_a001_2902->setValue( (uint8_t*) dVendor_d1ff_a001_2902_data, sizeof(dVendor_d1ff_a001_2902_data) );
+//					dVendor_d1ff_a001_2902->setCallbacks(this);
 
 			sVendor_d0ff = pServer->createService((NimBLEUUID) "d0ff");
 
