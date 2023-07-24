@@ -17,18 +17,6 @@
 #include "NimBLEHIDDevice.h"
 #include <string>
 
-#undef NIMBLE_LOGD
-#undef NIMBLE_LOGI
-#undef NIMBLE_LOGW
-#undef NIMBLE_LOGE
-#undef NIMBLE_LOGC
-
-#define NIMBLE_LOGD ( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-#define NIMBLE_LOGI( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-#define NIMBLE_LOGW( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_WARN, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-#define NIMBLE_LOGE( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-#define NIMBLE_LOGC( tag, format, ... ) esp_log_printf_(ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__)
-
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
 const uint8_t SPECIAL_MENU_PICK = 0;
