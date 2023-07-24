@@ -168,9 +168,6 @@ namespace esphome {
 			NimBLEServer *pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
-			// vendorServicesSetup();
-
-
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
 			inputSpecialKeys->setCallbacks(this);
@@ -193,6 +190,8 @@ namespace esphome {
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
 			hid->reportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
+
+			vendorServicesSetup();
 
 			hid->startServices();
 
