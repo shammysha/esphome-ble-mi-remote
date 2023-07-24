@@ -2,6 +2,7 @@
 #ifdef USE_ESP32
 
 #include "ble_mi_remote.h"
+#include <NimBLEDevice.h>
 #include <NimBLEService.h>
 #include <NimBLEUtils.h>
 #include <NimBLEAdvertising.h>
