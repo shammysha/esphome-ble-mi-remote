@@ -38,7 +38,8 @@ from .const import (
     CONF_RECONNECT,
     CONF_TEXT,
     DOMAIN,
-    LIBS_ADDITIONAL
+    LIBS_ADDITIONAL,
+    BUILD_FLAGS
 )
 
 CODEOWNERS: Final = ["@shammysha"]
@@ -88,6 +89,8 @@ async def to_code(config: dict) -> None:
 
     for lib in LIBS_ADDITIONAL:  # type: ignore
         cg.add_library(*lib)
+        
+    cg.add_build_flag(BUILD_FLAGS)
 
 
 async def adding_special_keys(var: MockObj) -> None:

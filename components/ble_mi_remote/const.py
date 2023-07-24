@@ -55,6 +55,9 @@ LIBS_ADDITIONAL: Final = [
     )
 ]
 
+BUILD_FLAGS: Final = "-std=gnu++11"
+
+
 """Special buttons"""
 SPECIAL_KEY: Final = [
     {
