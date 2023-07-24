@@ -260,7 +260,7 @@ namespace esphome {
 				cVendor_d0ff_fff2->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("fff1", NIMBLE_PROPERTY::WRITE);
-				cVendor_d0ff_fff->setValue(0x01);
+				cVendor_d0ff_fff1->setValue(0x01);
 				cVendor_d0ff_fff1->setCallbacks(this);
 
 				NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("ffd8", NIMBLE_PROPERTY::WRITE_NR);
