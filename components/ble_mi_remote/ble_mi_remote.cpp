@@ -231,28 +231,52 @@ namespace esphome {
 		}
 
 		void BleMiRemote::vendorServicesSetup() {
+//			NimBLEService* sVendor_6287 = pServer->createService("00006287-3c17-d293-8e48-14fe2e4da212");
+//			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("00006487-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+//			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("00006387-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+//			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("00002902-0000-1000-8000-00805f9b34fb");
+//
+//			NimBLEService* sVendor_d1ff = pServer->createService("0000d1ff-3c17-d293-8e48-14fe2e4da212");
+//			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("0000a001-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
+//			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("00002902-0000-1000-8000-00805f9b34fb");
+//
+//			NimBLEService* sVendor_d0ff = pServer->createService("0000d0ff-3c17-d293-8e48-14fe2e4da212");
+//			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("0000fff2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
+//			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("0000fff1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
+//			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("0000ffd8-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
+//			NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("0000ffd5-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
+//			NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("0000ffd4-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
+//			NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("0000ffd3-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
+//			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("0000ffd2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
+//			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("0000ffd1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
+//
+//			cVendor_6287_6487->setCallbacks(this);
+//			cVendor_6287_6387->setCallbacks(this);
+//			dVendor_6287_6487_2902->setCallbacks(this);
+
 			NimBLEService* sVendor_6287 = pServer->createService("00006287-3c17-d293-8e48-14fe2e4da212");
 			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("00006487-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("00006387-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("00002902-0000-1000-8000-00805f9b34fb");
+			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
 
 			NimBLEService* sVendor_d1ff = pServer->createService("0000d1ff-3c17-d293-8e48-14fe2e4da212");
-			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("0000a001-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
-			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("00002902-0000-1000-8000-00805f9b34fb");
+			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("a001", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
+			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
 
 			NimBLEService* sVendor_d0ff = pServer->createService("0000d0ff-3c17-d293-8e48-14fe2e4da212");
-			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("0000fff2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
-			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("0000fff1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
-			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("0000ffd8-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
-			NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("0000ffd5-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("0000ffd4-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("0000ffd3-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("0000ffd2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("0000ffd1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
+			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("fff2", NIMBLE_PROPERTY::WRITE);
+			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("fff1", NIMBLE_PROPERTY::WRITE);
+			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("ffd8", NIMBLE_PROPERTY::WRITE_NR);
+			NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("ffd5", NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("ffd4", NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("ffd3", NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("ffd2", NIMBLE_PROPERTY::READ);
+			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("ffd1", NIMBLE_PROPERTY::WRITE_NR);
 
 			cVendor_6287_6487->setCallbacks(this);
 			cVendor_6287_6387->setCallbacks(this);
 			dVendor_6287_6487_2902->setCallbacks(this);
+
 		}
 
 		void BleMiRemote::powerAdvertisingSetup() {
