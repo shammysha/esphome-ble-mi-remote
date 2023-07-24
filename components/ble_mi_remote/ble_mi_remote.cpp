@@ -152,7 +152,7 @@ namespace esphome {
 			ESP_LOGI(TAG, "Setting up...");
 
 			NimBLEDevice::init (deviceName);
-			NimBLEServer *pServer = NimBLEDevice::createServer();
+			pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
 //			vendorServicesSetup();
