@@ -1,6 +1,9 @@
 
 #ifdef USE_ESP32
 
+#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
+#define CONFIG_BT_NIMBLE_LOG_LEVEL 0
+
 #include "ble_mi_remote.h"
 #include <NimBLEDevice.h>
 #include <NimBLEService.h>
@@ -17,32 +20,32 @@
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
 
-#undef NIMBLE_LOGD
-#undef NIMBLE_LOGI
-#undef NIMBLE_LOGW
-#undef NIMBLE_LOGE
-#undef NIMBLE_LOGC
-
-#undef CONFIG_NIMBLE_CPP_LOG_LEVEL
-#undef CONFIG_BT_NIMBLE_LOG_LEVEL
-#undef CONFIG_NIMBLE_CPP_ENABLE_GAP_EVENT_CODE_TEXT
-#undef CONFIG_NIMBLE_CPP_ENABLE_ADVERTISEMENT_TYPE_TEXT
-
-#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
-#define CONFIG_BT_NIMBLE_LOG_LEVEL 0
-#define CONFIG_NIMBLE_CPP_ENABLE_GAP_EVENT_CODE_TEXT
-#define CONFIG_NIMBLE_CPP_ENABLE_ADVERTISEMENT_TYPE_TEXT
-
-#define NIMBLE_LOGD ( tag, format, ... ) \
-	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
-#define NIMBLE_LOGI( tag, format, ... ) \
-	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
-#define NIMBLE_LOGW( tag, format, ... ) \
-	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_WARN, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
-#define NIMBLE_LOGE( tag, format, ... ) \
-	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
-#define NIMBLE_LOGC( tag, format, ... ) \
-	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+//#undef NIMBLE_LOGD
+//#undef NIMBLE_LOGI
+//#undef NIMBLE_LOGW
+//#undef NIMBLE_LOGE
+//#undef NIMBLE_LOGC
+//
+//#undef CONFIG_NIMBLE_CPP_LOG_LEVEL
+//#undef CONFIG_BT_NIMBLE_LOG_LEVEL
+//#undef CONFIG_NIMBLE_CPP_ENABLE_GAP_EVENT_CODE_TEXT
+//#undef CONFIG_NIMBLE_CPP_ENABLE_ADVERTISEMENT_TYPE_TEXT
+//
+//#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
+//#define CONFIG_BT_NIMBLE_LOG_LEVEL 0
+//#define CONFIG_NIMBLE_CPP_ENABLE_GAP_EVENT_CODE_TEXT
+//#define CONFIG_NIMBLE_CPP_ENABLE_ADVERTISEMENT_TYPE_TEXT
+//
+//#define NIMBLE_LOGD ( tag, format, ... ) \
+//	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+//#define NIMBLE_LOGI( tag, format, ... ) \
+//	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+//#define NIMBLE_LOGW( tag, format, ... ) \
+//	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_WARN, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+//#define NIMBLE_LOGE( tag, format, ... ) \
+//	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+//#define NIMBLE_LOGC( tag, format, ... ) \
+//	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
@@ -276,6 +279,10 @@ namespace esphome {
 			cVendor_6287_6487->setCallbacks(this);
 			cVendor_6287_6387->setCallbacks(this);
 			dVendor_6287_6487_2902->setCallbacks(this);
+
+			cVendor_d1ff_a001->setValue(0);
+
+
 
 		}
 
