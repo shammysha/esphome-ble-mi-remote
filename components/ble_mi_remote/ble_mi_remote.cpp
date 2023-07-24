@@ -24,7 +24,7 @@
 #undef NIMBLE_LOGC
 
 #define NIMBLE_LOGD ( tag, format, ... ) \
-	esp_log_printf_(ESPHOME_LOG_LEVEL_ DEBUG, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+	esp_log_printf_(ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 #define NIMBLE_LOGI( tag, format, ... ) \
 	esp_log_printf_(ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 #define NIMBLE_LOGW( tag, format, ... ) \
