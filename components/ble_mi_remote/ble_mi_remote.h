@@ -4,6 +4,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/core/log.h"
 
 #define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
 #define CONFIG_BT_NIMBLE_LOG_LEVEL 0
