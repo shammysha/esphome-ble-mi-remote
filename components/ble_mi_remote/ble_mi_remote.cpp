@@ -34,15 +34,15 @@
 #define CONFIG_NIMBLE_CPP_ENABLE_ADVERTISEMENT_TYPE_TEXT
 
 #define NIMBLE_LOGD ( tag, format, ... ) \
-	::esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_DEBUG, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 #define NIMBLE_LOGI( tag, format, ... ) \
-	::esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_INFO, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 #define NIMBLE_LOGW( tag, format, ... ) \
-	::esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_WARN, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_WARN, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 #define NIMBLE_LOGE( tag, format, ... ) \
-	::esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 #define NIMBLE_LOGC( tag, format, ... ) \
-	::esphome::esp_log_printf_(ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
+	::esphome::esp_log_printf_(::esphome::ESPHOME_LOG_LEVEL_ERROR, tag, __LINE__, ::esphome::ESPHOME_LOG_FORMAT(format), ##__VA_ARGS__ )
 
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
