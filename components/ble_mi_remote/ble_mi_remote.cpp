@@ -26,7 +26,6 @@ static const std::string sUUID_6287 = "00006287-3c17-d293-8e48-14fe2e4da212";
 static const std::string sUUID_D1FF = "0000d1ff-3c17-d293-8e48-14fe2e4da212";
 static const std::string sUUID_D0FF = "0000d0ff-3c17-d293-8e48-14fe2e4da212";
 
-
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
 		USAGE(1),				0x01,			// Consumer Control
@@ -161,7 +160,7 @@ namespace esphome {
 			pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
-			vendorServicesSetup();
+//			vendorServicesSetup();
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
@@ -208,7 +207,7 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
 
-//			powerAdvertisingSetup();
+			powerAdvertisingSetup();
 			release();
 		}
 
@@ -321,9 +320,7 @@ namespace esphome {
 			ESP_LOGD(TAG, "Power payload is:");
 			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
 
-			powerAdvertising->start(1);
-			delay(1000);
-			powerAdvertisingStop();
+			powerAdvertising->start(1, [this]() { this->powerAdvertisingStop() });
 		}
 
 		void BleMiRemote::powerAdvertisingStop() {
