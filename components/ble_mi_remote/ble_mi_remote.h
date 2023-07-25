@@ -90,6 +90,9 @@ namespace esphome {
 				void powerAdvertisingStart();
 				void powerAdvertisingStop(NimBLEAdvertising *pAdv);
 
+			    void (*m_advCompCB)(NimBLEAdvertising *pAdv);
+
+
 				void vendorServicesSetup();
 
 				NimBLEServer* 				pServer;
@@ -107,6 +110,7 @@ namespace esphome {
 				NimBLEAdvertisementData* 	powerAdvData;
 				NimBLEAdvertising*			advertising;
 				NimBLEAdvertising*			powerAdvertising;
+
 
 
 				bool 				_reconnect{true};
