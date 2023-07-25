@@ -318,7 +318,7 @@ namespace esphome {
 			NimBLEAdvertising* powerAdvertising = new NimBLEAdvertising();
 			powerAdvertising->setAdvertisementData(*powerAdvData);
 
-			m_advCompCB = BleMiRemote::powerAdvertisingStop;
+			m_advCompCB = &BleMiRemote::powerAdvertisingStop;
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
