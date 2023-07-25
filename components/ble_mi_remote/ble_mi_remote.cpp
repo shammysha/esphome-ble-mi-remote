@@ -193,9 +193,9 @@ namespace esphome {
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
-			advertising->addServiceUUID( sVendor_6287->getUUID() );
-			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
-			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
+//			advertising->addServiceUUID( sVendor_6287->getUUID() );
+//			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
+//			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
 			advertising->setScanResponse(false);
 
 			advertising->start();
