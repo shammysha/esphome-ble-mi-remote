@@ -16,10 +16,16 @@
 #include "sdkconfig.h"
 #include <string>
 #include <list>
+#include <signal.h>
 
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
+
+static const std::string sUUID_6287 = "00006287-3c17-d293-8e48-14fe2e4da212";
+static const std::string sUUID_D1FF = "0000d1ff-3c17-d293-8e48-14fe2e4da212";
+static const std::string sUUID_D0FF = "0000d0ff-3c17-d293-8e48-14fe2e4da212";
+
 
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
@@ -204,7 +210,8 @@ namespace esphome {
 
 //			powerAdvertisingSetup();
 			release();
-
+			12a24d2efe14488e93d2173cffd00000
+			12a24d2efe14488e93d2173cffd10000
 		}
 
 		void BleMiRemote::vendorServicesSetup() {
@@ -231,9 +238,9 @@ namespace esphome {
 //			cVendor_6287_6387->setCallbacks(this);
 //			dVendor_6287_6487_2902->setCallbacks(this);
 
-			sVendor_6287 = pServer->createService("6287");
+			sVendor_6287 = pServer->createService((NimBLEUUID) sUUID_6287);
 
-				NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("6487", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+				NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("00006487-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 				cVendor_6287_6487->setCallbacks(this);
 
 //					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
@@ -241,12 +248,12 @@ namespace esphome {
 //					dVendor_6287_6487_2902->setValue( (uint8_t*) dVendor_6287_6487_2902_data, sizeof(dVendor_6287_6487_2902_data) );
 //					dVendor_6287_6487_2902->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("6387", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
+				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("00006387-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
 				cVendor_6287_6387->setCallbacks(this);
 
-			sVendor_d1ff = pServer->createService((NimBLEUUID) "d1ff");
+			sVendor_d1ff = pServer->createService((NimBLEUUID) sUUID_D1FF);
 
-				NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("a001", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
+				NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("0000a001-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
 				cVendor_d1ff_a001->setCallbacks(this);
 
 //					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
@@ -254,39 +261,39 @@ namespace esphome {
 //					dVendor_d1ff_a001_2902->setValue( (uint8_t*) dVendor_d1ff_a001_2902_data, sizeof(dVendor_d1ff_a001_2902_data) );
 //					dVendor_d1ff_a001_2902->setCallbacks(this);
 
-			sVendor_d0ff = pServer->createService((NimBLEUUID) "d0ff");
+			sVendor_d0ff = pServer->createService((NimBLEUUID) sUUID_D0FF);
 
-				NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("fff2", NIMBLE_PROPERTY::WRITE);
+				NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("0000fff2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
 				cVendor_d0ff_fff2->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("fff1", NIMBLE_PROPERTY::WRITE);
+				NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("0000fff1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
 				cVendor_d0ff_fff1->setValue(0x01);
 				cVendor_d0ff_fff1->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("ffd8", NIMBLE_PROPERTY::WRITE_NR);
+				NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("0000ffd8-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
 				cVendor_d0ff_ffd8->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("ffd5", NIMBLE_PROPERTY::READ);
+				NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("0000ffd5-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
 				uint8_t cVendor_d0ff_ffd5_data[] = { 0x00, 0x00 };
 				cVendor_d0ff_ffd5->setValue( (uint8_t*) cVendor_d0ff_ffd5_data, sizeof(cVendor_d0ff_ffd5_data) );
 				cVendor_d0ff_ffd5->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("ffd4", NIMBLE_PROPERTY::READ);
+				NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("0000ffd4-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
 				uint8_t cVendor_d0ff_ffd4_data[] = { 0x14, 0x20 };
 				cVendor_d0ff_ffd4->setValue( (uint8_t*) cVendor_d0ff_ffd4_data, sizeof(cVendor_d0ff_ffd4_data) );
 				cVendor_d0ff_ffd4->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("ffd3", NIMBLE_PROPERTY::READ);
+				NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("0000ffd3-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
 				uint8_t cVendor_d0ff_ffd3_data[] = { 0xd7, 0x4b };
 				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd3_data, sizeof(cVendor_d0ff_ffd3_data) );
 				cVendor_d0ff_ffd3->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("ffd2", NIMBLE_PROPERTY::READ);
+				NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("0000ffd2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
 				uint8_t cVendor_d0ff_ffd2_data[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
 				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd2_data, sizeof(cVendor_d0ff_ffd2_data) );
 				cVendor_d0ff_ffd2->setCallbacks(this);
 
-				NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("ffd1", NIMBLE_PROPERTY::WRITE_NR);
+				NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("0000ffd1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
 				cVendor_d0ff_ffd1->setCallbacks(this);
 		}
 
