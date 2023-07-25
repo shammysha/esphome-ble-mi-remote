@@ -142,8 +142,6 @@ namespace esphome {
 	namespace ble_mi_remote {
 		static const char *const TAG = "ble_mi_remote";
 
-		static void powerAdvertisingStop(NimBLEAdvertising *pAdv);
-
 		BleMiRemote::BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level, bool reconnect)
 			:
 				PollingComponent(1000),
@@ -325,7 +323,7 @@ namespace esphome {
 			powerAdvertising->start(1, BleMiRemote::powerAdvertisingStop );
 		}
 
-		static void BleMiRemote::powerAdvertisingStop(powerAdvertising) {
+		static void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
 			if (!this->_connected) {
 				pServer->startAdvertising();
 			}
