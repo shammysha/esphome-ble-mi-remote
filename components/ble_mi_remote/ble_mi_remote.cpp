@@ -26,8 +26,6 @@ static const std::string sUUID_6287 = "00006287-3c17-d293-8e48-14fe2e4da212";
 static const std::string sUUID_D1FF = "0000d1ff-3c17-d293-8e48-14fe2e4da212";
 static const std::string sUUID_D0FF = "0000d0ff-3c17-d293-8e48-14fe2e4da212";
 
-static void powerAdvertisingStop(NimBLEAdvertising *pAdv);
-
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
 		USAGE(1),				0x01,			// Consumer Control
@@ -143,6 +141,8 @@ static const uint8_t _hidReportDescriptor[] = {
 namespace esphome {
 	namespace ble_mi_remote {
 		static const char *const TAG = "ble_mi_remote";
+
+		static void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv);
 
 		BleMiRemote::BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level, bool reconnect)
 			:
