@@ -88,7 +88,7 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
-				void powerAdvertisingStop();
+				advCompleteCB* powerAdvertisingStop(NimBLEAdvertising *pAdv);
 
 				void vendorServicesSetup();
 
