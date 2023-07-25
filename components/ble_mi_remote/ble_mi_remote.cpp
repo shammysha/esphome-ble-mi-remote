@@ -320,7 +320,7 @@ namespace esphome {
 			ESP_LOGD(TAG, "Power payload is:");
 			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
 
-			powerAdvertising->start(1, [this](NimBLEAdvertising *pAdv) { powerAdvertisingStop(pAdv); } );
+			powerAdvertising->start(1, [*](NimBLEAdvertising *pAdv) { powerAdvertisingStop(pAdv); } );
 		}
 
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
