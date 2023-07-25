@@ -210,8 +210,6 @@ namespace esphome {
 
 //			powerAdvertisingSetup();
 			release();
-			12a24d2efe14488e93d2173cffd00000
-			12a24d2efe14488e93d2173cffd10000
 		}
 
 		void BleMiRemote::vendorServicesSetup() {
