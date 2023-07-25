@@ -92,7 +92,6 @@ namespace esphome {
 
 			    void (*m_advCompCB)(NimBLEAdvertising *pAdv);
 
-
 				void vendorServicesSetup();
 
 				NimBLEServer* 				pServer;
