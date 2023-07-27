@@ -49,7 +49,7 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
-#define CONFIG_BT_NIMBLE_EXT_ADV;
+#define CONFIG_BT_NIMBLE_EXT_ADV
 
 namespace esphome {
 	namespace ble_mi_remote {
