@@ -338,8 +338,6 @@ namespace esphome {
 
 			advertising->stop();
 
-			::bmr = this;
-
 			powerAdvertising->start(1, BleMiRemote::callbHandler);
 
 			ESP_LOGD(TAG, "Power advertise started");
