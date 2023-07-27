@@ -189,9 +189,9 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			hid->setBatteryLevel(batteryLevel);
-
 			advertisingSetup();
+
+			hid->setBatteryLevel(batteryLevel);
 
 			advertisingStart();
 
@@ -206,48 +206,48 @@ namespace esphome {
 
 
 		void BleMiRemote::advertisingSetup() {
-			this->advertising = this->pServer->getAdvertising();
-			this->advertising->setAppearance(HID_KEYBOARD);
-			this->advertising->addServiceUUID(this->hid->hidService()->getUUID());
+			advertising = pServer->getAdvertising();
+			advertising->setAppearance(HID_KEYBOARD);
+			advertising->addServiceUUID(hid->hidService()->getUUID());
 //			advertising->addServiceUUID( sVendor_6287->getUUID() );
 //			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
 //			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
-			this->advertising->setScanResponse(false);
+			advertising->setScanResponse(false);
 		}
 
 		void BleMiRemote::advertisingStart() {
-			this->advertising->start();
-
+			advertising->start();
 			ESP_LOGD(TAG, "Advertising started!");
 		}
 
 		void BleMiRemote::advertisingStop() {
-			this->advertising->stop();
-			this->advertising->reset();
+
+			advertising->stop();
+			advertising->reset();
 
 			ESP_LOGD(TAG, "Advertising stopped!");
 		}
 
 		void BleMiRemote::powerAdvertisingSetup() {
-			this->powerAdvData = new NimBLEAdvertisementData();
-			this->powerAdvData->setFlags(1);
+			powerAdvData = new NimBLEAdvertisementData();
+			powerAdvData->setFlags(1);
 
 			char mfgData[] = { 0x00, 0x01 };
-			this->powerAdvData->setManufacturerData(std::string(mfgData, 2));
+			powerAdvData->setManufacturerData(std::string(mfgData, 2));
 
-			this->powerAdvData->setShortName("MI RC");
-			this->powerAdvData->setPartialServices((NimBLEUUID) "1812");
+			powerAdvData->setShortName("MI RC");
+			powerAdvData->setPartialServices((NimBLEUUID) "1812");
 
 			char codData[] = { 0x04, 0x0d, 0x04, 0x05, 0x00 };
-			this->powerAdvData->addData((char*) codData, sizeof(codData));
+			powerAdvData->addData((char*) codData, sizeof(codData));
 
-			this->powerAdvData->addTxPower();
+			powerAdvData->addTxPower();
 
 			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
-			this->powerAdvData->addData((char*) custData, sizeof(custData));
+			powerAdvData->addData((char*) custData, sizeof(custData));
 
 			NimBLEAdvertising* powerAdvertising = new NimBLEAdvertising();
-			this->powerAdvertising->setAdvertisementData(*powerAdvData);
+			powerAdvertising->setAdvertisementData(*powerAdvData);
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
@@ -264,32 +264,32 @@ namespace esphome {
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
 			ESP_LOGD(TAG, "Power advertise stopped");
 
-			this->powerAdvertising->reset();
+			powerAdvertising->reset();
 			advertisingStart();
 		}
 
 		void BleMiRemote::stop() {
 			if (_reconnect) {
-				this->pServer->advertiseOnDisconnect(false);
+				pServer->advertiseOnDisconnect(false);
 			}
 
-			std::vector<uint16_t> ids = this->pServer->getPeerDevices();
+			std::vector<uint16_t> ids = pServer->getPeerDevices();
 
 			if (ids.size() > 0) {
 				for (uint16_t &id : ids) {
-					this->pServer->disconnect(id);
+					pServer->disconnect(id);
 				}
 			} else {
-				this->pServer->stopAdvertising();
+				pServer->stopAdvertising();
 			}
 		}
 
 		void BleMiRemote::start() {
 			if (this->_reconnect) {
-				this->pServer->advertiseOnDisconnect(true);
+				pServer->advertiseOnDisconnect(true);
 			}
 
-			this->pServer->startAdvertising();
+			pServer->startAdvertising();
 		}
 
 		void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
