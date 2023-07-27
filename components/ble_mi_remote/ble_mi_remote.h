@@ -49,8 +49,6 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
-typedef void (BleMiRemote::*advCallback)(NimBLEAdvertising*);
-
 
 namespace esphome {
 	namespace ble_mi_remote {
