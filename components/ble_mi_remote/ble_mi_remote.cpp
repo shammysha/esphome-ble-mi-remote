@@ -179,7 +179,7 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x00);
+			hid->hidInfo(0x00, 0x01);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
@@ -320,7 +320,7 @@ namespace esphome {
 			ESP_LOGD(TAG, "Power payload is:");
 			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
 
-			powerAdvertising->start(1, &advCompleteCB);
+			powerAdvertising->start(1, &esphome::ble_mi_remote::BleMiRemote::advCompleteCB);
 		}
 
 		void BleMiRemote::advCompleteCB(NimBLEAdvertising *pAdv) {
