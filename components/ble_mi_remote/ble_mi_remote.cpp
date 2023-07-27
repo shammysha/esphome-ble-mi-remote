@@ -299,6 +299,7 @@ namespace esphome {
 		void BleMiRemote::advertisingStart() {
 
 			advertising->stop();
+			advertising->reset();
 
 			ESP_LOGD(TAG, "Advertising started!");
 		}
@@ -336,21 +337,24 @@ namespace esphome {
 			ESP_LOGD(TAG, "Power payload is:");
 			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
 
-			advertising->stop();
+			this->advertisingStop();
 
-			powerAdvertising->start(1, BleMiRemote::callbHandler);
+			this->powerAdvertising->start(1, BleMiRemote::callbHandler);
 
 			ESP_LOGD(TAG, "Power advertise started");
 		}
 
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
 			ESP_LOGD(TAG, "Power advertise stopped");
+			ESP_LOGD(TAG, "Power payload is:");
+			ESP_LOGD(TAG, pAdv->getPayload().c_str());
 
-			this->advertisingStart();
+			powerAdvertising->()
+			advertisingStart();
 		}
 
 		void BleMiRemote::stop() {
-			if (this->_reconnect) {
+			if (_reconnect) {
 				pServer->advertiseOnDisconnect(false);
 			}
 
@@ -606,10 +610,10 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
-			}
-
-			if (k == 5) {
-				this->powerAdvertisingStart();
+			} else {
+				if (k == 5) {
+					powerAdvertisingStart();
+				}
 			}
 		}
 
