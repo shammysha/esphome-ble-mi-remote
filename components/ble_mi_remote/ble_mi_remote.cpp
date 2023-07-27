@@ -325,8 +325,6 @@ namespace esphome {
 			ESP_LOGD(TAG, "Power payload is:");
 			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
 
-			advCallback = BleMiRemote::powerAdvertisingStop;
-
 			powerAdvertising->start(1, &::advCallback);
 		}
 
