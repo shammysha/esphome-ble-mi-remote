@@ -49,9 +49,11 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
+define CONFIG_BT_NIMBLE_EXT_ADV;
+
 namespace esphome {
 	namespace ble_mi_remote {
-		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks, public NimBLEAdvertising {
+		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks, public NimBLEExtAdvertisingCallbacks {
 			public:
 				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
@@ -104,9 +106,10 @@ namespace esphome {
 				NimBLEService*				sVendor_d1ff;
 				NimBLEService*				sVendor_d0ff;
 
-				NimBLEAdvertisementData* 	powerAdvData;
-				NimBLEAdvertising*			advertising;
-				NimBLEAdvertising*			powerAdvertising;
+				NimBLEExtAdvertisement* 	advData;
+				NimBLEExtAdvertising*		advertising;
+				NimBLEExtAdvertisement* 	powerAdvData;
+				NimBLEExtAdvertising*		powerAdvertising;
 
 				bool 				_reconnect{true};
 				uint32_t 			_default_delay{100};
@@ -139,6 +142,7 @@ namespace esphome {
 				void onWrite(NimBLEDescriptor* pDescriptor);
 			    void onRead(NimBLEDescriptor* pDescriptor);
 
+			    void onStopped(NimBLEExtAdvertising* pAdv, int reason, uint8_t inst_id);
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome
