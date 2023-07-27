@@ -148,7 +148,7 @@ namespace esphome {
 
 
 static void advCallback(NimBLEAdvertising *pAdv) {
-	esphome::ble_mi_remote::BleMiRemote m;
+	esphome::ble_mi_remote::BleMiRemote* m;
 	m->powerAdvertisingStop(*pAdv);
 }
 
