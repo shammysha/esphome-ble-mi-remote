@@ -2,6 +2,8 @@
 
 #ifdef USE_ESP32
 
+#define CONFIG_BT_NIMBLE_EXT_ADV 1
+
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/core/log.h"
@@ -49,8 +51,6 @@ typedef struct {
 typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
-
-#define CONFIG_BT_NIMBLE_EXT_ADV 1
 
 namespace esphome {
 	namespace ble_mi_remote {
