@@ -80,7 +80,7 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
-				void powerAdvertisingStop(NimBLEAdvertising *pAdv);
+				static void powerAdvertisingStop(NimBLEAdvertising *pAdv);
 
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
@@ -107,8 +107,6 @@ namespace esphome {
 				NimBLEAdvertisementData* 	powerAdvData;
 				NimBLEAdvertising*			advertising;
 				NimBLEAdvertising*			powerAdvertising;
-
-
 
 				bool 				_reconnect{true};
 				uint32_t 			_default_delay{100};
@@ -145,10 +143,5 @@ namespace esphome {
 	}  // namespace ble_mi_remote
 }  // namespace esphome
 
-
-void advCallback(NimBLEAdvertising *pAdv) {
-	esphome::ble_mi_remote::BleMiRemote* m;
-	m->powerAdvertisingStop(pAdv);
-}
 
 #endif
