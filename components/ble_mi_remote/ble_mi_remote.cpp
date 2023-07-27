@@ -320,8 +320,6 @@ namespace esphome {
 			ESP_LOGD(TAG, "Power payload is:");
 			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
 
-			void
-
 			powerAdvertising->start(1, std::bind(BleMiRemote::powerAdvertisingStop, this));
 		}
 
