@@ -190,10 +190,9 @@ namespace esphome {
 			onStarted(pServer);
 
 			advertisingSetup();
+			advertisingStart();
 
 			hid->setBatteryLevel(batteryLevel);
-
-			advertisingStart();
 
 			pServer = NimBLEDevice::getServer();
 
