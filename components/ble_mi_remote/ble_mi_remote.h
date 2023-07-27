@@ -9,7 +9,6 @@
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
-#include "NimBLEAdvertosing.h"
 #include <string>
 
 const uint8_t SPECIAL_KEYS_COUNT = 24;
