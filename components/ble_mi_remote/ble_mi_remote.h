@@ -53,7 +53,7 @@ typedef struct {
 
 namespace esphome {
 	namespace ble_mi_remote {
-		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks, public NimBLEExtAdvertisingCallbacks {
+		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks, public NimBLEExtAdvertisingCallbacks) {
 			public:
 				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
