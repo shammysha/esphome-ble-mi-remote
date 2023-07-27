@@ -8,6 +8,7 @@
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
+#include "NimBLEExtAdvertising.h"
 #include "NimBLEHIDDevice.h"
 #include <string>
 
