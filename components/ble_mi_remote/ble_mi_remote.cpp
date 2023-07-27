@@ -346,10 +346,8 @@ namespace esphome {
 
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
 			ESP_LOGD(TAG, "Power advertise stopped");
-			ESP_LOGD(TAG, "Power payload is:");
-			ESP_LOGD(TAG, pAdv->getPayload().c_str());
 
-			powerAdvertising->()
+			powerAdvertising->reset();
 			advertisingStart();
 		}
 
