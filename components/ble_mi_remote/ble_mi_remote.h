@@ -2,15 +2,12 @@
 
 #ifdef USE_ESP32
 
-#define CONFIG_BT_NIMBLE_EXT_ADV 1
-
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/core/log.h"
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
-#include "NimBLEExtAdvertising.h"
 #include "NimBLEHIDDevice.h"
 #include <string>
 
@@ -52,9 +49,12 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
+typedef void (BLEMiRemote::*advCallback)(NimBLEAdvertising*);
+
+
 namespace esphome {
 	namespace ble_mi_remote {
-		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks, public NimBLEExtAdvertisingCallbacks {
+		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks, public NimBLEAdvertising {
 			public:
 				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
@@ -93,7 +93,9 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
-				void powerAdvertisingStop(NimBLEAdvertising *pAdv);
+				static void powerAdvertisingStop(NimBLEAdvertising *pAdv);
+
+				advCallback powerAdvertisingStop;
 
 				NimBLEServer* 				pServer;
 				NimBLEHIDDevice*			hid;
@@ -107,10 +109,9 @@ namespace esphome {
 				NimBLEService*				sVendor_d1ff;
 				NimBLEService*				sVendor_d0ff;
 
-				NimBLEExtAdvertisement* 	advData;
-				NimBLEExtAdvertising*		advertising;
-				NimBLEExtAdvertisement* 	powerAdvData;
-				NimBLEExtAdvertising*		powerAdvertising;
+				NimBLEAdvertisementData* 	powerAdvData;
+				NimBLEAdvertising*			advertising;
+				NimBLEAdvertising*			powerAdvertising;
 
 				bool 				_reconnect{true};
 				uint32_t 			_default_delay{100};
@@ -143,7 +144,6 @@ namespace esphome {
 				void onWrite(NimBLEDescriptor* pDescriptor);
 			    void onRead(NimBLEDescriptor* pDescriptor);
 
-			    void onStopped(NimBLEExtAdvertising* pAdv, int reason, uint8_t inst_id);
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome
