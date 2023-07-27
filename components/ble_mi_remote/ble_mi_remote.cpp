@@ -327,7 +327,7 @@ namespace esphome {
 
 			advCallback = BleMiRemote::powerAdvertisingStop;
 
-			powerAdvertising->start(1, *advCallback);
+			powerAdvertising->start(1, *::advCallback);
 		}
 
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
