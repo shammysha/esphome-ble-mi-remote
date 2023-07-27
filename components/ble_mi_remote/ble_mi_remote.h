@@ -49,7 +49,7 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
-typedef void (BLEMiRemote::*advCallback)(NimBLEAdvertising*);
+typedef void (BleMiRemote::*advCallback)(NimBLEAdvertising*);
 
 
 namespace esphome {
@@ -93,7 +93,6 @@ namespace esphome {
 
 				void powerAdvertisingSetup();
 				void powerAdvertisingStart();
-				static void powerAdvertisingStop(NimBLEAdvertising *pAdv);
 
 				advCallback powerAdvertisingStop;
 
@@ -130,6 +129,7 @@ namespace esphome {
 				uint16_t version	= 0x4a4f;
 
 			protected:
+				void advCompleteCB(NimBLEAdvertising *pAdv);
 				void onStarted(NimBLEServer *pServer) { };
 				void onConnect(NimBLEServer* pServer);
 				void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc);
