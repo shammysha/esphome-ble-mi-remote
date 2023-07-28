@@ -179,7 +179,7 @@ namespace esphome {
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x00);
+			hid->hidInfo(0x00, 0x01);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
@@ -189,8 +189,15 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			advertisingSetup();
-			advertisingStart();
+			advertising = pServer->getAdvertising();
+			advertising->setAppearance(HID_KEYBOARD);
+			advertising->addServiceUUID(hid->hidService()->getUUID());
+			advertising->setScanResponse(false);
+
+			advertising->start();
+
+//			advertisingSetup();
+//			advertisingStart();
 
 			hid->setBatteryLevel(batteryLevel);
 
@@ -198,20 +205,21 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
 
-			powerAdvertisingSetup();
+//			powerAdvertisingSetup();
 			release();
 		}
 
-
-
-		void BleMiRemote::advertisingSetup() {
+		void BleMiRemote::advertisingStart() {
 			advertising = pServer->getAdvertising();
+			advertising->reset();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 //			advertising->addServiceUUID( sVendor_6287->getUUID() );
 //			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
 //			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
 			advertising->setScanResponse(false);
+
+			advertising->start()
 		}
 
 		void BleMiRemote::advertisingStart() {
@@ -263,8 +271,8 @@ namespace esphome {
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
 			ESP_LOGD(TAG, "Power advertise stopped");
 
-			powerAdvertising->reset();
-			advertisingStart();
+//			v->reset();
+//			advertisingStart();
 		}
 
 		void BleMiRemote::stop() {
