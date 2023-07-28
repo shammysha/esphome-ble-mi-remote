@@ -189,15 +189,15 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			advertising = pServer->getAdvertising();
-			advertising->setAppearance(HID_KEYBOARD);
-			advertising->addServiceUUID(hid->hidService()->getUUID());
-			advertising->setScanResponse(false);
+//			advertising = pServer->getAdvertising();
+//			advertising->setAppearance(HID_KEYBOARD);
+//			advertising->addServiceUUID(hid->hidService()->getUUID());
+//			advertising->setScanResponse(false);
+//
+//			advertising->start();
 
-			advertising->start();
-
-//			advertisingSetup();
-//			advertisingStart();
+			advertisingSetup();
+			advertisingStart();
 
 			hid->setBatteryLevel(batteryLevel);
 
