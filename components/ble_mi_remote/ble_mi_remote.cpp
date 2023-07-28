@@ -243,9 +243,9 @@ namespace esphome {
 			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
 			powerAdvData->addData((char*) custData, sizeof(custData));
 
-			powerAdvertising = new NimBLEAdvertising();
-			powerAdvertising->setAdvertisementData(*powerAdvData);
-			powerAdvertising->setAdvertisementType(0);
+//			powerAdvertising = new NimBLEAdvertising();
+//			powerAdvertising->setAdvertisementData(*powerAdvData);
+//			powerAdvertising->setAdvertisementType(0);
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
