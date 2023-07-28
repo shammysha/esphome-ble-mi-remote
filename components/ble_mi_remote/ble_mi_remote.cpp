@@ -204,7 +204,6 @@ namespace esphome {
 
 		void BleMiRemote::advertisingSetup() {
 			advertising = pServer->getAdvertising();
-			advertising->reset();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 //			advertising->addServiceUUID( sVendor_6287->getUUID() );
