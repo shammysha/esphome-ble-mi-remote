@@ -189,13 +189,6 @@ namespace esphome {
 
 			onStarted(pServer);
 
-//			advertising = pServer->getAdvertising();
-//			advertising->setAppearance(HID_KEYBOARD);
-//			advertising->addServiceUUID(hid->hidService()->getUUID());
-//			advertising->setScanResponse(false);
-//
-//			advertising->start();
-
 			advertisingSetup();
 			advertisingStart();
 
@@ -205,7 +198,7 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
 
-//			powerAdvertisingSetup();
+			powerAdvertisingSetup();
 			release();
 		}
 
@@ -222,13 +215,12 @@ namespace esphome {
 
 		void BleMiRemote::advertisingStart() {
 			advertising->start();
+
 			ESP_LOGD(TAG, "Advertising started!");
 		}
 
 		void BleMiRemote::advertisingStop() {
-
 			advertising->stop();
-			advertising->reset();
 
 			ESP_LOGD(TAG, "Advertising stopped!");
 		}
@@ -251,14 +243,12 @@ namespace esphome {
 			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
 			powerAdvData->addData((char*) custData, sizeof(custData));
 
-			NimBLEAdvertising* powerAdvertising = new NimBLEAdvertising();
+			powerAdvertising = new NimBLEAdvertising();
 			powerAdvertising->setAdvertisementData(*powerAdvData);
+			powerAdvertising->setAdvertisementType(0);
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
-			ESP_LOGD(TAG, "Power payload is:");
-			ESP_LOGD(TAG, powerAdvData->getPayload().c_str());
-
 			advertisingStop();
 
 			powerAdvertising->start(1, BleMiRemote::callbHandler);
@@ -269,8 +259,7 @@ namespace esphome {
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
 			ESP_LOGD(TAG, "Power advertise stopped");
 
-//			v->reset();
-//			advertisingStart();
+			advertisingStart();
 		}
 
 		void BleMiRemote::stop() {
