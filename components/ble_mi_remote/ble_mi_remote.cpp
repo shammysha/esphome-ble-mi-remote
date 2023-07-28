@@ -198,7 +198,7 @@ namespace esphome {
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
 
-			powerAdvertisingSetup();
+//			powerAdvertisingSetup();
 			release();
 		}
 
