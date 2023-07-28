@@ -590,7 +590,7 @@ namespace esphome {
 
     	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic) {
 			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
-			ESP_LOGD(TAG,"Chr %s onWrite(), value: %s", TAG,pCharacteristic->getUUID().toString().c_str(), pCharacteristic->getValue().c_str());
+			ESP_LOGD(TAG,"Chr %s onWrite(), value: %s", pCharacteristic->getUUID().toString().c_str(), pCharacteristic->getValue().c_str());
     	}
 
     	void BleMiRemote::onNotify(NimBLECharacteristic* pCharacteristic) {
