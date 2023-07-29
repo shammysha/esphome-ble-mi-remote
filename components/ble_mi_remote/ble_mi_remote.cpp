@@ -221,13 +221,9 @@ namespace esphome {
 
 			if (!this->is_connected()) {
 				advertising->start();
+
+				ESP_LOGD(TAG, "Advertising started!");
 			}
-		}
-
-		void BleMiRemote::advertisingStart() {
-			advertising->start();
-
-			ESP_LOGD(TAG, "Advertising started!");
 		}
 
 		void BleMiRemote::advertisingStop() {
