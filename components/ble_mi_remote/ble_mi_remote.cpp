@@ -189,7 +189,7 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			advertisingSetup();
+			advertising = pServer->getAdvertising();
 			advertisingStart();
 
 			hid->setBatteryLevel(batteryLevel);
@@ -202,14 +202,26 @@ namespace esphome {
 			release();
 		}
 
-		void BleMiRemote::advertisingSetup() {
-			advertising = pServer->getAdvertising();
+		void BleMiRemote::advertisingStart() {
+			if (powerAdvData) {
+				delete powerAdvData;
+				powerAdvData = null;
+			}
+
+			if (advertising->isAdvertising()) {
+				advertising->reset();
+			}
+
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
 //			advertising->addServiceUUID( sVendor_6287->getUUID() );
 //			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
 //			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
 			advertising->setScanResponse(false);
+
+			if (!this->is_connected()) {
+				advertising->start();
+			}
 		}
 
 		void BleMiRemote::advertisingStart() {
@@ -224,7 +236,12 @@ namespace esphome {
 			ESP_LOGD(TAG, "Advertising stopped!");
 		}
 
-		void BleMiRemote::powerAdvertisingSetup() {
+		void BleMiRemote::powerAdvertisingStart() {
+			if (powerAdvData) {
+				delete powerAdvData;
+				powerAdvData = null;
+			}
+
 			powerAdvData = new NimBLEAdvertisementData();
 			powerAdvData->setFlags(1);
 
@@ -242,15 +259,14 @@ namespace esphome {
 			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
 			powerAdvData->addData((char*) custData, sizeof(custData));
 
-//			powerAdvertising = new NimBLEAdvertising();
-//			powerAdvertising->setAdvertisementData(*powerAdvData);
-//			powerAdvertising->setAdvertisementType(0);
-		}
+			if (advertising->isAdvertising()) {
+				advertising->reset();
+			} else {
+				advertising->setAdvertisementData(*powerAdvData);
+				advertising->setAdvertisementType(0);
+			}
 
-		void BleMiRemote::powerAdvertisingStart() {
-			advertisingStop();
-
-			powerAdvertising->start(1, BleMiRemote::callbHandler);
+			advertising->start(1, BleMiRemote::callbHandler);
 
 			ESP_LOGD(TAG, "Power advertise started");
 		}
