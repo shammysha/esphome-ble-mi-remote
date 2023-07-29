@@ -138,6 +138,7 @@ namespace esphome {
 				void onDisconnect(NimBLEServer* pServer);
 
 				void onWrite(NimBLECharacteristic* pCharacteristic);
+				void onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc);
 			    void onRead(NimBLECharacteristic* pCharacteristic);
 			    void onNotify(NimBLECharacteristic* pCharacteristic);
 			    void onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code);

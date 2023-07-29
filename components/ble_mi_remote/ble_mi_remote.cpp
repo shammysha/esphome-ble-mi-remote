@@ -593,8 +593,13 @@ namespace esphome {
 			ESP_LOGD(TAG,"Chr %s onWrite(), value: %s", pCharacteristic->getUUID().toString().c_str(), pCharacteristic->getValue().c_str());
     	}
 
+    	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc) {
+			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
+			ESP_LOGD(TAG,"Chr %s onWrite(), addr: %s, value: %s", pCharacteristic->getUUID().toString().c_str(), pCharacteristic->getValue().c_str());
+    	}
+
     	void BleMiRemote::onNotify(NimBLECharacteristic* pCharacteristic) {
-    		ESP_LOGD(TAG, "Sending notification to clients for characteristic '%s'" ,pCharacteristic->getUUID().toString().c_str());
+    		ESP_LOGD(TAG, "Chr %s onNotify(), value: %s'", pCharacteristic->getUUID().toString().c_str(), std::string(NimBLEAddress(desc->peer_ota_addr)).c_str(), pCharacteristic->getValue().c_str());
     	}
 
     	void BleMiRemote::onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code) {
