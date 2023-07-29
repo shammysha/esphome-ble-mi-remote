@@ -239,7 +239,7 @@ namespace esphome {
 		void BleMiRemote::powerAdvertisingStart() {
 			if (powerAdvData) {
 				delete powerAdvData;
-				powerAdvData = null;
+				powerAdvData = NULL;
 			}
 
 			powerAdvData = new NimBLEAdvertisementData();
