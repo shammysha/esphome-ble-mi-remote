@@ -203,9 +203,9 @@ namespace esphome {
 		}
 
 		void BleMiRemote::advertisingStart() {
-			if (powerAdvData) {
+			if (advertising) {
 				delete powerAdvData;
-				powerAdvData = null;
+				powerAdvData = NULL;
 			}
 
 			if (advertising->isAdvertising()) {
