@@ -738,7 +738,7 @@ namespace esphome {
 				cVendor_d0ff_ffd1->setCallbacks(this);
 		}
 
-		std::string str2hex(std::string val) {
+		std::string BleMiRemote::str2hex(std::string val) {
 			std::vector<uint8_t> myVector(val.begin(), val.end());
 
 			return format_hex_pretty(myVector);
