@@ -97,6 +97,8 @@ namespace esphome {
 
 				static void callbHandler(NimBLEAdvertising *a);
 
+				std::string str2hex(std::string val);
+
 				NimBLEServer* 				pServer;
 				NimBLEHIDDevice*			hid;
 				NimBLECharacteristic*		inputKeyboard;
