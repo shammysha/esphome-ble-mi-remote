@@ -739,7 +739,7 @@ namespace esphome {
 		}
 
 		std::string str2hex(std::string val) {
-			std::vector<uint8_t> myVector(a.begin(), a.end());
+			std::vector<uint8_t> myVector(val.begin(), val.end());
 
 			return format_hex_pretty(myVector);
 		}
