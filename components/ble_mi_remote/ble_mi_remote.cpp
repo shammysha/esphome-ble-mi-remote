@@ -596,17 +596,14 @@ namespace esphome {
 		}
 
 		void BleMiRemote::onRead(NimBLECharacteristic* pCharacteristic){
-			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
 			ESP_LOGD(TAG,"Chr %s: onRead(), value: %s", pCharacteristic->getUUID().toString().c_str(), str2hex(pCharacteristic->getValue()).c_str());
 		}
 
     	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic) {
-    		std::string val =
 			ESP_LOGD(TAG,"Chr %s onWrite(), value: %s", pCharacteristic->getUUID().toString().c_str(), str2hex(pCharacteristic->getValue()).c_str());
     	}
 
     	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc) {
-			ESP_LOGD(TAG,pCharacteristic->getUUID().toString().c_str());
 			ESP_LOGD(TAG,"Chr %s onWrite(), addr: %s, value: %s", pCharacteristic->getUUID().toString().c_str(), std::string(NimBLEAddress(desc->peer_ota_addr)).c_str(), str2hex(pCharacteristic->getValue()).c_str());
     	}
 
