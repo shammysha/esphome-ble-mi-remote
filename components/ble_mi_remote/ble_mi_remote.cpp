@@ -191,7 +191,6 @@ namespace esphome {
 
 			powerAdvData = NULL;
 
-			advertising = pServer->getAdvertising();
 			advertisingStart();
 
 			hid->setBatteryLevel(batteryLevel);
@@ -203,6 +202,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::advertisingStart() {
+			advertising = pServer->getAdvertising();
 			advertising->reset();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
@@ -251,7 +251,7 @@ namespace esphome {
 			advertising->reset();
 			advertising->setAdvertisementData(*powerAdvData);
 			advertising->setAdvertisementType(0);
-			advertising->start(1, BleMiRemote::callbHandler);
+			advertising->start(3, BleMiRemote::callbHandler);
 			advertising->setScanResponse(false);
 
 			ESP_LOGD(TAG, "Power advertise started");
