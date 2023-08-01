@@ -190,7 +190,21 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			advertisingStart();
+			advertising = >pServer->getAdvertising();
+			advertising->reset();
+
+			advertising->setAppearance(HID_KEYBOARD);
+			advertising->addServiceUUID(hid->hidService()->getUUID());
+//			advertising->addServiceUUID( sVendor_6287->getUUID() );
+//			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
+//			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
+			advertising->setScanResponse(false);
+
+			if (!this->is_connected()) {
+				pServer->startAdvertising();
+
+				ESP_LOGD(TAG, "Advertising started!");
+			}
 
 			hid->setBatteryLevel(batteryLevel);
 
@@ -201,7 +215,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::advertisingStart() {
-			advertising = pServer->getAdvertising();
+			advertising = this->pServer->getAdvertising();
 			advertising->reset();
 
 			advertising->setAppearance(HID_KEYBOARD);
