@@ -201,7 +201,7 @@ namespace esphome {
 			advertising->setScanResponse(false);
 
 			if (!this->is_connected()) {
-				pServer->startAdvertising();
+				advertising->start();
 
 				ESP_LOGD(TAG, "Advertising started!");
 			}
