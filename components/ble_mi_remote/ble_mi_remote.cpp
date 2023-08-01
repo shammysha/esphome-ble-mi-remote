@@ -202,6 +202,11 @@ namespace esphome {
 		}
 
 		void BleMiRemote::advertisingStart() {
+			if (powerAdvData) {
+				delete powerAdvData;
+				powerAdvData = NULL;
+			}
+
 			advertising = pServer->getAdvertising();
 			advertising->reset();
 			advertising->setAppearance(HID_KEYBOARD);
