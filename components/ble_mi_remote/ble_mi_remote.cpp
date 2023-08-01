@@ -151,6 +151,7 @@ namespace esphome {
 			    batteryLevel(battery_level)
 		{
 			_reconnect = reconnect;
+			powerAdvData = NULL;
 		}
 
 		void BleMiRemote::setup() {
@@ -159,8 +160,6 @@ namespace esphome {
 			NimBLEDevice::init (deviceName);
 			pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
-
-//			vendorServicesSetup();
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
@@ -176,6 +175,8 @@ namespace esphome {
 			vendorReport_07->setCallbacks(this);
 			vendorReport_08 = hid->inputReport(0x08);
 			vendorReport_08->setCallbacks(this);
+
+			vendorServicesSetup();
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
@@ -203,11 +204,6 @@ namespace esphome {
 		}
 
 		void BleMiRemote::advertisingStart() {
-			if (advertising) {
-				delete powerAdvData;
-				powerAdvData = NULL;
-			}
-
 			if (advertising->isAdvertising()) {
 				advertising->reset();
 			}
