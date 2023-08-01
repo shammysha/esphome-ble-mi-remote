@@ -176,7 +176,7 @@ namespace esphome {
 			vendorReport_08 = hid->inputReport(0x08);
 			vendorReport_08->setCallbacks(this);
 
-			vendorServicesSetup();
+//			vendorServicesSetup();
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
