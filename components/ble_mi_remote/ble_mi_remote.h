@@ -4,12 +4,12 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
-#include "esphome/core/log.h"
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
 #include <string>
+
 
 const uint8_t SPECIAL_KEYS_COUNT = 24;
 
@@ -49,10 +49,11 @@ typedef struct {
 	uint8_t keys[3];
 } SpecialKeyReport;
 
+
+
 namespace esphome {
 	namespace ble_mi_remote {
-
-		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks, public NimBLEAdvertising {
+		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks {
 			public:
 				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
@@ -87,30 +88,15 @@ namespace esphome {
 				void update_timer();
 				void delay_ms(uint64_t ms);
 
-				void vendorServicesSetup();
-
-				void advertisingStart();
-				void advertisingStop();
-
-				void powerAdvertising();
-
-				static void callbHandler(NimBLEAdvertising *a);
-
-				std::string str2hex(std::string val = "");
-
-				NimBLEServer* 				pServer;
-				NimBLEHIDDevice*			hid;
-				NimBLECharacteristic*		inputKeyboard;
-				NimBLECharacteristic*		outputKeyboard;
-				NimBLECharacteristic*		inputSpecialKeys;
-				NimBLECharacteristic*		vendorReport_06;
-				NimBLECharacteristic*		vendorReport_07;
-				NimBLECharacteristic*		vendorReport_08;
-				NimBLEService*				sVendor_6287;
-				NimBLEService*				sVendor_d1ff;
-				NimBLEService*				sVendor_d0ff;
-
-				NimBLEAdvertising*			advertising;
+				NimBLEServer 			*pServer;
+				NimBLEHIDDevice*		hid;
+				NimBLECharacteristic*	inputKeyboard;
+				NimBLECharacteristic*	outputKeyboard;
+				NimBLECharacteristic*	inputSpecialKeys;
+				NimBLECharacteristic*	vendorReport_06;
+				NimBLECharacteristic*	vendorReport_07;
+				NimBLECharacteristic*	vendorReport_08;
+				NimBLEAdvertising*		advertising;
 
 				bool 				_reconnect{true};
 				uint32_t 			_default_delay{100};
@@ -123,31 +109,19 @@ namespace esphome {
 				bool				_connected = false;
 				uint32_t			_delay_ms = 7;
 
+
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;
 				uint16_t pid		= 0x32b9;
 				uint16_t version	= 0x4a4f;
 
 			protected:
-				void onStarted(NimBLEServer *pServer) { };
-				void onConnect(NimBLEServer* pServer);
-				void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc);
-				void onDisconnect(NimBLEServer* pServer);
-
-				void onWrite(NimBLECharacteristic* pCharacteristic);
-				void onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc);
-			    void onRead(NimBLECharacteristic* pCharacteristic);
-			    void onNotify(NimBLECharacteristic* pCharacteristic);
-			    void onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code);
-			    void onSubscribe(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc, uint16_t subValue);
-
-				void onWrite(NimBLEDescriptor* pDescriptor);
-			    void onRead(NimBLEDescriptor* pDescriptor);
-
+				virtual void onStarted(NimBLEServer *pServer) { };
+				virtual void onConnect(NimBLEServer* pServer) override;
+				virtual void onDisconnect(NimBLEServer* pServer) override;
+				virtual void onWrite(NimBLECharacteristic* me) override;
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome
 
 #endif
-
-
