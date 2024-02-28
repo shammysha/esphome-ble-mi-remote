@@ -189,8 +189,6 @@ namespace esphome {
 
 			onStarted(pServer);
 
-			powerAdvData = NULL;
-
 			advertisingStart();
 
 			hid->setBatteryLevel(batteryLevel);
@@ -202,11 +200,6 @@ namespace esphome {
 		}
 
 		void BleMiRemote::advertisingStart() {
-			if (powerAdvData) {
-				delete powerAdvData;
-				powerAdvData = NULL;
-			}
-
 			advertising = pServer->getAdvertising();
 			advertising->reset();
 			advertising->setAppearance(HID_KEYBOARD);
@@ -230,36 +223,13 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertisingStart() {
-			if (powerAdvData) {
-				delete powerAdvData;
-				powerAdvData = NULL;
-			}
-
-			powerAdvData = new NimBLEAdvertisementData();
-			powerAdvData->setFlags(1);
-
-			char mfgData[] = { 0x00, 0x01 };
-			powerAdvData->setManufacturerData(std::string(mfgData, 2));
-
-			powerAdvData->setShortName("MI RC");
-			powerAdvData->setPartialServices((NimBLEUUID) "1812");
-
-			char codData[] = { 0x04, 0x0d, 0x04, 0x05, 0x00 };
-			powerAdvData->addData((char*) codData, sizeof(codData));
-
-			powerAdvData->addTxPower();
-
-			char custData[] = { 0x04, 0xfe, 0xee, 0x68, 0xc4 };
-			powerAdvData->addData((char*) custData, sizeof(custData));
-
-			advertising = pServer->getAdvertising();
-			advertising->reset();
-			advertising->setAdvertisementData(*powerAdvData);
-			advertising->setAdvertisementType(0);
-			advertising->start(3, BleMiRemote::callbHandler);
-			advertising->setScanResponse(false);
-
 			ESP_LOGD(TAG, "Power advertise started");
+			
+			for (int i = 0; i < 3; i++) {
+				hid->advertising = pServer->getAdvertising();
+			advert
+
+
 		}
 
 		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
