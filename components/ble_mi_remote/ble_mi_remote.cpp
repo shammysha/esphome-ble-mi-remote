@@ -1,14 +1,13 @@
 
 #ifdef USE_ESP32
 
-#define CONFIG_BT_NIMBLE_DEBUG
-#define CONFIG_NIMBLE_CPP_LOG_LEVEL 4
-#define CONFIG_BT_NIMBLE_LOG_LEVEL 0
-
 #include "ble_mi_remote.h"
+#include <NimBLEServer.h>
 #include <NimBLEDevice.h>
 #include <NimBLEService.h>
 #include <NimBLEUtils.h>
+#include <NimBLEHIDDevice.h>
+#include <NimBLECharacteristic.h>
 #include <NimBLEAdvertising.h>
 #include "HIDTypes.h"
 #include "HIDKeyboardTypes.h"
@@ -16,15 +15,10 @@
 #include "sdkconfig.h"
 #include <string>
 #include <list>
-#include <signal.h>
-
+#include "esphome/core/log.h"
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
-
-static const std::string sUUID_6287 = "00006287-3c17-d293-8e48-14fe2e4da212";
-static const std::string sUUID_D1FF = "0000d1ff-3c17-d293-8e48-14fe2e4da212";
-static const std::string sUUID_D0FF = "0000d0ff-3c17-d293-8e48-14fe2e4da212";
 
 static const uint8_t _hidReportDescriptor[] = {
 		USAGE_PAGE(1),			0x0C,			// Consumer
@@ -157,89 +151,50 @@ namespace esphome {
 			ESP_LOGI(TAG, "Setting up...");
 
 			NimBLEDevice::init (deviceName);
-			pServer = NimBLEDevice::createServer();
+			NimBLEServer *pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
-			inputSpecialKeys->setCallbacks(this);
 			inputKeyboard = hid->inputReport(KEYBOARD_ID);
-			inputKeyboard->setCallbacks(this);
 			outputKeyboard = hid->outputReport(KEYBOARD_ID);
 			outputKeyboard->setCallbacks(this);
 
 			vendorReport_06 = hid->inputReport(0x06);
-			vendorReport_06->setCallbacks(this);
 			vendorReport_07 = hid->inputReport(0x07);
-			vendorReport_07->setCallbacks(this);
 			vendorReport_08 = hid->inputReport(0x08);
-			vendorReport_08->setCallbacks(this);
-
-//			vendorServicesSetup();
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x01);
+			hid->hidInfo(0x00, 0x00);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
 			hid->reportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
-
 			hid->startServices();
 
 			onStarted(pServer);
 
-			advertisingStart();
+			advertising = pServer->getAdvertising();
+			advertising->setAppearance(HID_KEYBOARD);
+			advertising->addServiceUUID(hid->hidService()->getUUID());
+			advertising->setScanResponse(false);
+
+			advertising->start();
 
 			hid->setBatteryLevel(batteryLevel);
+
+			ESP_LOGD(TAG, "Advertising started!");
 
 			pServer = NimBLEDevice::getServer();
 
 			pServer->advertiseOnDisconnect(this->_reconnect);
+
 			release();
 		}
 
-		void BleMiRemote::advertisingStart() {
-			advertising = pServer->getAdvertising();
-			advertising->reset();
-			advertising->setAppearance(HID_KEYBOARD);
-			advertising->addServiceUUID(hid->hidService()->getUUID());
-//			advertising->addServiceUUID( sVendor_6287->getUUID() );
-//			advertising->addServiceUUID( sVendor_d1ff->getUUID() );
-//			advertising->addServiceUUID( sVendor_d0ff->getUUID() );
-			advertising->setScanResponse(false);
-
-			if (!this->is_connected()) {
-				advertising->start();
-
-				ESP_LOGD(TAG, "Advertising started!");
-			}
-		}
-
-		void BleMiRemote::advertisingStop() {
-			pServer->stopAdvertising();
-
-			ESP_LOGD(TAG, "Advertising stopped!");
-		}
-
-		void BleMiRemote::powerAdvertisingStart() {
-			ESP_LOGD(TAG, "Power advertise started");
-			
-			for (int i = 0; i < 3; i++) {
-				hid->advertising = pServer->getAdvertising();
-			advert
-
-
-		}
-
-		void BleMiRemote::powerAdvertisingStop(NimBLEAdvertising *pAdv) {
-			ESP_LOGD(TAG, "Power advertise stopped");
-
-			advertisingStart();
-		}
-
 		void BleMiRemote::stop() {
-			if (_reconnect) {
+			if (this->_reconnect) {
 				pServer->advertiseOnDisconnect(false);
 			}
 
@@ -495,10 +450,6 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
-			} else {
-				if (k == 5) {
-					powerAdvertisingStart();
-				}
 			}
 		}
 
@@ -521,6 +472,23 @@ namespace esphome {
 			}
 		}
 
+		void BleMiRemote::onConnect(NimBLEServer *pServer) {
+			this->_connected = true;
+			NimBLEConnInfo peer = pServer->getPeerInfo(0);
+
+			release();
+		}
+
+		void BleMiRemote::onDisconnect(NimBLEServer *pServer) {
+			this->_connected = false;
+		}
+
+		void BleMiRemote::onWrite(NimBLECharacteristic *me) {
+			uint8_t *value = (uint8_t*) (me->getValue().c_str());
+			(void) value;
+			ESP_LOGD(TAG, "special keys: %d", *value);
+		}
+
 		void BleMiRemote::delay_ms(uint64_t ms) {
 			uint64_t m = esp_timer_get_time();
 			if (ms) {
@@ -533,181 +501,7 @@ namespace esphome {
 				}
 			}
 		}
-
-		void BleMiRemote::onConnect(NimBLEServer *pServer) {
-			this->_connected = true;
-			NimBLEConnInfo peer = pServer->getPeerInfo(0);
-
-			release();
-		}
-
-		void BleMiRemote::onDisconnect(NimBLEServer *pServer) {
-			this->_connected = false;
-		}
-
-		void BleMiRemote::onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) {
-			ESP_LOGD(TAG, "Client address: %s", NimBLEAddress(desc->peer_ota_addr).toString().c_str());
-			ESP_LOGD(TAG, "Client id: %s", NimBLEAddress(desc->peer_id_addr).toString().c_str());
-			ESP_LOGD(TAG, "Connection handle: %s", NimBLEAddress(desc->conn_handle).toString().c_str());
-			/** We can use the connection handle here to ask for different connection parameters.
-			 *  Args: connection handle, min connection interval, max connection interval
-			 *  latency, supervision timeout.
-			 *  Units; Min/Max Intervals: 1.25 millisecond increments.
-			 *  Latency: number of intervals allowed to skip.
-			 *  Timeout: 10 millisecond increments, try for 5x interval time for best results.
-			 */
-
-
-		}
-
-		void BleMiRemote::onRead(NimBLECharacteristic* pCharacteristic){
-			ESP_LOGD(TAG,"Chr %s: onRead(), value: %s", pCharacteristic->getUUID().toString().c_str(), str2hex(pCharacteristic->getValue()).c_str());
-		}
-
-    	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic) {
-			ESP_LOGD(TAG,"Chr %s onWrite(), value: %s", pCharacteristic->getUUID().toString().c_str(), str2hex(pCharacteristic->getValue()).c_str());
-    	}
-
-    	void BleMiRemote::onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc) {
-			ESP_LOGD(TAG,"Chr %s onWrite(), addr: %s, value: %s", pCharacteristic->getUUID().toString().c_str(), std::string(NimBLEAddress(desc->peer_ota_addr)).c_str(), str2hex(pCharacteristic->getValue()).c_str());
-    	}
-
-    	void BleMiRemote::onNotify(NimBLECharacteristic* pCharacteristic) {
-    		ESP_LOGD(TAG, "Chr %s onNotify(), value: %s'", pCharacteristic->getUUID().toString().c_str(), str2hex(pCharacteristic->getValue()).c_str());
-    	}
-
-    	void BleMiRemote::onStatus(NimBLECharacteristic* pCharacteristic, Status status, int code) {
-			String str = ("Notification/Indication status code: ");
-			str += status;
-			str += ", return code: ";
-			str += code;
-			str += ", ";
-			str += NimBLEUtils::returnCodeToString(code);
-			ESP_LOGD(TAG, "Status: %s", str.c_str());
-		}
-
-		void BleMiRemote::onSubscribe(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc, uint16_t subValue) {
-			String str = "Client ID: ";
-			str += desc->conn_handle;
-			str += " Address: ";
-			str += std::string(NimBLEAddress(desc->peer_ota_addr)).c_str();
-			if(subValue == 0) {
-				str += " Unsubscribed to ";
-			}else if(subValue == 1) {
-				str += " Subscribed to notfications for ";
-			} else if(subValue == 2) {
-				str += " Subscribed to indications for ";
-			} else if(subValue == 3) {
-				str += " Subscribed to notifications and indications for ";
-			}
-			str += std::string(pCharacteristic->getUUID()).c_str();
-
-			ESP_LOGD(TAG, "onSubscribe: %s", str.c_str());
-		}
-
-		void BleMiRemote::onWrite(NimBLEDescriptor* pDescriptor) {
-			ESP_LOGD(TAG,"Descriptor witten value: %s", str2hex(pDescriptor->getValue()).c_str());
-		}
-
-		void BleMiRemote::onRead(NimBLEDescriptor* pDescriptor) {
-			ESP_LOGD(TAG, "Descriptor %s read value", pDescriptor->getUUID().toString().c_str());
-		}
-
-		void BleMiRemote::callbHandler(NimBLEAdvertising *a) {
-            ((BleMiRemote*)a)->powerAdvertisingStop(a);
-        }
-
-		void BleMiRemote::vendorServicesSetup() {
-//			NimBLEService* sVendor_6287 = pServer->createService("00006287-3c17-d293-8e48-14fe2e4da212");
-//			NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("00006487-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-//			NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("00006387-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-//			NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("00002902-0000-1000-8000-00805f9b34fb");
-//
-//			NimBLEService* sVendor_d1ff = pServer->createService("0000d1ff-3c17-d293-8e48-14fe2e4da212");
-//			NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("0000a001-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
-//			NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("00002902-0000-1000-8000-00805f9b34fb");
-//
-//			NimBLEService* sVendor_d0ff = pServer->createService("0000d0ff-3c17-d293-8e48-14fe2e4da212");
-//			NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("0000fff2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
-//			NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("0000fff1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
-//			NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("0000ffd8-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
-//			NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("0000ffd5-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-//			NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("0000ffd4-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-//			NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("0000ffd3-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-//			NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("0000ffd2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-//			NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("0000ffd1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
-//
-//			cVendor_6287_6487->setCallbacks(this);
-//			cVendor_6287_6387->setCallbacks(this);
-//			dVendor_6287_6487_2902->setCallbacks(this);
-
-			sVendor_6287 = pServer->createService((NimBLEUUID) sUUID_6287);
-
-				NimBLECharacteristic* cVendor_6287_6487 = sVendor_6287->createCharacteristic("00006487-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-				cVendor_6287_6487->setCallbacks(this);
-
-//					NimBLEDescriptor* dVendor_6287_6487_2902 = cVendor_6287_6487->createDescriptor("2902");
-//					uint8_t dVendor_6287_6487_2902_data[] = { 0x00, 0x00 };
-//					dVendor_6287_6487_2902->setValue( (uint8_t*) dVendor_6287_6487_2902_data, sizeof(dVendor_6287_6487_2902_data) );
-//					dVendor_6287_6487_2902->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_6287_6387 = sVendor_6287->createCharacteristic("00006387-3c17-d293-8e48-14fe2e4da212", NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
-				cVendor_6287_6387->setCallbacks(this);
-
-			sVendor_d1ff = pServer->createService((NimBLEUUID) sUUID_D1FF);
-
-				NimBLECharacteristic* cVendor_d1ff_a001 = sVendor_d1ff->createCharacteristic("0000a001-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY);
-				cVendor_d1ff_a001->setCallbacks(this);
-
-//					NimBLEDescriptor* dVendor_d1ff_a001_2902 = cVendor_d1ff_a001->createDescriptor("2902");
-//					uint8_t dVendor_d1ff_a001_2902_data[] = { 0x00, 0x00 };
-//					dVendor_d1ff_a001_2902->setValue( (uint8_t*) dVendor_d1ff_a001_2902_data, sizeof(dVendor_d1ff_a001_2902_data) );
-//					dVendor_d1ff_a001_2902->setCallbacks(this);
-
-			sVendor_d0ff = pServer->createService((NimBLEUUID) sUUID_D0FF);
-
-				NimBLECharacteristic* cVendor_d0ff_fff2 = sVendor_d0ff->createCharacteristic("0000fff2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
-				cVendor_d0ff_fff2->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_fff1 = sVendor_d0ff->createCharacteristic("0000fff1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE);
-				cVendor_d0ff_fff1->setValue(0x01);
-				cVendor_d0ff_fff1->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd8 = sVendor_d0ff->createCharacteristic("0000ffd8-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
-				cVendor_d0ff_ffd8->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd5 = sVendor_d0ff->createCharacteristic("0000ffd5-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd5_data[] = { 0x00, 0x00 };
-				cVendor_d0ff_ffd5->setValue( (uint8_t*) cVendor_d0ff_ffd5_data, sizeof(cVendor_d0ff_ffd5_data) );
-				cVendor_d0ff_ffd5->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd4 = sVendor_d0ff->createCharacteristic("0000ffd4-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd4_data[] = { 0x14, 0x20 };
-				cVendor_d0ff_ffd4->setValue( (uint8_t*) cVendor_d0ff_ffd4_data, sizeof(cVendor_d0ff_ffd4_data) );
-				cVendor_d0ff_ffd4->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd3 = sVendor_d0ff->createCharacteristic("0000ffd3-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd3_data[] = { 0xd7, 0x4b };
-				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd3_data, sizeof(cVendor_d0ff_ffd3_data) );
-				cVendor_d0ff_ffd3->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd2 = sVendor_d0ff->createCharacteristic("0000ffd2-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::READ);
-				uint8_t cVendor_d0ff_ffd2_data[] = { 0x18, 0x46, 0x44, 0xc1, 0x4a, 0xab };
-				cVendor_d0ff_ffd3->setValue( (uint8_t*) cVendor_d0ff_ffd2_data, sizeof(cVendor_d0ff_ffd2_data) );
-				cVendor_d0ff_ffd2->setCallbacks(this);
-
-				NimBLECharacteristic* cVendor_d0ff_ffd1 = sVendor_d0ff->createCharacteristic("0000ffd1-0000-1000-8000-00805f9b34fb", NIMBLE_PROPERTY::WRITE_NR);
-				cVendor_d0ff_ffd1->setCallbacks(this);
-		}
-
-		std::string BleMiRemote::str2hex(std::string val) {
-			std::vector<uint8_t> myVector(val.begin(), val.end());
-
-			return format_hex_pretty(myVector);
-		}
-
 	}  // namespace ble_mi_remote
 }  // namespace esphome
-
 
 #endif
