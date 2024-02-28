@@ -80,6 +80,9 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
+				void powerAdvertStart();
+				void powerAdvertStop();
+
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 
@@ -108,7 +111,8 @@ namespace esphome {
 				uint8_t				batteryLevel;
 				bool				_connected = false;
 				uint32_t			_delay_ms = 7;
-
+				uint8_t				_power_advert_delay = 1000;
+				uint8_t				_power_advert_cycle = 0;
 
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;
