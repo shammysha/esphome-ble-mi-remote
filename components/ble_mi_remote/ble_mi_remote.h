@@ -90,6 +90,9 @@ namespace esphome {
 				bool is_connected();
 				void update_timer();
 				void delay_ms(uint64_t ms);
+				
+				void powerAdvertData1();
+				void powerAdvertData2();
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
