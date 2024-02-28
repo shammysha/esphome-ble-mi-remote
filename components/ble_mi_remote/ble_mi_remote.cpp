@@ -441,23 +441,23 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertStart() {
-			power_advert_cycle = 0;
+			_power_advert_cycle = 0;
 			pServer->startAdvertising();			
 			
 		}
 				
 		void BleMiRemote::powerAdvertData1() {
 			pServer->getAdvertising()->setManufacturerData({0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
-			this->set_timeout((const std::string) TAG, 1000, [this]() { this->powerAdvertData2(); });
+			this->set_timeout((const std::string) TAG, _power_advert_delay, [this]() { this->powerAdvertData2(); });
 		}
 		
 		void BleMiRemote::powerAdvertData2() {
 			pServer->getAdvertising()->setManufacturerData({0x46, 0x00});
-			if (power_advert_cycle > 3) { 
+			if (_power_advert_cycle > 3) { 
 				this->powerAdvertStop();
 			} else {
-				power_advert_cycle++;
-				this->set_timeout((const std::string) TAG, 1000, [this]() { this->powerAdvertData1(); });			
+				_power_advert_cycle++;
+				this->set_timeout((const std::string) TAG, _power_advert_delay, [this]() { this->powerAdvertData1(); });			
 			}
 		}				
 		
