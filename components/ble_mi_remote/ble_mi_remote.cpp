@@ -436,16 +436,8 @@ namespace esphome {
 				sendReport (&_keyReport);
 		
 			} else if (k == 5) { // power key pressed
-				std::vector<uint8_t> power_data1 = {0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d};
-				std::vector<uint8_t> power_data2 = {0x46, 0x00};
-				
-				pServer->startAdvertising();
-				for (int i = 0; i < 3; i++) {
-					pServer->getAdvertising()->setManufacturerData(power_data);
-					this->delay_ms(1000);
-					pServer->getAdvertising()->setManufacturerData(power_data);
-					
-					
+				this->powerAdvertStart();
+			}					
 		}
 
 		void BleMiRemote::powerAdvertStart() {
