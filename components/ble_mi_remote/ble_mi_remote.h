@@ -92,8 +92,7 @@ namespace esphome {
 				void advertisingStart();
 				void advertisingStop();
 
-				void powerAdvertisingStart();
-				void powerAdvertisingStop(NimBLEAdvertising *pAdv);
+				void powerAdvertising();
 
 				static void callbHandler(NimBLEAdvertising *a);
 
@@ -111,9 +110,7 @@ namespace esphome {
 				NimBLEService*				sVendor_d1ff;
 				NimBLEService*				sVendor_d0ff;
 
-				NimBLEAdvertisementData* 	powerAdvData;
 				NimBLEAdvertising*			advertising;
-				NimBLEAdvertising*			powerAdvertising;
 
 				bool 				_reconnect{true};
 				uint32_t 			_default_delay{100};
