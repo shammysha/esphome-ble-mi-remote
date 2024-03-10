@@ -82,25 +82,25 @@ async def to_code(config: dict) -> None:
 
     await cg.register_component(var, config)
 
-    await adding_binary_sensors(var)
+    await adding_binary_sensors(var, config)
 
-    await adding_special_keys(var)
+    await adding_special_keys(var, config)
 
     for lib in LIBS_ADDITIONAL:  # type: ignore
         cg.add_library(*lib)
 
 
-async def adding_special_keys(var: MockObj) -> None:
+async def adding_special_keys(var: MockObj, config: dict) -> None:
     """Adding buttons
 
     :param var: MockObj
     """
-
+    
     for key in SPECIAL_KEY:
         new_key: MockObj = await button.new_button(
             {
                 CONF_ID: cv.declare_id(BleMiRemoteButton)(key[CONF_ID]),
-                CONF_NAME: DOMAIN.replace("_", "-") + "-" + key[CONF_NAME],
+                CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + " " + key[CONF_NAME],
                 CONF_ICON: key[CONF_ICON],
                 CONF_DISABLED_BY_DEFAULT: False
             }        
@@ -113,7 +113,7 @@ async def adding_special_keys(var: MockObj) -> None:
         cg.add(new_key.set_value(key[CONF_VALUE]))
 
 
-async def adding_binary_sensors(var: MockObj) -> None:
+async def adding_binary_sensors(var: MockObj, config: dict) -> None:
     """Adding binary sensor
 
     :param var: MockObj
@@ -123,7 +123,7 @@ async def adding_binary_sensors(var: MockObj) -> None:
         var.set_state_sensor(await binary_sensor.new_binary_sensor(
             {
                 CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
-                CONF_NAME: DOMAIN.replace("_", "-") + "-connected",
+                CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + "-connected",
                 CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
                 CONF_DISABLED_BY_DEFAULT: False
             }            
