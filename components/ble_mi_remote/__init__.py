@@ -102,7 +102,7 @@ async def adding_special_keys(var: MockObj, config: dict) -> None:
     for key in SPECIAL_KEY:
         new_key: MockObj = await button.new_button(
             {
-                CONF_ID: cv.declare_id(BleMiRemoteButton)(key[CONF_ID]),
+                CONF_ID: cv.declare_id(BleMiRemoteButton)(config[CONF_ID] + key[CONF_ID]),
                 CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + " " + key[CONF_NAME],
                 CONF_ICON: key[CONF_ICON],
                 CONF_DISABLED_BY_DEFAULT: False
@@ -125,7 +125,7 @@ async def adding_binary_sensors(var: MockObj, config: dict) -> None:
     cg.add(
         var.set_state_sensor(await binary_sensor.new_binary_sensor(
             {
-                CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
+                CONF_ID: cv.declare_id(binary_sensor.BinarySensor)(config[CONF_ID] + "_connected"),
                 CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + "-connected",
                 CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
                 CONF_DISABLED_BY_DEFAULT: False
