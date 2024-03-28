@@ -38,7 +38,6 @@ CONF_USE_DEFAULT_LIBS: Final = "use_default_libs"
 COMPONENT_CLASS: Final = "BleMiRemote"
 COMPONENT_NUMBER_CLASS: Final = "BleMiRemoteNumber"
 COMPONENT_BUTTON_CLASS: Final = "BleMiRemoteButton"
-COMPONENT_CONNECTED_CLASS: Final = "BleMiRemoteConnected"
 
 ACTION_START_CLASS: Final = "BleMiRemoteStartAction"
 ACTION_STOP_CLASS: Final = "BleMiRemoteStopAction"
