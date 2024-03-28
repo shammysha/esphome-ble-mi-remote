@@ -49,7 +49,6 @@ ble_mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
 
 BleMiRemote = ble_mi_remote_ns.class_(COMPONENT_CLASS, cg.PollingComponent)
 BleMiRemoteButton = ble_mi_remote_ns.class_(COMPONENT_BUTTON_CLASS, cg.Component)
-BleMiRemoteConnected = ble_mi_remote_ns.class_(COMPONENT_BINARY_SENSOR_CLASS, cg.Component)
 
 MULTI_CONF = True
 CONFIG_SCHEMA: Final = cv.Schema(
