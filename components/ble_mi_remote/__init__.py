@@ -40,6 +40,7 @@ from .const import (
     DOMAIN,
     LIBS_ADDITIONAL
 )
+from builtins import isinstance
 
 CODEOWNERS: Final = ["@shammysha"]
 AUTO_LOAD: Final = ["binary_sensor", "button"]
@@ -49,6 +50,7 @@ ble_mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
 BleMiRemote = ble_mi_remote_ns.class_(COMPONENT_CLASS, cg.PollingComponent)
 BleMiRemoteButton = ble_mi_remote_ns.class_(COMPONENT_BUTTON_CLASS, cg.Component)
 
+MULTI_CONF = True
 CONFIG_SCHEMA: Final = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(BleMiRemote),
@@ -72,19 +74,20 @@ async def to_code(config: dict) -> None:
     if not CORE.using_arduino:
         raise cv.Invalid("The component only supports the Arduino framework.")
 
+      
     var = cg.new_Pvariable(
-        config[CONF_ID],
-        config[CONF_NAME],
-        config[CONF_MANUFACTURER_ID],
-        config[CONF_BATTERY_LEVEL],
-        config[CONF_RECONNECT]
+        cfg[CONF_ID],
+        cfg[CONF_NAME],
+        cfg[CONF_MANUFACTURER_ID],
+        cfg[CONF_BATTERY_LEVEL],
+        cfg[CONF_RECONNECT]
     )
 
-    await cg.register_component(var, config)
+    await cg.register_component(var, cfg)
 
-    await adding_binary_sensors(var, config)
+    await adding_binary_sensors(var, cfg)
 
-    await adding_special_keys(var, config)
+    await adding_special_keys(var, cfg)
 
     for lib in LIBS_ADDITIONAL:  # type: ignore
         cg.add_library(*lib)
