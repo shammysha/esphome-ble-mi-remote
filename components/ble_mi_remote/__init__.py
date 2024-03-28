@@ -125,7 +125,7 @@ async def adding_binary_sensors(var: MockObj, config: dict) -> None:
     cg.add(
         var.set_state_sensor(await binary_sensor.new_binary_sensor(
             {
-                cv.GenerateID(): cv.declare_id(binary_sensor.BinarySensor),
+                CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
                 CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + "-connected",
                 CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
                 CONF_DISABLED_BY_DEFAULT: False
