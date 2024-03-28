@@ -102,7 +102,7 @@ async def adding_special_keys(var: MockObj, config: dict) -> None:
     for key in SPECIAL_KEY:
         new_key: MockObj = await button.new_button(
             {
-                CONF_ID: cv.declare_id(BleMiRemoteButton)(key[CONF_ID]),
+                CONF_ID: cv.declare_id(BleMiRemoteButton)(var.base.__str__() + key[CONF_ID]),
                 CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + " " + key[CONF_NAME],
                 CONF_ICON: key[CONF_ICON],
                 CONF_DISABLED_BY_DEFAULT: False
