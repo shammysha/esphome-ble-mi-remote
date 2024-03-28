@@ -34,6 +34,7 @@ from .const import (
     ACTION_STOP_CLASS,
     SPECIAL_KEY,
     COMPONENT_BUTTON_CLASS,
+    COMPONENT_CONNECTED_CLASS,
     COMPONENT_CLASS,
     CONF_RECONNECT,
     CONF_TEXT,
@@ -49,6 +50,7 @@ ble_mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
 
 BleMiRemote = ble_mi_remote_ns.class_(COMPONENT_CLASS, cg.PollingComponent)
 BleMiRemoteButton = ble_mi_remote_ns.class_(COMPONENT_BUTTON_CLASS, cg.Component)
+BleMiRemoteConnected = ble_mi_remote_ns.class_(COMPONENT_CONNECTED_CLASS, cg.Component)
 
 MULTI_CONF = True
 CONFIG_SCHEMA: Final = cv.Schema(
@@ -125,7 +127,7 @@ async def adding_binary_sensors(var: MockObj, config: dict) -> None:
     cg.add(
         var.set_state_sensor(await binary_sensor.new_binary_sensor(
             {
-                CONF_ID: cv.declare_id(binary_sensor.BinarySensor)(config[CONF_ID] + "_connected"),
+                CONF_ID: cv.declare_id(BleMiRemoteConnected)("connected"),
                 CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + "-connected",
                 CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
                 CONF_DISABLED_BY_DEFAULT: False
