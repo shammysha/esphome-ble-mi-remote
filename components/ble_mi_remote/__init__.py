@@ -76,18 +76,18 @@ async def to_code(config: dict) -> None:
 
       
     var = cg.new_Pvariable(
-        cfg[CONF_ID],
-        cfg[CONF_NAME],
-        cfg[CONF_MANUFACTURER_ID],
-        cfg[CONF_BATTERY_LEVEL],
-        cfg[CONF_RECONNECT]
+        config[CONF_ID],
+        config[CONF_NAME],
+        config[CONF_MANUFACTURER_ID],
+        config[CONF_BATTERY_LEVEL],
+        config[CONF_RECONNECT]
     )
 
-    await cg.register_component(var, cfg)
+    await cg.register_component(var, config)
 
-    await adding_binary_sensors(var, cfg)
+    await adding_binary_sensors(var, config)
 
-    await adding_special_keys(var, cfg)
+    await adding_special_keys(var, config)
 
     for lib in LIBS_ADDITIONAL:  # type: ignore
         cg.add_library(*lib)
