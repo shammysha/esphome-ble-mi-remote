@@ -30,7 +30,8 @@ static const uint8_t _hidReportDescriptor[] = {
 		LOGICAL_MINIMUM(1),		0x00,			//
 		LOGICAL_MAXIMUM(1),		0x01,			//
 		REPORT_SIZE(1),			0x01,			//
-		REPORT_COUNT(1),		0x18,			// 24
+		REPORT_COUNT(1),		0x19,			// 25
+		USAGE(1),       0x40,     // Menu
 		USAGE(1),				0x41,			// Menu Pick
 		USAGE(1),				0x42,			// Menu Up
 		USAGE(1),				0x43,			// Menu Down
@@ -141,8 +142,8 @@ namespace esphome {
 				PollingComponent(1000),
 				hid(0),
 				deviceName(std::string(name).substr(0, 15)),
-			    deviceManufacturer(std::string(manufacturer_id).substr(0,15)),
-			    batteryLevel(battery_level)
+				deviceManufacturer(std::string(manufacturer_id).substr(0,15)),
+				batteryLevel(battery_level)
 		{
 			_reconnect = reconnect;
 		}
@@ -150,7 +151,7 @@ namespace esphome {
 		void BleMiRemote::setup() {
 			ESP_LOGI(TAG, "Setting up...");
 
-			NimBLEDevice::init (deviceName);
+			NimBLEDevice::init(deviceName);
 			NimBLEServer *pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 

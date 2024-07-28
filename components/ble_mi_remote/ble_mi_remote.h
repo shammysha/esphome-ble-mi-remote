@@ -11,7 +11,7 @@
 #include <string>
 
 
-const uint8_t SPECIAL_KEYS_COUNT = 24;
+const uint8_t SPECIAL_KEYS_COUNT = 25;
 
 const uint8_t SPECIAL_MENU_PICK = 0;
 const uint8_t SPECIAL_MENU_UP = 1;
@@ -37,6 +37,7 @@ const uint8_t SPECIAL_FORWARD = 20;
 const uint8_t SPECIAL_STOP = 21;
 const uint8_t SPECIAL_REFRESH = 22;
 const uint8_t SPECIAL_BOOKMARK = 23;
+const uint8_t SPECIAL_MENU = 24;
 
 //  Low level key report: up to 6 keys and shift, ctrl etc at once
 typedef struct {

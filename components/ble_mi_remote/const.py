@@ -178,6 +178,11 @@ SPECIAL_KEY: Final = [
         CONF_ID: "key_bookmarks",
         CONF_ICON: "mdi:bookmark-box-outline",
         CONF_VALUE: 23
+    },{
+        CONF_NAME: "Menu",
+        CONF_ID: "key_menu",
+        CONF_ICON: "mdi:bookmark-box-outline",
+        CONF_VALUE: 24
     }
 ]
 
