@@ -31,7 +31,6 @@ static const uint8_t _hidReportDescriptor[] = {
 		LOGICAL_MAXIMUM(1),		0x01,			//
 		REPORT_SIZE(1),			0x01,			//
 		REPORT_COUNT(1),		0x19,			// 25
-		USAGE(1),       0x40,     // Menu
 		USAGE(1),				0x41,			// Menu Pick
 		USAGE(1),				0x42,			// Menu Up
 		USAGE(1),				0x43,			// Menu Down
@@ -56,6 +55,7 @@ static const uint8_t _hidReportDescriptor[] = {
 		USAGE(2),				0x26, 0x02,		// Instance 9730 (Stop)
 		USAGE(2),				0x27, 0x02,		// Instance 9986 (Refresh)
 		USAGE(2),				0x2A, 0x02,		// Instance 10754 (Bookmarks)
+    USAGE(1),       0x40,     // Menu		
 		HIDINPUT(1),			0x02,			// In bytes
 
 		USAGE_PAGE(2),			0x00, 0xFF,		// Vendor ??? переставить местами байты?
