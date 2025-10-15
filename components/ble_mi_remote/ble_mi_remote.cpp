@@ -155,14 +155,14 @@ namespace esphome {
 			pServer->setCallbacks(this);
 
 			hid = new NimBLEHIDDevice(pServer);
-			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
-			inputKeyboard = hid->inputReport(KEYBOARD_ID);
-			outputKeyboard = hid->outputReport(KEYBOARD_ID);
+			inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
+			inputKeyboard = hid->getInputReport(KEYBOARD_ID);
+			outputKeyboard = hid->getOutputReport(KEYBOARD_ID);
 			outputKeyboard->setCallbacks(this);
 
-			vendorReport_06 = hid->inputReport(0x06);
-			vendorReport_07 = hid->inputReport(0x07);
-			vendorReport_08 = hid->inputReport(0x08);
+			vendorReport_06 = hid->getInputReport(0x06);
+			vendorReport_07 = hid->getInputReport(0x07);
+			vendorReport_08 = hid->getInputReport(0x08);
 
 			hid->manufacturer()->setValue(deviceManufacturer);
 			hid->pnp(sid, vid, pid, version);
