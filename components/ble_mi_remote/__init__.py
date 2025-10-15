@@ -9,6 +9,7 @@ import esphome.config_validation as cv
 from esphome import automation
 from esphome.automation import maybe_simple_id
 from esphome.components import binary_sensor, button, number
+from esphome.components.esp32 import add_idf_sdkconfig_option
 from esphome.const import (
     CONF_DEVICE_CLASS,
     DEVICE_CLASS_CONNECTIVITY,
