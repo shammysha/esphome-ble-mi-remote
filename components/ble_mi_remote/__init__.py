@@ -69,8 +69,8 @@ async def to_code(config: dict) -> None:
     if not CORE.is_esp32:
         raise cv.Invalid("The component only supports ESP32.")
 
-    if not CORE.using_arduino:
-        raise cv.Invalid("The component only supports the Arduino framework.")
+#    if not CORE.using_:
+#        raise cv.Invalid("The component only supports the Arduino framework.")
 
     var = cg.new_Pvariable(
         config[CONF_ID],
