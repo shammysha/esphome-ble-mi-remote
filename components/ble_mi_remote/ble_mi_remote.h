@@ -117,9 +117,9 @@ namespace esphome {
 
 			protected:
 				virtual void onStarted(NimBLEServer *pServer) { };
-				virtual void onConnect(NimBLEServer* pServer) override;
-				virtual void onDisconnect(NimBLEServer* pServer) override;
-				virtual void onWrite(NimBLECharacteristic* me) override;
+				virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
+				virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
+				virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome

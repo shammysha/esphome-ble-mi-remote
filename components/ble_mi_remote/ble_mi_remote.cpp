@@ -178,7 +178,7 @@ namespace esphome {
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->hidService()->getUUID());
-			advertising->setScanResponse(false);
+			advertising->enableScanResponse(false);
 
 			advertising->start();
 
@@ -472,18 +472,18 @@ namespace esphome {
 			}
 		}
 
-		void BleMiRemote::onConnect(NimBLEServer *pServer) {
+		void BleMiRemote::onConnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo) {
 			this->_connected = true;
-			NimBLEConnInfo peer = pServer->getPeerInfo(0);
+			NimBLEConnInfo peer = connInfo;
 
 			release();
 		}
 
-		void BleMiRemote::onDisconnect(NimBLEServer *pServer) {
+		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
 			this->_connected = false;
 		}
 
-		void BleMiRemote::onWrite(NimBLECharacteristic *me) {
+		void BleMiRemote::onWrite(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
 			uint8_t *value = (uint8_t*) (me->getValue().c_str());
 			(void) value;
 			ESP_LOGD(TAG, "special keys: %d", *value);
