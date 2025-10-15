@@ -164,13 +164,13 @@ namespace esphome {
 			vendorReport_07 = hid->getInputReport(0x07);
 			vendorReport_08 = hid->getInputReport(0x08);
 
-			hid->manufacturer()->setValue(deviceManufacturer);
-			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x00);
+			hid->setManufacturer(deviceManufacturer);
+			hid->setPnp(sid, vid, pid, version);
+			hid->setHidInfo(0x00, 0x00);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
-			hid->reportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
+			hid->setReportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
 			hid->startServices();
 
 			onStarted(pServer);
