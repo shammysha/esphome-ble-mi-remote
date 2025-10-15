@@ -49,7 +49,7 @@ ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 """Libraries"""
 LIBS_ADDITIONAL: Final = [
     (
-        "h2zero/esp-nimble-cpp",
+        "https://github.com/h2zero/esp-nimble-cpp",
         "2.3.3",
         None,
     )
