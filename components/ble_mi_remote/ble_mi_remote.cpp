@@ -155,30 +155,30 @@ namespace esphome {
 			pServer->setCallbacks(this);
 
 			hid = new NimBLEHIDDevice(pServer);
-			inputSpecialKeys = hid->inputReport(CONSUMER_ID);
-			inputKeyboard = hid->inputReport(KEYBOARD_ID);
-			outputKeyboard = hid->outputReport(KEYBOARD_ID);
+			inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
+			inputKeyboard = hid->getInputReport(KEYBOARD_ID);
+			outputKeyboard = hid->getOutputReport(KEYBOARD_ID);
 			outputKeyboard->setCallbacks(this);
 
-			vendorReport_06 = hid->inputReport(0x06);
-			vendorReport_07 = hid->inputReport(0x07);
-			vendorReport_08 = hid->inputReport(0x08);
+			vendorReport_06 = hid->getInputReport(0x06);
+			vendorReport_07 = hid->getInputReport(0x07);
+			vendorReport_08 = hid->getInputReport(0x08);
 
-			hid->manufacturer()->setValue(deviceManufacturer);
-			hid->pnp(sid, vid, pid, version);
-			hid->hidInfo(0x00, 0x00);
+			hid->setManufacturer(deviceManufacturer);
+			hid->setPnp(sid, vid, pid, version);
+			hid->setHidInfo(0x00, 0x00);
 
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
-			hid->reportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
+			hid->setReportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
 			hid->startServices();
 
 			onStarted(pServer);
 
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
-			advertising->addServiceUUID(hid->hidService()->getUUID());
-			advertising->setScanResponse(false);
+			advertising->addServiceUUID(hid->getHidService()->getUUID());
+			advertising->enableScanResponse(false);
 
 			advertising->start();
 
@@ -472,18 +472,18 @@ namespace esphome {
 			}
 		}
 
-		void BleMiRemote::onConnect(NimBLEServer *pServer) {
+		void BleMiRemote::onConnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo) {
 			this->_connected = true;
-			NimBLEConnInfo peer = pServer->getPeerInfo(0);
+			NimBLEConnInfo peer = connInfo;
 
 			release();
 		}
 
-		void BleMiRemote::onDisconnect(NimBLEServer *pServer) {
+		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
 			this->_connected = false;
 		}
 
-		void BleMiRemote::onWrite(NimBLECharacteristic *me) {
+		void BleMiRemote::onWrite(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
 			uint8_t *value = (uint8_t*) (me->getValue().c_str());
 			(void) value;
 			ESP_LOGD(TAG, "special keys: %d", *value);
