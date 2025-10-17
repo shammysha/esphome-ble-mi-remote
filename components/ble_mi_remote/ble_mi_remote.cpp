@@ -481,6 +481,9 @@ namespace esphome {
 
 		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
 			this->_connected = false;
+			if (this->_reconnect) {
+			  pServer->getAdvertising()->start();
+			}
 		}
 
 		void BleMiRemote::onWrite(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
