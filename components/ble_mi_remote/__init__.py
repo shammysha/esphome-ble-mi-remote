@@ -88,6 +88,8 @@ async def to_code(config: dict) -> None:
     await adding_special_keys(var, config)
 
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_NIMBLE_CPP_IDF", True)
     
     for lib in LIBS_ADDITIONAL:  # type: ignore
         cg.add_library(*lib)

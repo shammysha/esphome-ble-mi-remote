@@ -247,7 +247,9 @@ namespace esphome {
 			  ESP_LOGD(TAG, "sendReport FIRED!!!");
 
 				this->inputKeyboard->setValue((uint8_t*) keys, sizeof(KeyReport));
-				this->inputKeyboard->notify();
+				if (!this->inputKeyboard->notify()) {
+				  ESP_LOGE(TAG, "sendReport FAILED!!!");
+				}
 				this->delay_ms(_delay_ms);
 			}
 		}
@@ -258,7 +260,9 @@ namespace esphome {
 			  ESP_LOGD(TAG, "sendReport FIRED!!!");
 
 				this->inputSpecialKeys->setValue((uint8_t*) keys, sizeof(SpecialKeyReport));
-				this->inputSpecialKeys->notify();
+        if (!this->inputSpecialKeys->notify()) {
+          ESP_LOGE(TAG, "sendReport FAILED!!!");
+        }
 				this->delay_ms(_delay_ms);
 			}
 		}
