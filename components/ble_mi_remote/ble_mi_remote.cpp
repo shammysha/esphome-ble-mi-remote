@@ -498,6 +498,12 @@ namespace esphome {
 		  this->stop();
 		}
 
+    void BleMiRemote::on_safe_shutdown() {
+      ESP_LOGD(TAG, "on_safe_shutdown FIRED!!!");
+      this->stop();
+    }
+
+
 		void BleMiRemote::delay_ms(uint64_t ms) {
 			uint64_t m = esp_timer_get_time();
 			if (ms) {
