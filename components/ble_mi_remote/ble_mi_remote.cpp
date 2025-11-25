@@ -480,7 +480,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
-		  ESP_LOGD(TAG, "onDisconnect FIRED!!!);
+		  ESP_LOGD(TAG, "onDisconnect FIRED!!!");
 		  this->_connected = false;
 			if (this->_reconnect) {
 			  pServer->startAdvertising();
