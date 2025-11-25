@@ -80,14 +80,15 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
-			protected:
-				binary_sensor::BinarySensor *state_sensor_;
         virtual void onStarted(NimBLEServer *pServer) { };
         virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
         virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
         virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
         virtual void on_shutdown() override;
         virtual void on_safe_shutdown() override;
+
+			protected:
+				binary_sensor::BinarySensor *state_sensor_;
 
 			private:
 				bool is_connected();
