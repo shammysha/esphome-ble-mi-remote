@@ -80,6 +80,13 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
+        virtual void onStarted(NimBLEServer *pServer) { };
+        virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
+        virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
+        virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
+        virtual void on_shutdown() override;
+        virtual void on_safe_shutdown() override;
+
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 
@@ -115,11 +122,6 @@ namespace esphome {
 				uint16_t pid		= 0x32b9;
 				uint16_t version	= 0x4a4f;
 
-			protected:
-				virtual void onStarted(NimBLEServer *pServer) { };
-				virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
-				virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
-				virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome

@@ -150,9 +150,11 @@ namespace esphome {
 		void BleMiRemote::setup() {
 			ESP_LOGI(TAG, "Setting up...");
 
-			NimBLEDevice::init (deviceName);
-			NimBLEServer *pServer = NimBLEDevice::createServer();
+			NimBLEDevice::init(deviceName);
+			NimBLEDevice pServer = NimBLEDevice::createServer();
+
 			pServer->setCallbacks(this);
+      pServer->advertiseOnDisconnect(this->_reconnect);
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
@@ -186,10 +188,6 @@ namespace esphome {
 
 			ESP_LOGD(TAG, "Advertising started!");
 
-			pServer = NimBLEDevice::getServer();
-
-			pServer->advertiseOnDisconnect(this->_reconnect);
-
 			release();
 		}
 
@@ -202,7 +200,7 @@ namespace esphome {
 
 			if (ids.size() > 0) {
 				for (uint16_t &id : ids) {
-					pServer->disconnect(id);
+				  pServer->disconnect(id);
 				}
 			} else {
 				pServer->stopAdvertising();
@@ -242,17 +240,27 @@ namespace esphome {
 
 
 		void BleMiRemote::sendReport(KeyReport *keys) {
-			if (this->is_connected()) {
+		  ESP_LOGD(TAG, "sendReport FIRING...");
+		  if (this->is_connected()) {
+			  ESP_LOGD(TAG, "sendReport FIRED!!!");
+
 				this->inputKeyboard->setValue((uint8_t*) keys, sizeof(KeyReport));
-				this->inputKeyboard->notify();
+				if (!this->inputKeyboard->notify()) {
+				  ESP_LOGE(TAG, "sendReport FAILED!!!");
+				}
 				this->delay_ms(_delay_ms);
 			}
 		}
 
 		void BleMiRemote::sendReport(SpecialKeyReport *keys) {
-			if (this->is_connected()) {
+		  ESP_LOGD(TAG, "sendReport FIRING...");
+		  if (this->is_connected()) {
+			  ESP_LOGD(TAG, "sendReport FIRED!!!");
+
 				this->inputSpecialKeys->setValue((uint8_t*) keys, sizeof(SpecialKeyReport));
-				this->inputSpecialKeys->notify();
+        if (!this->inputSpecialKeys->notify()) {
+          ESP_LOGE(TAG, "sendReport FAILED!!!");
+        }
 				this->delay_ms(_delay_ms);
 			}
 		}
@@ -480,6 +488,10 @@ namespace esphome {
 		}
 
 		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
+<<<<<<< HEAD
+		  ESP_LOGD(TAG, "onDisconnect FIRED!!!");
+=======
+>>>>>>> branch 'main' of https://github.com/shammysha/esphome-ble-mi-remote
 		  this->_connected = false;
 			if (this->_reconnect) {
 			  pServer->startAdvertising();
@@ -491,6 +503,17 @@ namespace esphome {
 			(void) value;
 			ESP_LOGD(TAG, "special keys: %d", *value);
 		}
+
+		void BleMiRemote::on_shutdown() {
+		  ESP_LOGD(TAG, "on_shutdown FIRED!!!");
+		  this->stop();
+		}
+
+    void BleMiRemote::on_safe_shutdown() {
+      ESP_LOGD(TAG, "on_safe_shutdown FIRED!!!");
+      this->stop();
+    }
+
 
 		void BleMiRemote::delay_ms(uint64_t ms) {
 			uint64_t m = esp_timer_get_time();
