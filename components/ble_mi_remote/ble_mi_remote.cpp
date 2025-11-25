@@ -493,6 +493,10 @@ namespace esphome {
 			ESP_LOGD(TAG, "special keys: %d", *value);
 		}
 
+		void BleMiRemote::on_shutdown() {
+		  this->stop();
+		}
+
 		void BleMiRemote::delay_ms(uint64_t ms) {
 			uint64_t m = esp_timer_get_time();
 			if (ms) {

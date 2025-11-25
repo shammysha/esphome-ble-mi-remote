@@ -120,6 +120,7 @@ namespace esphome {
 				virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
 				virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
 				virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
+				virtual void on_shutdown() override;
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome
