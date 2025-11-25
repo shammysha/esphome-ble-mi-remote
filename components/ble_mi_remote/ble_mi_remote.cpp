@@ -150,9 +150,11 @@ namespace esphome {
 		void BleMiRemote::setup() {
 			ESP_LOGI(TAG, "Setting up...");
 
-			NimBLEDevice::init (deviceName);
-			NimBLEServer *pServer = NimBLEDevice::createServer();
+			NimBLEDevice::init(deviceName);
+			NimBLEDevice pServer = NimBLEDevice::createServer();
+
 			pServer->setCallbacks(this);
+      pServer->advertiseOnDisconnect(this->_reconnect);
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
@@ -186,10 +188,6 @@ namespace esphome {
 
 			ESP_LOGD(TAG, "Advertising started!");
 
-			pServer = NimBLEDevice::getServer();
-
-			pServer->advertiseOnDisconnect(this->_reconnect);
-
 			release();
 		}
 
@@ -202,7 +200,7 @@ namespace esphome {
 
 			if (ids.size() > 0) {
 				for (uint16_t &id : ids) {
-					pServer->disconnect(id);
+				  pServer->disconnect(id);
 				}
 			} else {
 				pServer->stopAdvertising();
