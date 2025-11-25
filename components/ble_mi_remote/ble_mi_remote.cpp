@@ -494,6 +494,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::on_shutdown() {
+		  ESP_LOGD(TAG, "on_shutdown FIRED!!!");
 		  this->stop();
 		}
 
