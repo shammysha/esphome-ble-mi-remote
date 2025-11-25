@@ -242,7 +242,10 @@ namespace esphome {
 
 
 		void BleMiRemote::sendReport(KeyReport *keys) {
-			if (this->is_connected()) {
+		  ESP_LOGD(TAG, "sendReport FIRING...");
+		  if (this->is_connected()) {
+			  ESP_LOGD(TAG, "sendReport FIRED!!!");
+
 				this->inputKeyboard->setValue((uint8_t*) keys, sizeof(KeyReport));
 				this->inputKeyboard->notify();
 				this->delay_ms(_delay_ms);
@@ -250,7 +253,10 @@ namespace esphome {
 		}
 
 		void BleMiRemote::sendReport(SpecialKeyReport *keys) {
-			if (this->is_connected()) {
+		  ESP_LOGD(TAG, "sendReport FIRING...");
+		  if (this->is_connected()) {
+			  ESP_LOGD(TAG, "sendReport FIRED!!!");
+
 				this->inputSpecialKeys->setValue((uint8_t*) keys, sizeof(SpecialKeyReport));
 				this->inputSpecialKeys->notify();
 				this->delay_ms(_delay_ms);
