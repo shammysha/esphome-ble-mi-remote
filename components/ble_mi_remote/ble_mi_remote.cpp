@@ -151,7 +151,7 @@ namespace esphome {
 			ESP_LOGI(TAG, "Setting this up...");
 
 			NimBLEDevice::init(deviceName);
-			NimBLEDevice *pServer = NimBLEDevice::createServer();
+			NimBLEServer* pServer = NimBLEDevice::createServer();
 
 			pServer->setCallbacks(this);
       		pServer->advertiseOnDisconnect(this->_reconnect);
