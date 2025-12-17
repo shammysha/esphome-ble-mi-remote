@@ -148,7 +148,7 @@ namespace esphome {
 		}
 
 		void BleMiRemote::setup() {
-			ESP_LOGI(TAG, "Setting up...");
+			ESP_LOGI(TAG, "Setting this up...");
 
 			NimBLEDevice::init(deviceName);
 			NimBLEDevice *pServer = NimBLEDevice::createServer();
