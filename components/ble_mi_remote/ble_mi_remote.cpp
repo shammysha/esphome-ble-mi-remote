@@ -151,10 +151,10 @@ namespace esphome {
 			ESP_LOGI(TAG, "Setting up...");
 
 			NimBLEDevice::init(deviceName);
-			NimBLEDevice pServer = NimBLEDevice::createServer();
+			NimBLEDevice *pServer = NimBLEDevice::createServer();
 
 			pServer->setCallbacks(this);
-      pServer->advertiseOnDisconnect(this->_reconnect);
+      		pServer->advertiseOnDisconnect(this->_reconnect);
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
