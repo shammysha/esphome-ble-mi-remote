@@ -148,13 +148,13 @@ namespace esphome {
 		}
 
 		void BleMiRemote::setup() {
-			ESP_LOGI(TAG, "Setting up...");
+			ESP_LOGI(TAG, "Setting this up...");
 
 			NimBLEDevice::init(deviceName);
 			NimBLEServer* pServer = NimBLEDevice::createServer();
 
 			pServer->setCallbacks(this);
-      pServer->advertiseOnDisconnect(this->_reconnect);
+      		pServer->advertiseOnDisconnect(this->_reconnect);
 
 			hid = new NimBLEHIDDevice(pServer);
 			inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
