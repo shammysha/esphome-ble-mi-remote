@@ -488,10 +488,8 @@ namespace esphome {
 		}
 
 		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
-<<<<<<< HEAD
 		  ESP_LOGD(TAG, "onDisconnect FIRED!!!");
-=======
->>>>>>> branch 'main' of https://github.com/shammysha/esphome-ble-mi-remote
+
 		  this->_connected = false;
 			if (this->_reconnect) {
 			  pServer->startAdvertising();
