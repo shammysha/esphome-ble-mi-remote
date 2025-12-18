@@ -143,11 +143,11 @@ SPECIAL_KEY: Final = [
         CONF_ID: "key_files",
         CONF_ICON: "mdi:folder-file-outline",
         CONF_VALUE: 16
-    },{ 
-        CONF_NAME: "Voice2",
-        CONF_ID: "key_voice2",
-        CONF_ICON: "mdi:account-voice",
-        CONF_VALUE: 17 
+    },{
+        CONF_NAME: "Menu",
+        CONF_ID: "key_menu",
+        CONF_ICON: "mdi:menu",
+        CONF_VALUE: 17
     },{ 
         CONF_NAME: "Android TV",
         CONF_ID: "key_androidtv",
@@ -178,11 +178,6 @@ SPECIAL_KEY: Final = [
         CONF_ID: "key_bookmarks",
         CONF_ICON: "mdi:bookmark-box-outline",
         CONF_VALUE: 23
-    },{
-        CONF_NAME: "Menu",
-        CONF_ID: "key_menu",
-        CONF_ICON: "mdi:menu",
-        CONF_VALUE: 24
     }
 ]
 

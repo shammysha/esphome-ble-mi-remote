@@ -30,7 +30,7 @@ static const uint8_t _hidReportDescriptor[] = {
 		LOGICAL_MINIMUM(1),		0x00,			//
 		LOGICAL_MAXIMUM(1),		0x01,			//
 		REPORT_SIZE(1),			0x01,			//
-		REPORT_COUNT(1),		0x19,			// 25
+		REPORT_COUNT(1),		0x18,			// 24
 		USAGE(1),				0x41,			// Menu Pick
 		USAGE(1),				0x42,			// Menu Up
 		USAGE(1),				0x43,			// Menu Down
@@ -48,14 +48,13 @@ static const uint8_t _hidReportDescriptor[] = {
 		USAGE(2),				0x8A, 0x01,		// Instance 35329 (Email reader??)
 		USAGE(2),				0x92, 0x01,		// Instance 37377 (Calculator)
 		USAGE(2),				0x94, 0x01,		// Instance 37889 (Local Machine Browser)
-		USAGE(1),				0xCF,			// Voice Command
+    USAGE(1),       0x52,        // Menu
 		USAGE(2),				0x23, 0x02,		// Instance 8962 (Home)
 		USAGE(2),				0x24, 0x02,		// Instance 9218 (Back)
 		USAGE(2),				0x25, 0x02,		// Instance 9474 (Forward)
 		USAGE(2),				0x26, 0x02,		// Instance 9730 (Stop)
 		USAGE(2),				0x27, 0x02,		// Instance 9986 (Refresh)
 		USAGE(2),				0x2A, 0x02,		// Instance 10754 (Bookmarks)
-		USAGE(1),       0x52,        // Menu
 		HIDINPUT(1),			0x02,			// In bytes
 
 		USAGE_PAGE(2),			0x00, 0xFF,		// Vendor ??? переставить местами байты?
