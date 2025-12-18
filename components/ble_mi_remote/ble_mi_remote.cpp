@@ -48,7 +48,7 @@ static const uint8_t _hidReportDescriptor[] = {
 		USAGE(2),				0x8A, 0x01,		// Instance 35329 (Email reader??)
 		USAGE(2),				0x92, 0x01,		// Instance 37377 (Calculator)
 		USAGE(2),				0x94, 0x01,		// Instance 37889 (Local Machine Browser)
-    USAGE(1),       0x52,        // Menu
+    USAGE(1),       0x40,        // Menu
 		USAGE(2),				0x23, 0x02,		// Instance 8962 (Home)
 		USAGE(2),				0x24, 0x02,		// Instance 9218 (Back)
 		USAGE(2),				0x25, 0x02,		// Instance 9474 (Forward)
