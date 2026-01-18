@@ -50,7 +50,7 @@ ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 LIBS_ADDITIONAL: Final = [
     (
         "https://github.com/h2zero/NimBLE-Arduino",
-        "2.3.6",
+        "2.3.7",
         None,
     )
 ]
