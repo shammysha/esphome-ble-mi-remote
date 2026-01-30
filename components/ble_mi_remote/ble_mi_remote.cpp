@@ -234,8 +234,8 @@ namespace esphome {
 		}
 
 		void BleMiRemote::update_timer() {
-			this->cancel_timeout((const std::string) TAG);
-			this->set_timeout((const std::string) TAG, _release_delay, [this]() { this->release(); });
+			this->cancel_timeout(TAG);
+			this->set_timeout(TAG, _release_delay, [this]() { this->release(); });
 		}
 
 
@@ -463,7 +463,7 @@ namespace esphome {
 
 		void BleMiRemote::release() {
 			if (this->is_connected()) {
-				this->cancel_timeout((const std::string) TAG);
+				this->cancel_timeout(TAG);
 
 				_keyReport.keys[0] = 0;
 				_keyReport.keys[1] = 0;
