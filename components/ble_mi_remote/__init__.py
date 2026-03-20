@@ -9,6 +9,7 @@ import esphome.config_validation as cv
 from esphome import automation
 from esphome.automation import maybe_simple_id
 from esphome.components import binary_sensor, button, number
+from esphome.components.esp32 import add_idf_sdkconfig_option
 from esphome.const import (
     CONF_DEVICE_CLASS,
     DEVICE_CLASS_CONNECTIVITY,
@@ -70,8 +71,8 @@ async def to_code(config: dict) -> None:
     if not CORE.is_esp32:
         raise cv.Invalid("The component only supports ESP32.")
 
-    if not CORE.using_arduino:
-        raise cv.Invalid("The component only supports the Arduino framework.")
+#    if not CORE.using_:
+#        raise cv.Invalid("The component only supports the Arduino framework.")
 
     var = cg.new_Pvariable(
         config[CONF_ID],
@@ -83,27 +84,31 @@ async def to_code(config: dict) -> None:
 
     await cg.register_component(var, config)
 
-    await adding_binary_sensors(var)
+    await adding_binary_sensors(var, config)
 
-    await adding_special_keys(var)
+    await adding_special_keys(var, config)
 
+    add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_NIMBLE_CPP_IDF", True)
+    
     for lib in LIBS_ADDITIONAL:  # type: ignore
         cg.add_library(*lib)
         
     cg.add_build_flag(BUILD_FLAGS)
 
 
-async def adding_special_keys(var: MockObj) -> None:
+async def adding_special_keys(var: MockObj, config: dict) -> None:
     """Adding buttons
 
     :param var: MockObj
     """
-
+    
     for key in SPECIAL_KEY:
         new_key: MockObj = await button.new_button(
             {
                 CONF_ID: cv.declare_id(BleMiRemoteButton)(key[CONF_ID]),
-                CONF_NAME: DOMAIN.replace("_", "-") + "-" + key[CONF_NAME],
+                CONF_NAME: (config[CONF_NAME] or DOMAIN.replace("_", " ")) + " " + key[CONF_NAME],
                 CONF_ICON: key[CONF_ICON],
                 CONF_DISABLED_BY_DEFAULT: False
             }        
@@ -116,7 +121,7 @@ async def adding_special_keys(var: MockObj) -> None:
         cg.add(new_key.set_value(key[CONF_VALUE]))
 
 
-async def adding_binary_sensors(var: MockObj) -> None:
+async def adding_binary_sensors(var: MockObj, config: dict) -> None:
     """Adding binary sensor
 
     :param var: MockObj
@@ -126,7 +131,6 @@ async def adding_binary_sensors(var: MockObj) -> None:
         var.set_state_sensor(await binary_sensor.new_binary_sensor(
             {
                 CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
-                CONF_NAME: DOMAIN.replace("_", "-") + "-connected",
                 CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
                 CONF_DISABLED_BY_DEFAULT: False
             }            
@@ -149,6 +153,7 @@ BleMiRemoteReleaseAction = ble_mi_remote_ns.class_(
     f"{DOMAIN}.release",
     BleMiRemoteReleaseAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
 )
 async def ble_mi_remote_release_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
@@ -180,7 +185,8 @@ BleMiRemotePressAction = ble_mi_remote_ns.class_(ACTION_PRESS_CLASS, automation.
                 cv.templatable(cv.string)
             )
         }
-    )
+    ),
+    synchronous=True,
 )
 
 async def ble_mi_remote_press_to_code(
@@ -229,6 +235,7 @@ BleMiRemoteStartAction = ble_mi_remote_ns.class_(ACTION_START_CLASS, automation.
     f"{DOMAIN}.start",
     BleMiRemoteStartAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,    
 )
 async def ble_mi_remote_start_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
@@ -254,6 +261,8 @@ BleMiRemoteStopAction = ble_mi_remote_ns.class_(ACTION_STOP_CLASS, automation.Ac
     f"{DOMAIN}.stop",
     BleMiRemoteStopAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,    
+
 )
 async def ble_mi_remote_stop_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
