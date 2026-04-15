@@ -199,7 +199,7 @@ async def ble_mi_remote_press_to_code(
     var: MockObj = cg.new_Pvariable(action_id, template_arg, paren)
 
 
-    template_: LambdaExpression = await cg.templatable(config[CONF_CODE], args, cv.string)
+    template_: LambdaExpression = await cg.templatable(config[CONF_CODE], args, cg.std_string)
     
     is_number = True;
 
