@@ -12,7 +12,7 @@ namespace esphome {
 		template<typename... Ts> class BleMiRemotePressAction : public Action<Ts...> {
 			public:
 				explicit BleMiRemotePressAction(BleMiRemote *ble_mi_remote) : ble_mi_remote_(ble_mi_remote) {}
-				TEMPLATABLE_VALUE(uint8_t, key)
+				TEMPLATABLE_VALUE(int, key)
 				TEMPLATABLE_VALUE(uint8_t, special)
 
 				void play(Ts... x) override {
