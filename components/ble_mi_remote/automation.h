@@ -9,22 +9,24 @@
 
 namespace esphome {
 	namespace ble_mi_remote {
-		template<typename... Ts> class BleMiRemotePressAction : public Action<Ts...> {
-			public:
-				explicit BleMiRemotePressAction(BleMiRemote *ble_mi_remote) : ble_mi_remote_(ble_mi_remote) {}
-				TEMPLATABLE_VALUE(int, key)
-				TEMPLATABLE_VALUE(uint8_t, special)
-
-				void play(Ts... x) override {
-					if (this->key_.has_value()) {
-						this->ble_mi_remote_->press(this->key_.value(x...));
-					} else if (this->special_.has_value()) {
-						this->ble_mi_remote_->pressSpecial(this->special_.value(x...));
-					}
-				}
-			protected:
-				BleMiRemote *ble_mi_remote_;
-		};
+	    template<typename... Ts> class BleMiRemotePressAction : public Action<Ts...> {
+	      public:
+	        explicit BleMiRemotePressAction(BleMiRemote *ble_mi_remote) : ble_mi_remote_(ble_mi_remote) {}
+	
+	        template<typename V> void set_key(V key) { this->key_ = (uint8_t) key; }
+	        TEMPLATABLE_VALUE(uint8_t, special)
+	
+	        void play(Ts... x) override {
+	          if (this->key_.has_value()) {
+	            this->ble_mi_remote_->press(this->key_.value(x...));
+	          } else if (this->special_.has_value()) {
+	            this->ble_mi_remote_->pressSpecial(this->special_.value(x...));
+	          }
+	        }
+	      protected:
+	        BleMiRemote *ble_mi_remote_;
+	        TemplatableValue<uint8_t, Ts...> key_{};
+	    };
 
 		template<typename... Ts> class BleMiRemoteReleaseAction : public Action<Ts...> {
 			public:
