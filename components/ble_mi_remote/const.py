@@ -49,9 +49,9 @@ ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 """Libraries"""
 LIBS_ADDITIONAL: Final = [
     (
-        "https://github.com/shammysha/esp-nimble-cpp",
+        "ESP-Nimble-CPP",
         None,
-        None
+        "https://github.com/shammysha/esp-nimble-cpp"
     )
 ]
 
