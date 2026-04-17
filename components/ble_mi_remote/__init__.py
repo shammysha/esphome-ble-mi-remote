@@ -1,9 +1,9 @@
 """BleMiRemote component."""
 
+import logging
+
 from __future__ import annotations
-
 from typing import Final
-
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
@@ -44,6 +44,9 @@ from .const import (
 
 CODEOWNERS: Final = ["@shammysha"]
 AUTO_LOAD: Final = ["binary_sensor", "button"]
+
+_LOGGER = logging.getLogger(__name__)
+
 
 ble_mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
 
@@ -88,6 +91,22 @@ async def to_code(config: dict) -> None:
     await adding_special_keys(var, config)
 
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_NIMBLE_CPP_IDF", True)
+    add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODE_BLE_ONLY", True)
+    add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODE_BR_EDR_ONLY", False)
+    add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODE_BTDM", False)
+    add_idf_sdkconfig_option("CONFIG_BT_BLUEDROID_ENABLED", False)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_MAX_CONNECTIONS", 3)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ROLE_BROADCASTER", True)
+    add_idf_sdkconfig_option("CONFIG_NIMBLE_CPP_ATT_VALUE_TIMESTAMP_ENABLED", 0)
+    add_idf_sdkconfig_option("CONFIG_NIMBLE_CPP_ATT_VALUE_INIT_LENGTH", 20)
+    add_idf_sdkconfig_option("NIMBLE_CPP_LOG_LEVEL", 3)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_MAX_CONNECTIONS", 3)
+
+    
+  
     
     for lib in LIBS_ADDITIONAL:  # type: ignore
         cg.add_library(*lib)

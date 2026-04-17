@@ -51,7 +51,7 @@ LIBS_ADDITIONAL: Final = [
     (
         "ESP-Nimble-CPP",
         None,
-        "https://github.com/h2zero/esp-nimble-cpp"
+        "https://github.com/shammysha/esp-nimble-cpp"
     )
 ]
 
