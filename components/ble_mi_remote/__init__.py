@@ -1,9 +1,9 @@
 """BleMiRemote component."""
 
-import logging
-
 from __future__ import annotations
 from typing import Final
+
+import logging
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
@@ -44,9 +44,6 @@ from .const import (
 
 CODEOWNERS: Final = ["@shammysha"]
 AUTO_LOAD: Final = ["binary_sensor", "button"]
-
-_LOGGER = logging.getLogger(__name__)
-
 
 ble_mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
 
