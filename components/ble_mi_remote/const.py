@@ -49,9 +49,9 @@ ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 """Libraries"""
 LIBS_ADDITIONAL: Final = [
     (
-        "https://github.com/h2zero/NimBLE-Arduino",
-        "2.3.6",
+        "NimBLE-Arduino",
         None,
+        "https://github.com/h2zero/NimBLE-Arduino"
     )
 ]
 
@@ -143,11 +143,11 @@ SPECIAL_KEY: Final = [
         CONF_ID: "key_files",
         CONF_ICON: "mdi:folder-file-outline",
         CONF_VALUE: 16
-    },{ 
-        CONF_NAME: "Voice2",
-        CONF_ID: "key_voice2",
-        CONF_ICON: "mdi:account-voice",
-        CONF_VALUE: 17 
+    },{
+        CONF_NAME: "Menu",
+        CONF_ID: "key_menu",
+        CONF_ICON: "mdi:menu",
+        CONF_VALUE: 17
     },{ 
         CONF_NAME: "Android TV",
         CONF_ID: "key_androidtv",

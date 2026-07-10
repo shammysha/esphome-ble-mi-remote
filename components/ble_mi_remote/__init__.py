@@ -24,7 +24,7 @@ from esphome.const import (
     CONF_RESTORE_MODE    
 )
 from esphome.core import CORE, ID
-from esphome.cpp_generator import LambdaExpression, MockObj, TemplateArguments
+from esphome.cpp_generator import LambdaExpression, MockObj, TemplateArguments, TemplateArgsType
 
 from .const import (
     ACTION_COMBINATION_CLASS,
@@ -151,16 +151,17 @@ BleMiRemoteReleaseAction = ble_mi_remote_ns.class_(
     f"{DOMAIN}.release",
     BleMiRemoteReleaseAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
 )
 async def ble_mi_remote_release_to_code(
-    config: dict, action_id: ID, template_arg: TemplateArguments, args: list
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: TemplateArgsType
 ) -> MockObj:
     """Action release
 
     :param config: dict
     :param action_id: ID
     :param template_arg: TemplateArguments
-    :param args: list
+    :param args: TemplateArgsType
     :return: MockObj
     """
 
@@ -178,22 +179,23 @@ BleMiRemotePressAction = ble_mi_remote_ns.class_(ACTION_PRESS_CLASS, automation.
     OPERATION_BASE_SCHEMA.extend(
         {
             cv.Required(CONF_CODE): cv.Any(
-                cv.templatable(cv.uint8_t),
+                cv.templatable(cv.int_),
                 cv.templatable(cv.string)
             )
         }
-    )
+    ),
+    synchronous=True,
 )
 
 async def ble_mi_remote_press_to_code(
-    config: dict, action_id: ID, template_arg: TemplateArguments, args: list
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: TemplateArgsType
 ) -> MockObj:
     """Action press
 
     :param config: dict
     :param action_id: ID
     :param template_arg: TemplateArguments
-    :param args: list
+    :param args: TemplateArgsType
     :return: MockObj
     """
 
@@ -201,10 +203,10 @@ async def ble_mi_remote_press_to_code(
     var: MockObj = cg.new_Pvariable(action_id, template_arg, paren)
 
 
-    template_: LambdaExpression = await cg.templatable(config[CONF_CODE], args, cv.string)
+    template_ = await cg.templatable(config[CONF_CODE], args, cg.std_string)
     
     is_number = True;
-
+    
     try:
         config[CONF_CODE] = int(template_)
     except:
@@ -214,7 +216,7 @@ async def ble_mi_remote_press_to_code(
             is_number = False
     
     if is_number:
-        cg.add(var.set_key(template_))
+        cg.add(var.set_key(config[CONF_CODE]))
     else:
         template_ = template_.lower()
         for i, k in enumerate(SPECIAL_KEY):
@@ -231,16 +233,17 @@ BleMiRemoteStartAction = ble_mi_remote_ns.class_(ACTION_START_CLASS, automation.
     f"{DOMAIN}.start",
     BleMiRemoteStartAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,    
 )
 async def ble_mi_remote_start_to_code(
-    config: dict, action_id: ID, template_arg: TemplateArguments, args: list
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: TemplateArgsType
 ) -> MockObj:
     """Action start
 
     :param config: dict
     :param action_id: ID
     :param template_arg: TemplateArguments
-    :param args: list
+    :param args: TemplateArgsType
     :return: MockObj
     """
 
@@ -256,16 +259,18 @@ BleMiRemoteStopAction = ble_mi_remote_ns.class_(ACTION_STOP_CLASS, automation.Ac
     f"{DOMAIN}.stop",
     BleMiRemoteStopAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,    
+
 )
 async def ble_mi_remote_stop_to_code(
-    config: dict, action_id: ID, template_arg: TemplateArguments, args: list
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: TemplateArgsType
 ) -> MockObj:
     """Action stop
 
     :param config: dict
     :param action_id: ID
     :param template_arg: TemplateArguments
-    :param args: list
+    :param args: TemplateArgsType
     :return: MockObj
     """
 
