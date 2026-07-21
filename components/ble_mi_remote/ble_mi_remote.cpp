@@ -434,21 +434,19 @@ namespace esphome {
 					}
 				}
 				sendReport (&_keyReport);
-		
-			} else if (k == 5) { // power key pressed
-				this->powerAdvertStart();
-			}					
+			}
 		}
 
 		void BleMiRemote::powerAdvertStart() {
 			_power_advert_cycle = 0;
-			pServer->startAdvertising();			
+			pServer->startAdvertising();
+			this->powerAdvertData1();			
 			
 		}
 				
 		void BleMiRemote::powerAdvertData1() {
 			pServer->getAdvertising()->setManufacturerData({0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
-			this->set_timeout((const std::string) TAG, _power_advert_delay, [this]() { this->powerAdvertData2(); });
+			this->set_timeout((const std::string) "ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData2(); });
 		}
 		
 		void BleMiRemote::powerAdvertData2() {
@@ -457,12 +455,12 @@ namespace esphome {
 				this->powerAdvertStop();
 			} else {
 				_power_advert_cycle++;
-				this->set_timeout((const std::string) TAG, _power_advert_delay, [this]() { this->powerAdvertData1(); });			
+				this->set_timeout((const std::string) "ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData1(); });			
 			}
 		}				
 		
 		void BleMiRemote::powerAdvertStop() {
-			pServer->getAdvertising()->setManufacturerData(deviceManufacturer));
+			pServer->getAdvertising()->setManufacturerData(std::vector<uint8_t>{});
 		}								
 
 				
@@ -479,6 +477,8 @@ namespace esphome {
 			    ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
 			    sendReport (&_specialKeyReport);
+			} else if (k == SPECIAL_POWER) {
+				this->powerAdvertStart();
 			}
 		}
 

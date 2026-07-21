@@ -114,7 +114,7 @@ namespace esphome {
 				uint8_t				batteryLevel;
 				bool				_connected = false;
 				uint32_t			_delay_ms = 7;
-				uint8_t				_power_advert_delay = 1000;
+				uint32_t				_power_advert_delay = 1000;
 				uint8_t				_power_advert_cycle = 0;
 
 				uint16_t sid		= 0x01;
