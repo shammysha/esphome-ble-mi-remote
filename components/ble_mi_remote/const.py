@@ -46,14 +46,9 @@ ACTION_PRESS_CLASS: Final = "BleMiRemotePressAction"
 ACTION_RELEASE_CLASS: Final = "BleMiRemoteReleaseAction"
 ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 
-"""Libraries"""
-LIBS_ADDITIONAL: Final = [
-    (
-        "NimBLE-Arduino",
-        None,
-        "https://github.com/h2zero/NimBLE-Arduino"
-    )
-]
+"""ESP-IDF component: NimBLE C++ wrapper (native ESP-IDF port of NimBLE-Arduino)"""
+NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
+NIMBLE_CPP_COMPONENT_VERSION: Final = "^2.5.0"
 
 """Special buttons"""
 SPECIAL_KEY: Final = [

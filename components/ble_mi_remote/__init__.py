@@ -9,7 +9,7 @@ import esphome.config_validation as cv
 from esphome import automation
 from esphome.automation import maybe_simple_id
 from esphome.components import binary_sensor, button, number
-from esphome.components.esp32 import add_idf_sdkconfig_option
+from esphome.components.esp32 import add_idf_component, add_idf_sdkconfig_option
 from esphome.const import (
     CONF_DEVICE_CLASS,
     DEVICE_CLASS_CONNECTIVITY,
@@ -39,7 +39,8 @@ from .const import (
     CONF_RECONNECT,
     CONF_TEXT,
     DOMAIN,
-    LIBS_ADDITIONAL
+    NIMBLE_CPP_COMPONENT,
+    NIMBLE_CPP_COMPONENT_VERSION
 )
 
 CODEOWNERS: Final = ["@shammysha"]
@@ -70,9 +71,6 @@ async def to_code(config: dict) -> None:
     if not CORE.is_esp32:
         raise cv.Invalid("The component only supports ESP32.")
 
-#    if not CORE.using_:
-#        raise cv.Invalid("The component only supports the Arduino framework.")
-
     var = cg.new_Pvariable(
         config[CONF_ID],
         config[CONF_NAME],
@@ -89,10 +87,8 @@ async def to_code(config: dict) -> None:
 
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
-    add_idf_sdkconfig_option("CONFIG_NIMBLE_CPP_IDF", True)
-    
-    for lib in LIBS_ADDITIONAL:  # type: ignore
-        cg.add_library(*lib)
+
+    add_idf_component(name=NIMBLE_CPP_COMPONENT, ref=NIMBLE_CPP_COMPONENT_VERSION)
 
 
 async def adding_special_keys(var: MockObj, config: dict) -> None:
