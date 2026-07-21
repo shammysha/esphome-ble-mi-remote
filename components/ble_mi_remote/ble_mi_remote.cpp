@@ -152,7 +152,7 @@ namespace esphome {
       ESP_LOGI(TAG, "Setting this up...");
 
       NimBLEDevice::init(deviceName);
-      NimBLEServer* pServer = NimBLEDevice::createServer();
+      this->pServer = NimBLEDevice::createServer();
 
       pServer->setCallbacks(this);
           pServer->advertiseOnDisconnect(this->_reconnect);
@@ -446,6 +446,31 @@ namespace esphome {
       }
     }
 
+    void BleMiRemote::powerAdvertStart() {
+      _power_advert_cycle = 0;
+      pServer->startAdvertising();
+      this->powerAdvertData1();
+    }
+
+    void BleMiRemote::powerAdvertData1() {
+      pServer->getAdvertising()->setManufacturerData({0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
+      this->set_timeout("ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData2(); });
+    }
+
+    void BleMiRemote::powerAdvertData2() {
+      pServer->getAdvertising()->setManufacturerData({0x46, 0x00});
+      if (_power_advert_cycle > 3) {
+        this->powerAdvertStop();
+      } else {
+        _power_advert_cycle++;
+        this->set_timeout("ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData1(); });
+      }
+    }
+
+    void BleMiRemote::powerAdvertStop() {
+      pServer->getAdvertising()->setManufacturerData(std::vector<uint8_t>{});
+    }
+
     void BleMiRemote::pressSpecial(uint8_t k, bool with_timer) {
       if (this->is_connected()) {
         if (with_timer) {
@@ -459,6 +484,8 @@ namespace esphome {
           ESP_LOGD(TAG, "Send: %d, %d, %d", _specialKeyReport.keys[0], _specialKeyReport.keys[1], _specialKeyReport.keys[2]);
 
           sendReport (&_specialKeyReport);
+      } else if (k == SPECIAL_POWER) {
+        this->powerAdvertStart();
       }
     }
 
