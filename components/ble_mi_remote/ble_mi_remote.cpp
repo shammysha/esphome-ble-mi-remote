@@ -188,7 +188,24 @@ namespace esphome {
       // "add device" scan - only bonded/directed reconnects worked.
       advertising->enableScanResponse(true);
 
-      advertising->start();
+      // Directed advertising falls back to plain undirected if it ends
+      // without a connection (e.g. the ~1.28s controller-enforced high duty
+      // cycle window expires) - see advertisingComplete().
+      advertising->setAdvertisingCompleteCallback([this](NimBLEAdvertising *adv) { this->advertisingComplete(adv); });
+
+      // A bonded-but-not-yet-reconnected peer (e.g. right after our own
+      // reboot, while the TV/box stayed up) reconnects far faster via
+      // directed advertising - aimed at that specific known peer - than
+      // plain undirected advertising, which relies on the central noticing
+      // us during a passive background scan. Real HID remotes do this;
+      // plain advertising->start() never did.
+      if (NimBLEDevice::getNumBonds() > 0) {
+        NimBLEAddress bondedAddr = NimBLEDevice::getBondedAddress(0);
+        ESP_LOGI(TAG, "Starting directed advertising to bonded peer %s", bondedAddr.toString().c_str());
+        advertising->start(0, &bondedAddr);
+      } else {
+        advertising->start();
+      }
 
       hid->setBatteryLevel(batteryLevel);
 
@@ -563,9 +580,23 @@ namespace esphome {
       ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
 
       if (this->_reconnect) {
-        bool ok = pServer->startAdvertising();
+        // Directed at the peer that just disconnected - see setup() for why.
+        NimBLEAddress peerAddr = connInfo.getAddress();
+        ESP_LOGI(TAG, "Starting directed advertising to %s", peerAddr.toString().c_str());
+        bool ok = pServer->getAdvertising()->start(0, &peerAddr);
         ESP_LOGI(TAG, "startAdvertising() after disconnect: %s", ok ? "OK" : "FAILED");
       }
+    }
+
+    void BleMiRemote::advertisingComplete(NimBLEAdvertising *adv) {
+      if (this->_connected) {
+        return;
+      }
+      // Directed advertising ended (controller-enforced timeout, typically
+      // ~1.28s for high duty cycle) without the peer reconnecting - fall
+      // back to undirected so we stay generally discoverable/connectable.
+      ESP_LOGD(TAG, "Directed advertising ended without a connection, falling back to undirected");
+      adv->start();
     }
 
     void BleMiRemote::onWrite(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
