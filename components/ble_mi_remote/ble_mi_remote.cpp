@@ -452,6 +452,7 @@ namespace esphome {
     }
 
     void BleMiRemote::powerAdvertStart() {
+      ESP_LOGI(TAG, "powerAdvertStart: entered");
       _power_advert_cycle = 0;
       this->powerAdvertData1();
     }
@@ -466,17 +467,19 @@ namespace esphome {
     // guard to actually re-apply the new data.
     void BleMiRemote::powerAdvertData1() {
       NimBLEAdvertising *adv = pServer->getAdvertising();
-      adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
-      adv->stop();
-      adv->start();
+      bool setOk = adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
+      bool stopOk = adv->stop();
+      bool startOk = adv->start();
+      ESP_LOGI(TAG, "powerAdvertData1: setManufacturerData=%s stop=%s start=%s", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
       this->set_timeout("ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData2(); });
     }
 
     void BleMiRemote::powerAdvertData2() {
       NimBLEAdvertising *adv = pServer->getAdvertising();
-      adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
-      adv->stop();
-      adv->start();
+      bool setOk = adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
+      bool stopOk = adv->stop();
+      bool startOk = adv->start();
+      ESP_LOGI(TAG, "powerAdvertData2: setManufacturerData=%s stop=%s start=%s cycle=%d", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", _power_advert_cycle);
       if (_power_advert_cycle > 3) {
         this->powerAdvertStop();
       } else {
@@ -487,9 +490,10 @@ namespace esphome {
 
     void BleMiRemote::powerAdvertStop() {
       NimBLEAdvertising *adv = pServer->getAdvertising();
-      adv->setManufacturerData(std::vector<uint8_t>{});
-      adv->stop();
-      adv->start();
+      bool setOk = adv->setManufacturerData(std::vector<uint8_t>{});
+      bool stopOk = adv->stop();
+      bool startOk = adv->start();
+      ESP_LOGI(TAG, "powerAdvertStop: setManufacturerData=%s stop=%s start=%s", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
     }
 
     // Mirrors the wake trick used by github.com/DenizOner/MiPower: instead of
