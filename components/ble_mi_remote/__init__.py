@@ -28,6 +28,7 @@ from esphome.cpp_generator import LambdaExpression, MockObj, TemplateArguments, 
 
 from .const import (
     ACTION_COMBINATION_CLASS,
+    ACTION_CONNECT_WAKE_CLASS,
     ACTION_PRESS_CLASS,
     ACTION_PRINT_CLASS,
     ACTION_RELEASE_CLASS,
@@ -37,6 +38,7 @@ from .const import (
     COMPONENT_BUTTON_CLASS,
     COMPONENT_CLASS,
     CONF_RECONNECT,
+    CONF_TARGET_MAC_ADDRESS,
     CONF_TEXT,
     DOMAIN,
     NIMBLE_CPP_COMPONENT,
@@ -57,7 +59,8 @@ CONFIG_SCHEMA: Final = cv.Schema(
         cv.Optional(CONF_NAME, default=COMPONENT_CLASS): cv.Length(min=1),
         cv.Optional(CONF_MANUFACTURER_ID, default=COMPONENT_CLASS): cv.Length(min=1),
         cv.Optional(CONF_BATTERY_LEVEL, default=100): cv.int_range(min=0, max=100),
-        cv.Optional(CONF_RECONNECT, default=True): cv.boolean
+        cv.Optional(CONF_RECONNECT, default=True): cv.boolean,
+        cv.Optional(CONF_TARGET_MAC_ADDRESS): cv.mac_address
     }
 )
 
@@ -85,8 +88,12 @@ async def to_code(config: dict) -> None:
 
     await adding_special_keys(var, config)
 
+    if CONF_TARGET_MAC_ADDRESS in config:
+        cg.add(var.set_target_mac(config[CONF_TARGET_MAC_ADDRESS].as_hex))
+
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ROLE_CENTRAL", True)
 
     add_idf_component(name=NIMBLE_CPP_COMPONENT, ref=NIMBLE_CPP_COMPONENT_VERSION)
 
@@ -262,6 +269,39 @@ async def ble_mi_remote_stop_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: TemplateArgsType
 ) -> MockObj:
     """Action stop
+
+    :param config: dict
+    :param action_id: ID
+    :param template_arg: TemplateArguments
+    :param args: TemplateArgsType
+    :return: MockObj
+    """
+
+    paren: MockObj = await cg.get_variable(config[CONF_ID])
+
+    return cg.new_Pvariable(action_id, template_arg, paren)
+
+
+BleMiRemoteConnectWakeAction = ble_mi_remote_ns.class_(
+    ACTION_CONNECT_WAKE_CLASS, automation.Action
+)
+
+
+@automation.register_action(
+    f"{DOMAIN}.connect_wake",
+    BleMiRemoteConnectWakeAction,
+    maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
+)
+async def ble_mi_remote_connect_wake_to_code(
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: TemplateArgsType
+) -> MockObj:
+    """Action connect_wake
+
+    Attempts a direct BLE central connection to the configured
+    target_mac_address, mirroring the `bluetoothctl pair <mac>` wake
+    trick used by github.com/DenizOner/MiPower. Standalone action for
+    testing independently of the manufacturer-data advertise sequence.
 
     :param config: dict
     :param action_id: ID
