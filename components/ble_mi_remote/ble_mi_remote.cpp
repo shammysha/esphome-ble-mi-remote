@@ -453,17 +453,30 @@ namespace esphome {
 
     void BleMiRemote::powerAdvertStart() {
       _power_advert_cycle = 0;
-      pServer->startAdvertising();
       this->powerAdvertData1();
     }
 
+    // NimBLEAdvertising::setManufacturerData() only marks the advertisement
+    // data dirty (m_advDataSet = false); it's only actually pushed to the
+    // controller the next time start() runs past its "already active" guard.
+    // Since advertising never legitimately stops while this is called (it's
+    // always running from setup()), a bare setManufacturerData() never
+    // reached the air at all - confirmed by an over-the-air capture showing
+    // no manufacturer data ever transmitted. stop()+start() forces the
+    // guard to actually re-apply the new data.
     void BleMiRemote::powerAdvertData1() {
-      pServer->getAdvertising()->setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
+      NimBLEAdvertising *adv = pServer->getAdvertising();
+      adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
+      adv->stop();
+      adv->start();
       this->set_timeout("ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData2(); });
     }
 
     void BleMiRemote::powerAdvertData2() {
-      pServer->getAdvertising()->setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
+      NimBLEAdvertising *adv = pServer->getAdvertising();
+      adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
+      adv->stop();
+      adv->start();
       if (_power_advert_cycle > 3) {
         this->powerAdvertStop();
       } else {
@@ -473,7 +486,10 @@ namespace esphome {
     }
 
     void BleMiRemote::powerAdvertStop() {
-      pServer->getAdvertising()->setManufacturerData(std::vector<uint8_t>{});
+      NimBLEAdvertising *adv = pServer->getAdvertising();
+      adv->setManufacturerData(std::vector<uint8_t>{});
+      adv->stop();
+      adv->start();
     }
 
     // Mirrors the wake trick used by github.com/DenizOner/MiPower: instead of
