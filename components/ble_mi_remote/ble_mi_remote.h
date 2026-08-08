@@ -104,8 +104,6 @@ namespace esphome {
 				void powerAdvertData1();
 				void powerAdvertData2();
 
-				void advertisingComplete(NimBLEAdvertising *adv);
-
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
 				NimBLECharacteristic*	inputKeyboard;
