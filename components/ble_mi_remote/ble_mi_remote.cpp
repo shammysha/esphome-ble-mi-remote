@@ -176,7 +176,8 @@ namespace esphome {
       NimBLEDevice::setSecurityAuth(true, true, true);
 
       hid->setReportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
-      pServer->start();
+      bool serverStartOk = pServer->start();
+      ESP_LOGI(TAG, "setup: pServer->start()=%s", serverStartOk ? "OK" : "FAILED");
 
       onStarted(pServer);
 
@@ -188,16 +189,18 @@ namespace esphome {
       // "add device" scan - only bonded/directed reconnects worked.
       advertising->enableScanResponse(true);
 
-      advertising->start();
+      bool advStartOk = advertising->start();
 
       hid->setBatteryLevel(batteryLevel);
 
-      ESP_LOGD(TAG, "Advertising started!");
+      ESP_LOGI(TAG, "setup: advertising->start()=%s", advStartOk ? "OK" : "FAILED");
 
       release();
     }
 
     void BleMiRemote::stop() {
+      ESP_LOGI(TAG, "stop: entered, reconnect=%s", this->_reconnect ? "true" : "false");
+
       if (this->_reconnect) {
         pServer->advertiseOnDisconnect(false);
       }
@@ -205,20 +208,25 @@ namespace esphome {
       std::vector<uint16_t> ids = pServer->getPeerDevices();
 
       if (ids.size() > 0) {
+        ESP_LOGI(TAG, "stop: disconnecting %d peer(s)", (int) ids.size());
         for (uint16_t &id : ids) {
           pServer->disconnect(id);
         }
       } else {
-        pServer->stopAdvertising();
+        bool ok = pServer->stopAdvertising();
+        ESP_LOGI(TAG, "stop: stopAdvertising()=%s", ok ? "OK" : "FAILED");
       }
     }
 
     void BleMiRemote::start() {
+      ESP_LOGI(TAG, "start: entered, reconnect=%s", this->_reconnect ? "true" : "false");
+
       if (this->_reconnect) {
         pServer->advertiseOnDisconnect(true);
       }
 
-      pServer->startAdvertising();
+      bool ok = pServer->startAdvertising();
+      ESP_LOGI(TAG, "start: startAdvertising()=%s", ok ? "OK" : "FAILED");
     }
 
     void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
@@ -410,6 +418,7 @@ namespace esphome {
     uint8_t USBPutChar(uint8_t c);
 
     void BleMiRemote::press(uint8_t k, bool with_timer) {
+      ESP_LOGI(TAG, "press: k=%d connected=%s", k, this->_connected ? "true" : "false");
       if (this->is_connected()) {
         if (with_timer) {
           this->update_timer();
@@ -524,6 +533,7 @@ namespace esphome {
     }
 
     void BleMiRemote::pressSpecial(uint8_t k, bool with_timer) {
+      ESP_LOGI(TAG, "pressSpecial: k=%d connected=%s", k, this->_connected ? "true" : "false");
       if (this->is_connected()) {
         if (with_timer) {
           this->update_timer();
