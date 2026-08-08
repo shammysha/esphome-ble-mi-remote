@@ -183,7 +183,10 @@ namespace esphome {
       advertising = pServer->getAdvertising();
       advertising->setAppearance(HID_KEYBOARD);
       advertising->addServiceUUID(hid->getHidService()->getUUID());
-      advertising->enableScanResponse(false);
+      // Scan response carries the device name; without it, some centrals
+      // (confirmed: this TV box) won't show the device at all in a fresh
+      // "add device" scan - only bonded/directed reconnects worked.
+      advertising->enableScanResponse(true);
 
       advertising->start();
 
@@ -541,13 +544,27 @@ namespace esphome {
       this->_connected = true;
       NimBLEConnInfo peer = connInfo;
 
+      ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
+
+      // Explicit supervision timeout so a peer that silently vanishes at the
+      // app layer (radio still ACKing link-layer traffic, host-side BT
+      // service gone) gets detected and torn down within a bounded time,
+      // instead of leaving us believing we're connected - and therefore not
+      // advertising - indefinitely. min/max interval 15/30ms, no peripheral
+      // latency, 4s supervision timeout (400 * 10ms).
+      pServer->updateConnParams(peer.getConnHandle(), 12, 24, 0, 400);
+
       release();
     }
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
       this->_connected = false;
+
+      ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
+
       if (this->_reconnect) {
-        pServer->startAdvertising();
+        bool ok = pServer->startAdvertising();
+        ESP_LOGI(TAG, "startAdvertising() after disconnect: %s", ok ? "OK" : "FAILED");
       }
     }
 
