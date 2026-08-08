@@ -83,6 +83,9 @@ namespace esphome {
 				void powerAdvertStart();
 				void powerAdvertStop();
 
+				void set_target_mac(uint64_t mac) { _target_mac = mac; _has_target_mac = true; }
+				void connectWakeStart();
+
         virtual void onStarted(NimBLEServer *pServer) { };
         virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
         virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
@@ -123,6 +126,8 @@ namespace esphome {
 				uint32_t			_delay_ms = 7;
 				uint32_t			_power_advert_delay = 1000;
 				uint8_t				_power_advert_cycle = 0;
+				uint64_t			_target_mac = 0;
+				bool				_has_target_mac = false;
 
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;

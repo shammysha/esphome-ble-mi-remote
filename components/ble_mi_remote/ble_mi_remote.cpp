@@ -9,6 +9,8 @@
 #include <NimBLEHIDDevice.h>
 #include <NimBLECharacteristic.h>
 #include <NimBLEAdvertising.h>
+#include <NimBLEClient.h>
+#include <NimBLEAddress.h>
 #include "HIDTypes.h"
 #include "HIDKeyboardTypes.h"
 // #include <driver/adc.h>
@@ -472,6 +474,33 @@ namespace esphome {
 
     void BleMiRemote::powerAdvertStop() {
       pServer->getAdvertising()->setManufacturerData(std::vector<uint8_t>{});
+    }
+
+    // Mirrors the wake trick used by github.com/DenizOner/MiPower: instead of
+    // this device advertising, act as a BLE central and directly attempt a
+    // connection to the (already-bonded) target's MAC address, the same
+    // effect as `bluetoothctl pair <mac>`. One-shot, blocking, short timeout;
+    // not looped like powerAdvertStart() pending hardware testing.
+    void BleMiRemote::connectWakeStart() {
+      if (!_has_target_mac) {
+        ESP_LOGW(TAG, "connectWakeStart: no target_mac_address configured, skipping");
+        return;
+      }
+
+      NimBLEAddress targetAddress(_target_mac, BLE_ADDR_PUBLIC);
+      NimBLEClient* pClient = NimBLEDevice::createClient(targetAddress);
+      pClient->setSelfDelete(true, true);
+      pClient->setConnectTimeout(3000);
+
+      ESP_LOGD(TAG, "connectWakeStart: connecting to %s", targetAddress.toString().c_str());
+
+      if (!pClient->connect(targetAddress, false, false, false)) {
+        ESP_LOGW(TAG, "connectWakeStart: connect attempt failed or timed out");
+        return;
+      }
+
+      ESP_LOGD(TAG, "connectWakeStart: connected, disconnecting");
+      pClient->disconnect();
     }
 
     void BleMiRemote::pressSpecial(uint8_t k, bool with_timer) {
