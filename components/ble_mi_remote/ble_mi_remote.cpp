@@ -512,13 +512,19 @@ namespace esphome {
       this->_connected = true;
       NimBLEConnInfo peer = connInfo;
 
+      ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
+
       release();
     }
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
       this->_connected = false;
+
+      ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
+
       if (this->_reconnect) {
-        pServer->startAdvertising();
+        bool ok = pServer->startAdvertising();
+        ESP_LOGI(TAG, "startAdvertising() after disconnect: %s", ok ? "OK" : "FAILED");
       }
     }
 
