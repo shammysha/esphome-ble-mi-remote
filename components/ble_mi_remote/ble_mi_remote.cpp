@@ -181,7 +181,10 @@ namespace esphome {
       advertising = pServer->getAdvertising();
       advertising->setAppearance(HID_KEYBOARD);
       advertising->addServiceUUID(hid->getHidService()->getUUID());
-      advertising->enableScanResponse(false);
+      // Scan response carries the device name; without it, some centrals
+      // (confirmed: this TV box) won't show the device at all in a fresh
+      // "add device" scan - only bonded/directed reconnects worked.
+      advertising->enableScanResponse(true);
 
       advertising->start();
 
@@ -513,6 +516,14 @@ namespace esphome {
       NimBLEConnInfo peer = connInfo;
 
       ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
+
+      // Explicit supervision timeout so a peer that silently vanishes at the
+      // app layer (radio still ACKing link-layer traffic, host-side BT
+      // service gone) gets detected and torn down within a bounded time,
+      // instead of leaving us believing we're connected - and therefore not
+      // advertising - indefinitely. min/max interval 15/30ms, no peripheral
+      // latency, 4s supervision timeout (400 * 10ms).
+      pServer->updateConnParams(peer.getConnHandle(), 12, 24, 0, 400);
 
       release();
     }
