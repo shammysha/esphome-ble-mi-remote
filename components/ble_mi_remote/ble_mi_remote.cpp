@@ -650,28 +650,49 @@ namespace esphome {
         return;
       }
 
-      // setConnectableMode()/setHighDutyCycleDirected() are the actual
-      // switches NimBLE/the controller use to pick ADV_DIRECT_IND (and its
-      // duty cycle) - start()'s dirAddr/duration arguments alone are NOT
-      // enough (confirmed the hard way: without setConnectableMode(DIR), a
-      // live nRF52840 sniffer capture showed dirAddr being silently ignored
-      // and plain undirected advertising going out regardless; without
-      // setHighDutyCycleDirected(true), the burst transmitted but at a slow
-      // ~65ms interval instead of the real remotes' ~3.75ms). Both are
-      // sticky and must be set back for the undirected fallback below.
+      // A single 1.28s HD burst matches a genuine remote's packet
+      // byte-for-byte (confirmed via sniffer) but still wasn't enough by
+      // itself for the box to notice/respond in testing - the previous
+      // one-shot-then-fall-back-to-slow-undirected-forever design gives up
+      // right at the moment the box might still be waking its own scanner
+      // up. Instead: keep firing fresh back-to-back HD bursts (the
+      // controller hard-caps each one at 1.28s regardless) for up to 30s
+      // before giving up to plain undirected advertising.
+      this->_reconnect_retry_until_ms = millis() + 30000;
+      this->fire_directed_burst_();
+    }
+
+    // setConnectableMode()/setHighDutyCycleDirected() are the actual
+    // switches NimBLE/the controller use to pick ADV_DIRECT_IND (and its
+    // duty cycle) - start()'s dirAddr/duration arguments alone are NOT
+    // enough (confirmed the hard way: without setConnectableMode(DIR), a
+    // live nRF52840 sniffer capture showed dirAddr being silently ignored
+    // and plain undirected advertising going out regardless; without
+    // setHighDutyCycleDirected(true), the burst transmitted but at a slow
+    // ~65ms interval instead of the real remotes' ~3.75ms). Both are sticky
+    // and must be reset for the undirected fallback.
+    void BleMiRemote::fire_directed_burst_() {
+      NimBLEAdvertising *adv = pServer->getAdvertising();
       NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
       adv->setConnectableMode(BLE_GAP_CONN_MODE_DIR);
       adv->setHighDutyCycleDirected(true);
       bool stopOk = adv->stop();
       bool startOk = adv->start(1280, &dirAddr);
-      ESP_LOGI(TAG, "start_reconnect_advert_: HD directed burst to %s, stop=%s start=%s", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+      ESP_LOGI(TAG, "fire_directed_burst_: HD directed burst to %s, stop=%s start=%s, retry_remaining_ms=%d", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", (int) (this->_reconnect_retry_until_ms - millis()));
 
       this->set_timeout("ble_mi_remote_reconnect_burst", 1300, [this]() {
         if (this->_connected) {
           // A real connection already completed during the burst window -
           // the controller auto-stops advertising once connected, so
           // there's nothing to fall back to.
-          ESP_LOGI(TAG, "start_reconnect_advert_: burst window elapsed, already connected - nothing to do");
+          ESP_LOGI(TAG, "fire_directed_burst_: burst window elapsed, already connected - nothing to do");
+          return;
+        }
+
+        if ((int32_t) (millis() - this->_reconnect_retry_until_ms) < 0) {
+          // Still within the retry window - fire another burst immediately
+          // instead of falling back.
+          this->fire_directed_burst_();
           return;
         }
 
@@ -684,7 +705,7 @@ namespace esphome {
         // NimBLE's internal "advertising active" state.
         bool stopOk2 = adv2->stop();
         bool startOk2 = adv2->start();
-        ESP_LOGI(TAG, "start_reconnect_advert_: burst window elapsed, fallback stop=%s start=%s", stopOk2 ? "OK" : "FAILED", startOk2 ? "OK" : "FAILED");
+        ESP_LOGI(TAG, "fire_directed_burst_: retry window exhausted, fallback stop=%s start=%s", stopOk2 ? "OK" : "FAILED", startOk2 ? "OK" : "FAILED");
       });
     }
 

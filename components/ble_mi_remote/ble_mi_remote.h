@@ -110,6 +110,7 @@ namespace esphome {
 				void load_target_mac_();
 				void learn_target_mac_(NimBLEAddress addr);
 				void start_reconnect_advert_();
+				void fire_directed_burst_();
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
@@ -141,6 +142,7 @@ namespace esphome {
 				uint8_t				_power_advert_cycle = 0;
 				uint64_t			_target_mac = 0;
 				bool				_has_target_mac = false;
+				uint32_t			_reconnect_retry_until_ms = 0;
 				bool				_target_mac_from_config = false;
 				ESPPreferenceObject	_target_mac_pref;
 
