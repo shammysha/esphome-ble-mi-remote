@@ -107,6 +107,7 @@ namespace esphome {
 
 				void load_target_mac_();
 				void learn_target_mac_(NimBLEAddress addr);
+				void start_reconnect_advert_();
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
@@ -119,6 +120,12 @@ namespace esphome {
 				NimBLEAdvertising*		advertising;
 
 				bool 				_reconnect{true};
+				// Live on/off switch for onDisconnect()'s re-advertise decision -
+				// distinct from _reconnect (the static YAML config): stop()/start()
+				// flip this at runtime so a deliberate stop() doesn't get undone by
+				// the very disconnect it just caused. NimBLE's own
+				// advertiseOnDisconnect is always left false (see setup()).
+				bool				_should_readvertise{true};
 				uint32_t 			_default_delay{100};
 				uint32_t 			_release_delay{8};
 				KeyReport			_keyReport;

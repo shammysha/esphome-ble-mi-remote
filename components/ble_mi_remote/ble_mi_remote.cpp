@@ -161,7 +161,12 @@ namespace esphome {
       this->pServer = NimBLEDevice::createServer();
 
       pServer->setCallbacks(this);
-          pServer->advertiseOnDisconnect(this->_reconnect);
+      // Always false: NimBLE's own auto-restart only knows plain undirected
+      // advertising and would race right after onDisconnect() below, undoing
+      // the directed reconnect burst start_reconnect_advert_() just started.
+      // onDisconnect() is now the sole place deciding whether/how to
+      // re-advertise (gated on _reconnect there instead).
+      pServer->advertiseOnDisconnect(false);
 
       hid = new NimBLEHIDDevice(pServer);
       inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
@@ -193,11 +198,9 @@ namespace esphome {
       // "add device" scan - only bonded/directed reconnects worked.
       advertising->enableScanResponse(true);
 
-      bool advStartOk = advertising->start();
+      this->start_reconnect_advert_();
 
       hid->setBatteryLevel(batteryLevel);
-
-      ESP_LOGI(TAG, "setup: advertising->start()=%s", advStartOk ? "OK" : "FAILED");
 
       release();
     }
@@ -205,9 +208,7 @@ namespace esphome {
     void BleMiRemote::stop() {
       ESP_LOGI(TAG, "stop: entered, reconnect=%s", this->_reconnect ? "true" : "false");
 
-      if (this->_reconnect) {
-        pServer->advertiseOnDisconnect(false);
-      }
+      this->_should_readvertise = false;
 
       std::vector<uint16_t> ids = pServer->getPeerDevices();
 
@@ -225,12 +226,8 @@ namespace esphome {
     void BleMiRemote::start() {
       ESP_LOGI(TAG, "start: entered, reconnect=%s", this->_reconnect ? "true" : "false");
 
-      if (this->_reconnect) {
-        pServer->advertiseOnDisconnect(true);
-      }
-
-      bool ok = pServer->startAdvertising();
-      ESP_LOGI(TAG, "start: startAdvertising()=%s", ok ? "OK" : "FAILED");
+      this->_should_readvertise = true;
+      this->start_reconnect_advert_();
     }
 
     void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
@@ -614,6 +611,37 @@ namespace esphome {
       ESP_LOGI(TAG, "learn_target_mac_: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
     }
 
+    // Mirrors what the real Xiaomi remote actually does on power-up, confirmed
+    // by a live nRF52840 sniffer capture: a burst of ADV_DIRECT_IND targeted
+    // at the bonded central's address (MAC learned via learn_target_mac_()),
+    // ~3.75ms/channel, instead of our previous plain undirected advertising.
+    // NimBLE/the controller pick high-duty-cycle directed advertising
+    // automatically when duration<=1280ms and a dirAddr is given - passing
+    // duration=0 here would instead map to BLE_HS_FOREVER and *not* get the
+    // fast cadence, so the explicit 1280 (the BLE spec's own HD directed-adv
+    // cap) matters. Falls back to normal undirected advertising once the
+    // burst window elapses without a connection.
+    void BleMiRemote::start_reconnect_advert_() {
+      NimBLEAdvertising *adv = pServer->getAdvertising();
+
+      if (!this->_has_target_mac) {
+        bool startOk = adv->start();
+        ESP_LOGI(TAG, "start_reconnect_advert_: no target_mac_address learned yet, plain start()=%s", startOk ? "OK" : "FAILED");
+        return;
+      }
+
+      NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
+      bool stopOk = adv->stop();
+      bool startOk = adv->start(1280, &dirAddr);
+      ESP_LOGI(TAG, "start_reconnect_advert_: directed burst to %s, stop=%s start=%s", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+
+      this->set_timeout("ble_mi_remote_reconnect_burst", 1300, [this]() {
+        NimBLEAdvertising *adv2 = pServer->getAdvertising();
+        bool ok2 = adv2->start();
+        ESP_LOGI(TAG, "start_reconnect_advert_: burst window elapsed, fallback start()=%s", ok2 ? "OK" : "FAILED");
+      });
+    }
+
     void BleMiRemote::onConnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo) {
       this->_connected = true;
       NimBLEConnInfo peer = connInfo;
@@ -638,9 +666,8 @@ namespace esphome {
 
       ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
 
-      if (this->_reconnect) {
-        bool ok = pServer->startAdvertising();
-        ESP_LOGI(TAG, "startAdvertising() after disconnect: %s", ok ? "OK" : "FAILED");
+      if (this->_reconnect && this->_should_readvertise) {
+        this->start_reconnect_advert_();
       }
     }
 
