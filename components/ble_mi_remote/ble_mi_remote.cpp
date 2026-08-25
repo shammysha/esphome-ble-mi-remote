@@ -775,8 +775,17 @@ namespace esphome {
 
       ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
 
+      // A mid-session disconnect (as opposed to the boot-time case handled
+      // by setup() -> start_reconnect_advert_()) is a specific signal that
+      // the box itself chose to drop the link - hammering it with more
+      // directed bursts targeted at a peer that just dropped us doesn't
+      // make sense here. Plain discoverable advertising instead, in case
+      // the box (or a human) is about to start a fresh "Add device" scan.
+      // Also cancel any still-pending HD-burst retry from a boot-time
+      // sequence that hadn't finished its 30s window yet.
+      this->cancel_timeout("ble_mi_remote_reconnect_burst");
       if (this->_reconnect && this->_should_readvertise) {
-        this->start_reconnect_advert_();
+        this->plainAdvertStart();
       }
     }
 
