@@ -716,13 +716,15 @@ namespace esphome {
 
       this->learn_target_mac_(peer.getAddress());
 
-      // Explicit supervision timeout so a peer that silently vanishes at the
-      // app layer (radio still ACKing link-layer traffic, host-side BT
-      // service gone) gets detected and torn down within a bounded time,
-      // instead of leaving us believing we're connected - and therefore not
-      // advertising - indefinitely. min/max interval 15/30ms, no peripheral
-      // latency, 4s supervision timeout (400 * 10ms).
-      pServer->updateConnParams(peer.getConnHandle(), 12, 24, 0, 400);
+      // updateConnParams() here (right alongside the new startSecurity()
+      // call above) is suspected of racing with the security negotiation -
+      // the box appeared to accept a fast reconnect via the HD burst, then
+      // drop the link again shortly after, right around when both requests
+      // would have been in flight together. Disabled for now to test that
+      // hypothesis in isolation; re-add (deferred to onAuthenticationComplete()
+      // rather than here, if restored) only once startSecurity() itself is
+      // confirmed not to be the whole story.
+      // pServer->updateConnParams(peer.getConnHandle(), 12, 24, 0, 400);
 
       release();
     }
