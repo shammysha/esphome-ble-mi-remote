@@ -96,6 +96,14 @@ async def to_code(config: dict) -> None:
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ROLE_CENTRAL", True)
+    # Without this, NimBLE's own bond store (LTK/IRK) does not survive a
+    # reboot - confirmed the hard way via a gapless serial capture: the box
+    # DOES auto-reconnect via the HD-burst (~2s after boot), but
+    # onAuthenticationComplete then reports bonded=false and the link drops
+    # (reason=0x213) because our side no longer has the LTK the box already
+    # remembers from the prior bonding. This is ESP-IDF's own documented
+    # requirement for "reconnect without rebonding after reset/power-cycle".
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_NVS_PERSIST", True)
 
     add_idf_component(name=NIMBLE_CPP_COMPONENT, repo=NIMBLE_CPP_COMPONENT_REPO, ref=NIMBLE_CPP_COMPONENT_REF)
 
