@@ -242,6 +242,7 @@ namespace esphome {
     void BleMiRemote::dump_config() {
       ESP_LOGCONFIG(TAG, "BLE Mi Remote:");
       ESP_LOGCONFIG(TAG, "  Reconnect: %s", this->_reconnect ? "true" : "false");
+      ESP_LOGCONFIG(TAG, "  Connect count: %u, Disconnect count: %u (this boot)", (unsigned) this->_connect_count, (unsigned) this->_disconnect_count);
       if (this->_has_target_mac) {
         ESP_LOGCONFIG(TAG, "  Target MAC: %s (%s)", NimBLEAddress(this->_target_mac, BLE_ADDR_PUBLIC).toString().c_str(), this->_target_mac_from_config ? "from config" : "learned");
       } else {
@@ -724,6 +725,7 @@ namespace esphome {
 
     void BleMiRemote::onConnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo) {
       this->_connected = true;
+      this->_connect_count++;
       NimBLEConnInfo peer = connInfo;
 
       ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
@@ -772,6 +774,7 @@ namespace esphome {
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
       this->_connected = false;
+      this->_disconnect_count++;
 
       ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
 

@@ -144,6 +144,14 @@ namespace esphome {
 				uint64_t			_target_mac = 0;
 				bool				_has_target_mac = false;
 				uint32_t			_reconnect_retry_until_ms = 0;
+				// RAM-only (not persisted) counters so dump_config() can reveal
+				// whether a connect/disconnect happened at all during a window we
+				// couldn't observe live (the remote API log listener routinely
+				// takes 7-25+ seconds to reattach after a reboot, well past a
+				// brief connect-then-drop) - dump_config() output is reliably
+				// replayed to any (re)attaching client, unlike plain ESP_LOGI.
+				uint32_t			_connect_count = 0;
+				uint32_t			_disconnect_count = 0;
 				bool				_target_mac_from_config = false;
 				ESPPreferenceObject	_target_mac_pref;
 
