@@ -628,6 +628,19 @@ namespace esphome {
       ESP_LOGI(TAG, "learn_target_mac_: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
     }
 
+    // Manual test/escape-hatch action: force plain undirected advertising
+    // regardless of the HD-burst/retry logic in start_reconnect_advert_() -
+    // for A/B testing whether the box responds to bare undirected
+    // advertising on its own, independent of anything directed.
+    void BleMiRemote::plainAdvertStart() {
+      NimBLEAdvertising *adv = pServer->getAdvertising();
+      adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
+      adv->setHighDutyCycleDirected(false);
+      bool stopOk = adv->stop();
+      bool startOk = adv->start();
+      ESP_LOGI(TAG, "plainAdvertStart: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+    }
+
     // Mirrors what the real Xiaomi remote (and a compatible third-party
     // remote, independently confirmed the same way) actually does on
     // power-up, confirmed by live nRF52840 sniffer captures: a burst of

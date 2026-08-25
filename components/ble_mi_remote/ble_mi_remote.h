@@ -87,6 +87,7 @@ namespace esphome {
 
 				void set_target_mac(uint64_t mac) { _target_mac = mac; _has_target_mac = true; _target_mac_from_config = true; }
 				void connectWakeStart();
+				void plainAdvertStart();
 
         virtual void onStarted(NimBLEServer *pServer) { };
         virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
