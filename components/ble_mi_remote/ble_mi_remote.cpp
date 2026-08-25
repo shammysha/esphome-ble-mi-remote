@@ -209,6 +209,9 @@ namespace esphome {
       ESP_LOGI(TAG, "stop: entered, reconnect=%s", this->_reconnect ? "true" : "false");
 
       this->_should_readvertise = false;
+      // A pending reconnect-burst fallback (start_reconnect_advert_()) would
+      // otherwise fire later and re-start advertising, undoing this stop().
+      this->cancel_timeout("ble_mi_remote_reconnect_burst");
 
       std::vector<uint16_t> ids = pServer->getPeerDevices();
 
@@ -231,6 +234,20 @@ namespace esphome {
     }
 
     void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
+
+    // dump_config() output is cached and replayed to any client that
+    // (re)subscribes to logs, unlike plain ESP_LOGI - the only reliable way
+    // to see this component's boot-time state remotely, since setup() runs
+    // and finishes well before a remote API log listener can ever attach.
+    void BleMiRemote::dump_config() {
+      ESP_LOGCONFIG(TAG, "BLE Mi Remote:");
+      ESP_LOGCONFIG(TAG, "  Reconnect: %s", this->_reconnect ? "true" : "false");
+      if (this->_has_target_mac) {
+        ESP_LOGCONFIG(TAG, "  Target MAC: %s (%s)", NimBLEAddress(this->_target_mac, BLE_ADDR_PUBLIC).toString().c_str(), this->_target_mac_from_config ? "from config" : "learned");
+      } else {
+        ESP_LOGCONFIG(TAG, "  Target MAC: none yet");
+      }
+    }
 
     bool BleMiRemote::is_connected() {
       if (!this->_connected) {
@@ -645,10 +662,23 @@ namespace esphome {
       ESP_LOGI(TAG, "start_reconnect_advert_: directed burst to %s, stop=%s start=%s", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 
       this->set_timeout("ble_mi_remote_reconnect_burst", 1300, [this]() {
+        if (this->_connected) {
+          // A real connection already completed during the burst window -
+          // the controller auto-stops advertising once connected, so
+          // there's nothing to fall back to.
+          ESP_LOGI(TAG, "start_reconnect_advert_: burst window elapsed, already connected - nothing to do");
+          return;
+        }
+
         NimBLEAdvertising *adv2 = pServer->getAdvertising();
         adv2->setConnectableMode(BLE_GAP_CONN_MODE_UND);
-        bool ok2 = adv2->start();
-        ESP_LOGI(TAG, "start_reconnect_advert_: burst window elapsed, fallback start()=%s", ok2 ? "OK" : "FAILED");
+        // stop()+start(), not a bare start(): same ble_gap_adv_active()
+        // guard lesson as powerAdvertData1/2 above - can't assume the
+        // controller's own HD-directed-advertising timeout already cleared
+        // NimBLE's internal "advertising active" state.
+        bool stopOk2 = adv2->stop();
+        bool startOk2 = adv2->start();
+        ESP_LOGI(TAG, "start_reconnect_advert_: burst window elapsed, fallback stop=%s start=%s", stopOk2 ? "OK" : "FAILED", startOk2 ? "OK" : "FAILED");
       });
     }
 
