@@ -91,6 +91,7 @@ namespace esphome {
         virtual void onStarted(NimBLEServer *pServer) { };
         virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
         virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
+        virtual void onAuthenticationComplete(NimBLEConnInfo& connInfo) override;
         virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
         virtual void on_shutdown() override;
         virtual void on_safe_shutdown() override;

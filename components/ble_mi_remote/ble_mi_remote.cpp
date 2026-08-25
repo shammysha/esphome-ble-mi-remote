@@ -727,6 +727,13 @@ namespace esphome {
       release();
     }
 
+    // Fires once the security procedure startSecurity() kicked off in
+    // onConnect() actually finishes (success or failure) - event-driven,
+    // unlike guessing from bonded/encrypted state on a later reconnect.
+    void BleMiRemote::onAuthenticationComplete(NimBLEConnInfo& connInfo) {
+      ESP_LOGI(TAG, "onAuthenticationComplete: bonded=%s encrypted=%s authenticated=%s", connInfo.isBonded() ? "true" : "false", connInfo.isEncrypted() ? "true" : "false", connInfo.isAuthenticated() ? "true" : "false");
+    }
+
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
       this->_connected = false;
 
