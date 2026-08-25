@@ -634,6 +634,13 @@ namespace esphome {
     // for A/B testing whether the box responds to bare undirected
     // advertising on its own, independent of anything directed.
     void BleMiRemote::plainAdvertStart() {
+      // A fresh manual pairing attempt should not be able to collide with
+      // whatever bond (LTK/IRK) is left over from a previous one - clear it
+      // first so the box is forced into a genuinely new pairing rather than
+      // risking a mismatched-key auth failure against stale local state.
+      bool deleteOk = NimBLEDevice::deleteAllBonds();
+      ESP_LOGI(TAG, "plainAdvertStart: deleteAllBonds()=%s", deleteOk ? "OK" : "FAILED");
+
       NimBLEAdvertising *adv = pServer->getAdvertising();
       adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
       adv->setHighDutyCycleDirected(false);
