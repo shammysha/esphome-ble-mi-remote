@@ -101,9 +101,9 @@ namespace esphome {
 				binary_sensor::BinarySensor *state_sensor_;
 
 			private:
-				bool is_connected();
-				void update_timer();
-				void delay_ms(uint64_t ms);
+				bool isConnected();
+				void updateTimer();
+				void delayMs(uint64_t ms);
 
 				void powerAdvertData1();
 				void powerAdvertData2();

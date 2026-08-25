@@ -250,7 +250,7 @@ namespace esphome {
       }
     }
 
-    bool BleMiRemote::is_connected() {
+    bool BleMiRemote::isConnected() {
       if (!this->_connected) {
         ESP_LOGI(TAG, "Disconnected");
 
@@ -266,7 +266,7 @@ namespace esphome {
         this->hid->setBatteryLevel(this->batteryLevel);
     }
 
-    void BleMiRemote::update_timer() {
+    void BleMiRemote::updateTimer() {
       this->cancel_timeout(TAG);
       this->set_timeout(TAG, _release_delay, [this]() { this->release(); });
     }
@@ -274,27 +274,27 @@ namespace esphome {
 
     void BleMiRemote::sendReport(KeyReport *keys) {
       ESP_LOGD(TAG, "sendReport FIRING...");
-      if (this->is_connected()) {
+      if (this->isConnected()) {
         ESP_LOGD(TAG, "sendReport FIRED!!!");
 
         this->inputKeyboard->setValue((uint8_t*) keys, sizeof(KeyReport));
         if (!this->inputKeyboard->notify()) {
           ESP_LOGE(TAG, "sendReport FAILED!!!");
         }
-        this->delay_ms(_delay_ms);
+        this->delayMs(_delay_ms);
       }
     }
 
     void BleMiRemote::sendReport(SpecialKeyReport *keys) {
       ESP_LOGD(TAG, "sendReport FIRING...");
-      if (this->is_connected()) {
+      if (this->isConnected()) {
         ESP_LOGD(TAG, "sendReport FIRED!!!");
 
         this->inputSpecialKeys->setValue((uint8_t*) keys, sizeof(SpecialKeyReport));
         if (!this->inputSpecialKeys->notify()) {
           ESP_LOGE(TAG, "sendReport FAILED!!!");
         }
-        this->delay_ms(_delay_ms);
+        this->delayMs(_delay_ms);
       }
     }
 
@@ -438,9 +438,9 @@ namespace esphome {
 
     void BleMiRemote::press(uint8_t k, bool with_timer) {
       ESP_LOGI(TAG, "press: k=%d connected=%s", k, this->_connected ? "true" : "false");
-      if (this->is_connected()) {
+      if (this->isConnected()) {
         if (with_timer) {
-          this->update_timer();
+          this->updateTimer();
         }
 
         uint8_t i;
@@ -553,9 +553,9 @@ namespace esphome {
 
     void BleMiRemote::pressSpecial(uint8_t k, bool with_timer) {
       ESP_LOGI(TAG, "pressSpecial: k=%d connected=%s", k, this->_connected ? "true" : "false");
-      if (this->is_connected()) {
+      if (this->isConnected()) {
         if (with_timer) {
-          this->update_timer();
+          this->updateTimer();
         }
           uint8_t bit = k % 8;
           uint8_t byte = int(k / 8);
@@ -571,7 +571,7 @@ namespace esphome {
     }
 
     void BleMiRemote::release() {
-      if (this->is_connected()) {
+      if (this->isConnected()) {
         this->cancel_timeout(TAG);
 
         _keyReport.keys[0] = 0;
@@ -868,7 +868,7 @@ namespace esphome {
     }
 
 
-    void BleMiRemote::delay_ms(uint64_t ms) {
+    void BleMiRemote::delayMs(uint64_t ms) {
       uint64_t m = esp_timer_get_time();
       if (ms) {
         uint64_t e = (m + (ms * 1000));
