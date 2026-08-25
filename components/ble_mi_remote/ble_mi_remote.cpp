@@ -155,7 +155,7 @@ namespace esphome {
     void BleMiRemote::setup() {
       ESP_LOGI(TAG, "Setting this up...");
 
-      this->load_target_mac_();
+      this->loadTargetMac();
 
       NimBLEDevice::init(deviceName);
       this->pServer = NimBLEDevice::createServer();
@@ -163,7 +163,7 @@ namespace esphome {
       pServer->setCallbacks(this);
       // Always false: NimBLE's own auto-restart only knows plain undirected
       // advertising and would race right after onDisconnect() below, undoing
-      // the directed reconnect burst start_reconnect_advert_() just started.
+      // the directed reconnect burst startReconnectAdvert() just started.
       // onDisconnect() is now the sole place deciding whether/how to
       // re-advertise (gated on _reconnect there instead).
       pServer->advertiseOnDisconnect(false);
@@ -198,7 +198,7 @@ namespace esphome {
       // "add device" scan - only bonded/directed reconnects worked.
       advertising->enableScanResponse(true);
 
-      this->start_reconnect_advert_();
+      this->startReconnectAdvert();
 
       hid->setBatteryLevel(batteryLevel);
 
@@ -209,7 +209,7 @@ namespace esphome {
       ESP_LOGI(TAG, "stop: entered, reconnect=%s", this->_reconnect ? "true" : "false");
 
       this->_should_readvertise = false;
-      // A pending reconnect-burst fallback (start_reconnect_advert_()) would
+      // A pending reconnect-burst fallback (startReconnectAdvert()) would
       // otherwise fire later and re-start advertising, undoing this stop().
       this->cancel_timeout("ble_mi_remote_reconnect_burst");
 
@@ -230,7 +230,7 @@ namespace esphome {
       ESP_LOGI(TAG, "start: entered, reconnect=%s", this->_reconnect ? "true" : "false");
 
       this->_should_readvertise = true;
-      this->start_reconnect_advert_();
+      this->startReconnectAdvert();
     }
 
     void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
@@ -594,11 +594,11 @@ namespace esphome {
     // address (persisted to NVS flash so it survives reboots). An explicit
     // target_mac_address: in YAML always takes priority and is never
     // overwritten by this.
-    void BleMiRemote::load_target_mac_() {
+    void BleMiRemote::loadTargetMac() {
       this->_target_mac_pref = global_preferences->make_preference<uint64_t>(fnv1_hash("ble_mi_remote_target_mac"));
 
       if (this->_target_mac_from_config) {
-        ESP_LOGI(TAG, "load_target_mac_: using target_mac_address from config: %s", NimBLEAddress(this->_target_mac, BLE_ADDR_PUBLIC).toString().c_str());
+        ESP_LOGI(TAG, "loadTargetMac: using target_mac_address from config: %s", NimBLEAddress(this->_target_mac, BLE_ADDR_PUBLIC).toString().c_str());
         return;
       }
 
@@ -606,13 +606,13 @@ namespace esphome {
       if (this->_target_mac_pref.load(&stored) && stored != 0) {
         this->_target_mac = stored;
         this->_has_target_mac = true;
-        ESP_LOGI(TAG, "load_target_mac_: loaded learned target %s from flash", NimBLEAddress(stored, BLE_ADDR_PUBLIC).toString().c_str());
+        ESP_LOGI(TAG, "loadTargetMac: loaded learned target %s from flash", NimBLEAddress(stored, BLE_ADDR_PUBLIC).toString().c_str());
       } else {
-        ESP_LOGI(TAG, "load_target_mac_: no target_mac_address configured and nothing learned yet");
+        ESP_LOGI(TAG, "loadTargetMac: no target_mac_address configured and nothing learned yet");
       }
     }
 
-    void BleMiRemote::learn_target_mac_(NimBLEAddress addr) {
+    void BleMiRemote::learnTargetMac(NimBLEAddress addr) {
       if (this->_target_mac_from_config) {
         return;
       }
@@ -626,7 +626,7 @@ namespace esphome {
       this->_has_target_mac = true;
 
       bool ok = this->_target_mac_pref.save(&mac);
-      ESP_LOGI(TAG, "learn_target_mac_: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
+      ESP_LOGI(TAG, "learnTargetMac: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
     }
 
     // Raw plain/undirected advertising start - touches no bond state. This
@@ -636,49 +636,49 @@ namespace esphome {
     // never by itself cost us a saved LTK/IRK - only plainAdvertStart()'s
     // deliberate manual escape hatch and a *confirmed* saved-key auth
     // rejection (onAuthenticationComplete()) are allowed to touch bonds.
-    void BleMiRemote::start_plain_advertising_() {
+    void BleMiRemote::startPlainAdvertising() {
       NimBLEAdvertising *adv = pServer->getAdvertising();
       adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
       adv->setHighDutyCycleDirected(false);
       bool stopOk = adv->stop();
       bool startOk = adv->start();
-      ESP_LOGI(TAG, "start_plain_advertising_: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+      ESP_LOGI(TAG, "startPlainAdvertising: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
     }
 
     // Manual test/escape-hatch action (ble_mi_remote.plain_advert): explicit
     // user intent to force a completely fresh pairing, regardless of the
-    // HD-burst/retry logic in start_reconnect_advert_().
+    // HD-burst/retry logic in startReconnectAdvert().
     void BleMiRemote::plainAdvertStart() {
       // A fresh manual pairing attempt should not be able to collide with
       // whatever bond (LTK/IRK) is left over from a previous one - clear it
       // first so the box is forced into a genuinely new pairing rather than
       // risking a mismatched-key auth failure against stale local state.
-      // Deliberate, human-initiated action only - see start_plain_advertising_()
+      // Deliberate, human-initiated action only - see startPlainAdvertising()
       // for why every automatic path avoids this.
       bool deleteOk = NimBLEDevice::deleteAllBonds();
       ESP_LOGI(TAG, "plainAdvertStart: deleteAllBonds()=%s", deleteOk ? "OK" : "FAILED");
 
-      this->start_plain_advertising_();
+      this->startPlainAdvertising();
     }
 
     // Mirrors what the real Xiaomi remote (and a compatible third-party
     // remote, independently confirmed the same way) actually does on
     // power-up, confirmed by live nRF52840 sniffer captures: a burst of
     // ADV_DIRECT_IND at high duty cycle (~3.75ms/channel) targeted at the
-    // bonded central's address (MAC learned via learn_target_mac_()),
+    // bonded central's address (MAC learned via learnTargetMac()),
     // instead of our previous plain undirected advertising. High duty cycle
     // is a separate flag from conn_mode/duration - see
     // setHighDutyCycleDirected() (our esp-nimble-cpp fork's addition, since
     // upstream never exposed ble_gap_adv_params.high_duty_cycle at all).
     // Falls back to normal undirected advertising once the burst window
     // elapses without a connection.
-    void BleMiRemote::start_reconnect_advert_() {
+    void BleMiRemote::startReconnectAdvert() {
       if (!this->_has_target_mac) {
         // Nothing to send a directed burst *to* yet (first-ever boot) -
         // plain/discoverable advertising is the only option, same as every
         // other legitimate automatic-plain-advert trigger below.
-        ESP_LOGI(TAG, "start_reconnect_advert_: no target_mac_address learned yet, falling back to plain advertising");
-        this->start_plain_advertising_();
+        ESP_LOGI(TAG, "startReconnectAdvert: no target_mac_address learned yet, falling back to plain advertising");
+        this->startPlainAdvertising();
         return;
       }
 
@@ -691,8 +691,8 @@ namespace esphome {
         // a reconnect to an already-bonded peer; without a bond there's
         // nothing to reconnect to, so don't waste the 30s retry window on
         // it. No bond to preserve here either way - nothing to delete.
-        ESP_LOGI(TAG, "start_reconnect_advert_: no saved bond for %s, falling back to plain advertising", dirAddr.toString().c_str());
-        this->start_plain_advertising_();
+        ESP_LOGI(TAG, "startReconnectAdvert: no saved bond for %s, falling back to plain advertising", dirAddr.toString().c_str());
+        this->startPlainAdvertising();
         return;
       }
 
@@ -705,7 +705,7 @@ namespace esphome {
       // controller hard-caps each one at 1.28s regardless) for up to 30s
       // before giving up to plain undirected advertising.
       this->_reconnect_retry_until_ms = millis() + 30000;
-      this->fire_directed_burst_();
+      this->fireDirectedBurst();
     }
 
     // setConnectableMode()/setHighDutyCycleDirected() are the actual
@@ -717,28 +717,28 @@ namespace esphome {
     // setHighDutyCycleDirected(true), the burst transmitted but at a slow
     // ~65ms interval instead of the real remotes' ~3.75ms). Both are sticky
     // and must be reset for the undirected fallback.
-    void BleMiRemote::fire_directed_burst_() {
+    void BleMiRemote::fireDirectedBurst() {
       NimBLEAdvertising *adv = pServer->getAdvertising();
       NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
       adv->setConnectableMode(BLE_GAP_CONN_MODE_DIR);
       adv->setHighDutyCycleDirected(true);
       bool stopOk = adv->stop();
       bool startOk = adv->start(1280, &dirAddr);
-      ESP_LOGI(TAG, "fire_directed_burst_: HD directed burst to %s, stop=%s start=%s, retry_remaining_ms=%d", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", (int) (this->_reconnect_retry_until_ms - millis()));
+      ESP_LOGI(TAG, "fireDirectedBurst: HD directed burst to %s, stop=%s start=%s, retry_remaining_ms=%d", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", (int) (this->_reconnect_retry_until_ms - millis()));
 
       this->set_timeout("ble_mi_remote_reconnect_burst", 1300, [this]() {
         if (this->_connected) {
           // A real connection already completed during the burst window -
           // the controller auto-stops advertising once connected, so
           // there's nothing to fall back to.
-          ESP_LOGI(TAG, "fire_directed_burst_: burst window elapsed, already connected - nothing to do");
+          ESP_LOGI(TAG, "fireDirectedBurst: burst window elapsed, already connected - nothing to do");
           return;
         }
 
         if ((int32_t) (millis() - this->_reconnect_retry_until_ms) < 0) {
           // Still within the retry window - fire another burst immediately
           // instead of falling back.
-          this->fire_directed_burst_();
+          this->fireDirectedBurst();
           return;
         }
 
@@ -749,7 +749,7 @@ namespace esphome {
         // automatically).
         NimBLEAdvertising *adv2 = pServer->getAdvertising();
         bool stopOk2 = adv2->stop();
-        ESP_LOGI(TAG, "fire_directed_burst_: retry window exhausted, stopping advertising (stop=%s) - manual plain_advert needed to resume", stopOk2 ? "OK" : "FAILED");
+        ESP_LOGI(TAG, "fireDirectedBurst: retry window exhausted, stopping advertising (stop=%s) - manual plain_advert needed to resume", stopOk2 ? "OK" : "FAILED");
       });
     }
 
@@ -780,7 +780,7 @@ namespace esphome {
         ESP_LOGI(TAG, "Connected: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
       }
 
-      this->learn_target_mac_(peer.getAddress());
+      this->learnTargetMac(peer.getAddress());
 
       // Explicit connection-parameter/supervision-timeout request deferred
       // to onAuthenticationComplete() instead of here - see there for why.
@@ -804,7 +804,7 @@ namespace esphome {
         // is simply off right now - not 24/7) must never cost us a key, but
         // a *confirmed* rejection like this one would otherwise leave a
         // permanently-bad bond that isBonded() keeps reporting as present,
-        // making start_reconnect_advert_() retry the same failing HD burst
+        // making startReconnectAdvert() retry the same failing HD burst
         // forever instead of ever reaching the plain-advertising fallback.
         bool deleteOk = NimBLEDevice::deleteBond(connInfo.getAddress());
         ESP_LOGW(TAG, "onAuthenticationComplete: saved-key authentication failed, deleteBond(%s)=%s, disconnecting to trigger plain-advertising fallback", connInfo.getAddress().toString().c_str(), deleteOk ? "OK" : "FAILED");
@@ -816,7 +816,7 @@ namespace esphome {
       // link layer (radio gone - box powered off ungracefully, out of
       // range, etc.) gets detected and torn down within a bounded time,
       // instead of leaving us believing we're still connected (and
-      // therefore never re-entering start_reconnect_advert_()) for however
+      // therefore never re-entering startReconnectAdvert()) for however
       // long the central happened to negotiate at connect time (up to 32s
       // per spec, entirely outside our control). Placed here rather than in
       // onConnect() (right alongside startSecurity()) specifically to avoid
@@ -847,7 +847,7 @@ namespace esphome {
       // sequence that hadn't finished its own 30s window yet.
       this->cancel_timeout("ble_mi_remote_reconnect_burst");
       if (this->_reconnect && this->_should_readvertise) {
-        this->start_reconnect_advert_();
+        this->startReconnectAdvert();
       }
     }
 
