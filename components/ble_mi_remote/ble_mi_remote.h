@@ -112,6 +112,7 @@ namespace esphome {
 				void learn_target_mac_(NimBLEAddress addr);
 				void start_reconnect_advert_();
 				void fire_directed_burst_();
+				void start_plain_advertising_();
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;

@@ -629,24 +629,36 @@ namespace esphome {
       ESP_LOGI(TAG, "learn_target_mac_: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
     }
 
-    // Manual test/escape-hatch action: force plain undirected advertising
-    // regardless of the HD-burst/retry logic in start_reconnect_advert_() -
-    // for A/B testing whether the box responds to bare undirected
-    // advertising on its own, independent of anything directed.
-    void BleMiRemote::plainAdvertStart() {
-      // A fresh manual pairing attempt should not be able to collide with
-      // whatever bond (LTK/IRK) is left over from a previous one - clear it
-      // first so the box is forced into a genuinely new pairing rather than
-      // risking a mismatched-key auth failure against stale local state.
-      bool deleteOk = NimBLEDevice::deleteAllBonds();
-      ESP_LOGI(TAG, "plainAdvertStart: deleteAllBonds()=%s", deleteOk ? "OK" : "FAILED");
-
+    // Raw plain/undirected advertising start - touches no bond state. This
+    // is what every *automatic* fallback path (no target MAC yet, no saved
+    // bond, a plain mid-session disconnect) calls: the box being off is a
+    // completely normal, expected outcome (it's not a 24/7 device) and must
+    // never by itself cost us a saved LTK/IRK - only plainAdvertStart()'s
+    // deliberate manual escape hatch and a *confirmed* saved-key auth
+    // rejection (onAuthenticationComplete()) are allowed to touch bonds.
+    void BleMiRemote::start_plain_advertising_() {
       NimBLEAdvertising *adv = pServer->getAdvertising();
       adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
       adv->setHighDutyCycleDirected(false);
       bool stopOk = adv->stop();
       bool startOk = adv->start();
-      ESP_LOGI(TAG, "plainAdvertStart: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+      ESP_LOGI(TAG, "start_plain_advertising_: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+    }
+
+    // Manual test/escape-hatch action (ble_mi_remote.plain_advert): explicit
+    // user intent to force a completely fresh pairing, regardless of the
+    // HD-burst/retry logic in start_reconnect_advert_().
+    void BleMiRemote::plainAdvertStart() {
+      // A fresh manual pairing attempt should not be able to collide with
+      // whatever bond (LTK/IRK) is left over from a previous one - clear it
+      // first so the box is forced into a genuinely new pairing rather than
+      // risking a mismatched-key auth failure against stale local state.
+      // Deliberate, human-initiated action only - see start_plain_advertising_()
+      // for why every automatic path avoids this.
+      bool deleteOk = NimBLEDevice::deleteAllBonds();
+      ESP_LOGI(TAG, "plainAdvertStart: deleteAllBonds()=%s", deleteOk ? "OK" : "FAILED");
+
+      this->start_plain_advertising_();
     }
 
     // Mirrors what the real Xiaomi remote (and a compatible third-party
@@ -666,20 +678,21 @@ namespace esphome {
         // plain/discoverable advertising is the only option, same as every
         // other legitimate automatic-plain-advert trigger below.
         ESP_LOGI(TAG, "start_reconnect_advert_: no target_mac_address learned yet, falling back to plain advertising");
-        this->plainAdvertStart();
+        this->start_plain_advertising_();
         return;
       }
 
       NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
       if (!NimBLEDevice::isBonded(dirAddr)) {
         // We know *who* to target but hold no bond (LTK/IRK) for them -
-        // e.g. NVS bond storage was wiped/never persisted, or the target
-        // was learned from a connection that never actually bonded. A
-        // directed burst only makes sense as a reconnect to an already-
-        // bonded peer; without a bond there's nothing to reconnect to, so
-        // don't waste the 30s retry window on it.
+        // e.g. the target was learned from a connection that never actually
+        // bonded, or a confirmed auth failure already cleared it (see
+        // onAuthenticationComplete()). A directed burst only makes sense as
+        // a reconnect to an already-bonded peer; without a bond there's
+        // nothing to reconnect to, so don't waste the 30s retry window on
+        // it. No bond to preserve here either way - nothing to delete.
         ESP_LOGI(TAG, "start_reconnect_advert_: no saved bond for %s, falling back to plain advertising", dirAddr.toString().c_str());
-        this->plainAdvertStart();
+        this->start_plain_advertising_();
         return;
       }
 
@@ -792,14 +805,16 @@ namespace esphome {
         // startSecurity() ran against a peer we believed we already held
         // keys for (onConnect() only calls it when !isBonded() at connect
         // time, so getting here at all with a still-failed bond means our
-        // saved keys were rejected) - the box has typically already started
-        // tearing the link down on its own by this point (observed:
-        // Disconnected reason=0x213 a few ms later), which would let
-        // onDisconnect() handle the plain-advertising fallback anyway. Don't
-        // rely on that happening though: force the disconnect here so
-        // onDisconnect()'s plainAdvertStart() fallback is guaranteed to run
-        // promptly even if the peer stays connected-but-unauthenticated.
-        ESP_LOGW(TAG, "onAuthenticationComplete: saved-key authentication failed, disconnecting to trigger plain-advertising fallback");
+        // saved keys were rejected). This is the ONE automatic case allowed
+        // to touch bond storage - and only this specific peer's entry, not
+        // deleteAllBonds(): a merely failed/timed-out HD-burst (e.g. the box
+        // is simply off right now - not 24/7) must never cost us a key, but
+        // a *confirmed* rejection like this one would otherwise leave a
+        // permanently-bad bond that isBonded() keeps reporting as present,
+        // making start_reconnect_advert_() retry the same failing HD burst
+        // forever instead of ever reaching the plain-advertising fallback.
+        bool deleteOk = NimBLEDevice::deleteBond(connInfo.getAddress());
+        ESP_LOGW(TAG, "onAuthenticationComplete: saved-key authentication failed, deleteBond(%s)=%s, disconnecting to trigger plain-advertising fallback", connInfo.getAddress().toString().c_str(), deleteOk ? "OK" : "FAILED");
         pServer->disconnect(connInfo.getConnHandle());
       }
     }
@@ -810,17 +825,19 @@ namespace esphome {
 
       ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
 
-      // A mid-session disconnect (as opposed to the boot-time case handled
-      // by setup() -> start_reconnect_advert_()) is a specific signal that
-      // the box itself chose to drop the link - hammering it with more
-      // directed bursts targeted at a peer that just dropped us doesn't
-      // make sense here. Plain discoverable advertising instead, in case
-      // the box (or a human) is about to start a fresh "Add device" scan.
-      // Also cancel any still-pending HD-burst retry from a boot-time
-      // sequence that hadn't finished its 30s window yet.
+      // A mid-session disconnect is just as legitimate a reconnect scenario
+      // as the boot-time one - most commonly the box simply being powered
+      // off (it's not a 24/7 device). Reuse the same dispatcher setup()/
+      // start() use: if we still hold a valid bond for the target, retry
+      // via HD-burst so the box gets a genuine reconnect burst the moment
+      // it's powered back on, exactly like a real remote; a failed/timed-
+      // out HD-burst here is expected and must not touch saved keys. Only
+      // a target-less or bond-less state falls through to plain
+      // advertising. Also cancel any still-pending HD-burst retry from a
+      // sequence that hadn't finished its own 30s window yet.
       this->cancel_timeout("ble_mi_remote_reconnect_burst");
       if (this->_reconnect && this->_should_readvertise) {
-        this->plainAdvertStart();
+        this->start_reconnect_advert_();
       }
     }
 
