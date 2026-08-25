@@ -703,6 +703,17 @@ namespace esphome {
       // Logging this to confirm/rule out on the next real connect.
       ESP_LOGI(TAG, "Connected: bonded=%s encrypted=%s authenticated=%s", peer.isBonded() ? "true" : "false", peer.isEncrypted() ? "true" : "false", peer.isAuthenticated() ? "true" : "false");
 
+      // Confirmed via the above diagnostic (real hardware, 2026-08-25): the
+      // box connects without ever bonding/encrypting on its own - it's never
+      // forced to, since NOTIFY isn't ENC-gated. Request security ourselves
+      // instead of waiting for a central that apparently never will -
+      // standard "peripheral-initiated pairing". No-op if already bonded.
+      if (!peer.isBonded()) {
+        int rc = 0;
+        bool startOk = NimBLEDevice::startSecurity(peer.getConnHandle(), &rc);
+        ESP_LOGI(TAG, "Connected: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
+      }
+
       this->learn_target_mac_(peer.getAddress());
 
       // Explicit supervision timeout so a peer that silently vanishes at the
