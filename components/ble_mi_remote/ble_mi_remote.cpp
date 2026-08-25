@@ -782,15 +782,8 @@ namespace esphome {
 
       this->learn_target_mac_(peer.getAddress());
 
-      // updateConnParams() here (right alongside the new startSecurity()
-      // call above) is suspected of racing with the security negotiation -
-      // the box appeared to accept a fast reconnect via the HD burst, then
-      // drop the link again shortly after, right around when both requests
-      // would have been in flight together. Disabled for now to test that
-      // hypothesis in isolation; re-add (deferred to onAuthenticationComplete()
-      // rather than here, if restored) only once startSecurity() itself is
-      // confirmed not to be the whole story.
-      // pServer->updateConnParams(peer.getConnHandle(), 12, 24, 0, 400);
+      // Explicit connection-parameter/supervision-timeout request deferred
+      // to onAuthenticationComplete() instead of here - see there for why.
 
       release();
     }
@@ -816,7 +809,24 @@ namespace esphome {
         bool deleteOk = NimBLEDevice::deleteBond(connInfo.getAddress());
         ESP_LOGW(TAG, "onAuthenticationComplete: saved-key authentication failed, deleteBond(%s)=%s, disconnecting to trigger plain-advertising fallback", connInfo.getAddress().toString().c_str(), deleteOk ? "OK" : "FAILED");
         pServer->disconnect(connInfo.getConnHandle());
+        return;
       }
+
+      // Explicit supervision timeout so a peer that silently vanishes at the
+      // link layer (radio gone - box powered off ungracefully, out of
+      // range, etc.) gets detected and torn down within a bounded time,
+      // instead of leaving us believing we're still connected (and
+      // therefore never re-entering start_reconnect_advert_()) for however
+      // long the central happened to negotiate at connect time (up to 32s
+      // per spec, entirely outside our control). Placed here rather than in
+      // onConnect() (right alongside startSecurity()) specifically to avoid
+      // an earlier-suspected race between the two requests during the
+      // sensitive pairing window - by the time we get here, security has
+      // already succeeded, so there's nothing left to race with.
+      // min/max interval 15/30ms, no peripheral latency, 4s supervision
+      // timeout (400 * 10ms).
+      pServer->updateConnParams(connInfo.getConnHandle(), 12, 24, 0, 400);
+      ESP_LOGI(TAG, "onAuthenticationComplete: updateConnParams() requested");
     }
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
