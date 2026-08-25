@@ -693,6 +693,15 @@ namespace esphome {
       NimBLEConnInfo peer = connInfo;
 
       ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
+      // Diagnostic: NimBLEHIDDevice's input report characteristic requires
+      // encryption (READ_ENC) for a direct read, but its NOTIFY property is
+      // granted unconditionally - so an unbonded/unencrypted central can, in
+      // principle, subscribe and receive our sendReport()/notify() calls
+      // (which would explain "sendReport FIRED!!! but nothing happens on
+      // the TV" if the host OS silently drops HID input from an
+      // unauthenticated link per HOGP policy, while we see local success).
+      // Logging this to confirm/rule out on the next real connect.
+      ESP_LOGI(TAG, "Connected: bonded=%s encrypted=%s authenticated=%s", peer.isBonded() ? "true" : "false", peer.isEncrypted() ? "true" : "false", peer.isAuthenticated() ? "true" : "false");
 
       this->learn_target_mac_(peer.getAddress());
 
