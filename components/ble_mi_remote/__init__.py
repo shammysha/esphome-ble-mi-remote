@@ -42,7 +42,8 @@ from .const import (
     CONF_TEXT,
     DOMAIN,
     NIMBLE_CPP_COMPONENT,
-    NIMBLE_CPP_COMPONENT_VERSION
+    NIMBLE_CPP_COMPONENT_REPO,
+    NIMBLE_CPP_COMPONENT_REF
 )
 
 CODEOWNERS: Final = ["@shammysha"]
@@ -95,7 +96,7 @@ async def to_code(config: dict) -> None:
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ROLE_CENTRAL", True)
 
-    add_idf_component(name=NIMBLE_CPP_COMPONENT, ref=NIMBLE_CPP_COMPONENT_VERSION)
+    add_idf_component(name=NIMBLE_CPP_COMPONENT, repo=NIMBLE_CPP_COMPONENT_REPO, ref=NIMBLE_CPP_COMPONENT_REF)
 
 
 async def adding_special_keys(var: MockObj, config: dict) -> None:

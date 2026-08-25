@@ -48,9 +48,17 @@ ACTION_RELEASE_CLASS: Final = "BleMiRemoteReleaseAction"
 ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 ACTION_CONNECT_WAKE_CLASS: Final = "BleMiRemoteConnectWakeAction"
 
-"""ESP-IDF component: NimBLE C++ wrapper (native ESP-IDF port of NimBLE-Arduino)"""
+"""ESP-IDF component: NimBLE C++ wrapper (native ESP-IDF port of NimBLE-Arduino).
+Pinned to a fork (branched off the upstream 2.5.0 tag) that adds
+NimBLEAdvertising::setHighDutyCycleDirected() - upstream esp-nimble-cpp has no
+public way to request true high-duty-cycle directed advertising
+(ble_gap_adv_params.high_duty_cycle), which is the actual mechanism a real
+Xiaomi remote uses to reconnect fast after a power loss (confirmed via a live
+nRF52840 sniffer capture). See https://github.com/shammysha/esp-nimble-cpp/tree/ble-mi-remote-hd-directed
+"""
 NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
-NIMBLE_CPP_COMPONENT_VERSION: Final = "^2.5.0"
+NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
+NIMBLE_CPP_COMPONENT_REF: Final = "ble-mi-remote-hd-directed"
 
 """Special buttons"""
 SPECIAL_KEY: Final = [

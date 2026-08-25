@@ -628,38 +628,43 @@ namespace esphome {
       ESP_LOGI(TAG, "learn_target_mac_: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
     }
 
-    // Mirrors what the real Xiaomi remote actually does on power-up, confirmed
-    // by a live nRF52840 sniffer capture: a burst of ADV_DIRECT_IND targeted
-    // at the bonded central's address (MAC learned via learn_target_mac_()),
-    // ~3.75ms/channel, instead of our previous plain undirected advertising.
-    // NimBLE/the controller pick high-duty-cycle directed advertising
-    // automatically when duration<=1280ms and a dirAddr is given - passing
-    // duration=0 here would instead map to BLE_HS_FOREVER and *not* get the
-    // fast cadence, so the explicit 1280 (the BLE spec's own HD directed-adv
-    // cap) matters. Falls back to normal undirected advertising once the
-    // burst window elapses without a connection.
+    // Mirrors what the real Xiaomi remote (and a compatible third-party
+    // remote, independently confirmed the same way) actually does on
+    // power-up, confirmed by live nRF52840 sniffer captures: a burst of
+    // ADV_DIRECT_IND at high duty cycle (~3.75ms/channel) targeted at the
+    // bonded central's address (MAC learned via learn_target_mac_()),
+    // instead of our previous plain undirected advertising. High duty cycle
+    // is a separate flag from conn_mode/duration - see
+    // setHighDutyCycleDirected() (our esp-nimble-cpp fork's addition, since
+    // upstream never exposed ble_gap_adv_params.high_duty_cycle at all).
+    // Falls back to normal undirected advertising once the burst window
+    // elapses without a connection.
     void BleMiRemote::start_reconnect_advert_() {
       NimBLEAdvertising *adv = pServer->getAdvertising();
 
       if (!this->_has_target_mac) {
         adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
+        adv->setHighDutyCycleDirected(false);
         bool startOk = adv->start();
         ESP_LOGI(TAG, "start_reconnect_advert_: no target_mac_address learned yet, plain start()=%s", startOk ? "OK" : "FAILED");
         return;
       }
 
-      // setConnectableMode() is the actual switch NimBLE/the controller use
-      // to pick ADV_DIRECT_IND vs ADV_IND - start()'s dirAddr argument alone
-      // is NOT enough (confirmed the hard way: without this, a live
-      // nRF52840 sniffer capture showed dirAddr being silently ignored and
-      // plain undirected advertising going out regardless). Must be set back
-      // to UND for the undirected fallback below, since it's sticky
-      // (persists on the advertising params until changed again).
+      // setConnectableMode()/setHighDutyCycleDirected() are the actual
+      // switches NimBLE/the controller use to pick ADV_DIRECT_IND (and its
+      // duty cycle) - start()'s dirAddr/duration arguments alone are NOT
+      // enough (confirmed the hard way: without setConnectableMode(DIR), a
+      // live nRF52840 sniffer capture showed dirAddr being silently ignored
+      // and plain undirected advertising going out regardless; without
+      // setHighDutyCycleDirected(true), the burst transmitted but at a slow
+      // ~65ms interval instead of the real remotes' ~3.75ms). Both are
+      // sticky and must be set back for the undirected fallback below.
       NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
       adv->setConnectableMode(BLE_GAP_CONN_MODE_DIR);
+      adv->setHighDutyCycleDirected(true);
       bool stopOk = adv->stop();
       bool startOk = adv->start(1280, &dirAddr);
-      ESP_LOGI(TAG, "start_reconnect_advert_: directed burst to %s, stop=%s start=%s", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+      ESP_LOGI(TAG, "start_reconnect_advert_: HD directed burst to %s, stop=%s start=%s", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 
       this->set_timeout("ble_mi_remote_reconnect_burst", 1300, [this]() {
         if (this->_connected) {
@@ -672,6 +677,7 @@ namespace esphome {
 
         NimBLEAdvertising *adv2 = pServer->getAdvertising();
         adv2->setConnectableMode(BLE_GAP_CONN_MODE_UND);
+        adv2->setHighDutyCycleDirected(false);
         // stop()+start(), not a bare start(): same ble_gap_adv_active()
         // guard lesson as powerAdvertData1/2 above - can't assume the
         // controller's own HD-directed-advertising timeout already cleared
