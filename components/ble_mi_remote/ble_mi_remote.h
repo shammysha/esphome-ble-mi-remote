@@ -101,18 +101,18 @@ namespace esphome {
 				binary_sensor::BinarySensor *state_sensor_;
 
 			private:
-				bool is_connected();
-				void update_timer();
-				void delay_ms(uint64_t ms);
+				bool isConnected();
+				void updateTimer();
+				void delayMs(uint64_t ms);
 
 				void powerAdvertData1();
 				void powerAdvertData2();
 
-				void load_target_mac_();
-				void learn_target_mac_(NimBLEAddress addr);
-				void start_reconnect_advert_();
-				void fire_directed_burst_();
-				void start_plain_advertising_();
+				void loadTargetMac();
+				void learnTargetMac(NimBLEAddress addr);
+				void startReconnectAdvert();
+				void fireDirectedBurst();
+				void startPlainAdvertising();
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
