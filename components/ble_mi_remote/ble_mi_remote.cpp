@@ -19,6 +19,8 @@
 #include <list>
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
+#include "esphome/core/helpers.h"
+#include "esphome/core/preferences.h"
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
@@ -152,6 +154,8 @@ namespace esphome {
 
     void BleMiRemote::setup() {
       ESP_LOGI(TAG, "Setting this up...");
+
+      this->load_target_mac_();
 
       NimBLEDevice::init(deviceName);
       this->pServer = NimBLEDevice::createServer();
@@ -570,11 +574,53 @@ namespace esphome {
       }
     }
 
+    // Auto-learns the target_mac_address instead of requiring it hand-typed
+    // in YAML: every time a peer actually connects to us, remember its
+    // address (persisted to NVS flash so it survives reboots). An explicit
+    // target_mac_address: in YAML always takes priority and is never
+    // overwritten by this.
+    void BleMiRemote::load_target_mac_() {
+      this->_target_mac_pref = global_preferences->make_preference<uint64_t>(fnv1_hash("ble_mi_remote_target_mac"));
+
+      if (this->_target_mac_from_config) {
+        ESP_LOGI(TAG, "load_target_mac_: using target_mac_address from config: %s", NimBLEAddress(this->_target_mac, BLE_ADDR_PUBLIC).toString().c_str());
+        return;
+      }
+
+      uint64_t stored = 0;
+      if (this->_target_mac_pref.load(&stored) && stored != 0) {
+        this->_target_mac = stored;
+        this->_has_target_mac = true;
+        ESP_LOGI(TAG, "load_target_mac_: loaded learned target %s from flash", NimBLEAddress(stored, BLE_ADDR_PUBLIC).toString().c_str());
+      } else {
+        ESP_LOGI(TAG, "load_target_mac_: no target_mac_address configured and nothing learned yet");
+      }
+    }
+
+    void BleMiRemote::learn_target_mac_(NimBLEAddress addr) {
+      if (this->_target_mac_from_config) {
+        return;
+      }
+
+      uint64_t mac = (uint64_t) addr;
+      if (mac == 0 || mac == this->_target_mac) {
+        return;
+      }
+
+      this->_target_mac = mac;
+      this->_has_target_mac = true;
+
+      bool ok = this->_target_mac_pref.save(&mac);
+      ESP_LOGI(TAG, "learn_target_mac_: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
+    }
+
     void BleMiRemote::onConnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo) {
       this->_connected = true;
       NimBLEConnInfo peer = connInfo;
 
       ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
+
+      this->learn_target_mac_(peer.getAddress());
 
       // Explicit supervision timeout so a peer that silently vanishes at the
       // app layer (radio still ACKing link-layer traffic, host-side BT

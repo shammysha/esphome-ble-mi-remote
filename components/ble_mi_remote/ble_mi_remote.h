@@ -3,6 +3,7 @@
 #ifdef USE_ESP32
 
 #include "esphome/core/component.h"
+#include "esphome/core/preferences.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
@@ -83,7 +84,7 @@ namespace esphome {
 				void powerAdvertStart();
 				void powerAdvertStop();
 
-				void set_target_mac(uint64_t mac) { _target_mac = mac; _has_target_mac = true; }
+				void set_target_mac(uint64_t mac) { _target_mac = mac; _has_target_mac = true; _target_mac_from_config = true; }
 				void connectWakeStart();
 
         virtual void onStarted(NimBLEServer *pServer) { };
@@ -103,6 +104,9 @@ namespace esphome {
 
 				void powerAdvertData1();
 				void powerAdvertData2();
+
+				void load_target_mac_();
+				void learn_target_mac_(NimBLEAddress addr);
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
@@ -128,6 +132,8 @@ namespace esphome {
 				uint8_t				_power_advert_cycle = 0;
 				uint64_t			_target_mac = 0;
 				bool				_has_target_mac = false;
+				bool				_target_mac_from_config = false;
+				ESPPreferenceObject	_target_mac_pref;
 
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;
