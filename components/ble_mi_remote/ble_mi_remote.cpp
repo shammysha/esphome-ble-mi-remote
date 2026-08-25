@@ -710,16 +710,14 @@ namespace esphome {
           return;
         }
 
+        // Retry window exhausted - stop advertising entirely rather than
+        // auto-falling back to plain undirected (explicit user instruction:
+        // plain/undirected advertising must only ever be started manually,
+        // via plainAdvertStart()/the plain_advert action - never
+        // automatically).
         NimBLEAdvertising *adv2 = pServer->getAdvertising();
-        adv2->setConnectableMode(BLE_GAP_CONN_MODE_UND);
-        adv2->setHighDutyCycleDirected(false);
-        // stop()+start(), not a bare start(): same ble_gap_adv_active()
-        // guard lesson as powerAdvertData1/2 above - can't assume the
-        // controller's own HD-directed-advertising timeout already cleared
-        // NimBLE's internal "advertising active" state.
         bool stopOk2 = adv2->stop();
-        bool startOk2 = adv2->start();
-        ESP_LOGI(TAG, "fire_directed_burst_: retry window exhausted, fallback stop=%s start=%s", stopOk2 ? "OK" : "FAILED", startOk2 ? "OK" : "FAILED");
+        ESP_LOGI(TAG, "fire_directed_burst_: retry window exhausted, stopping advertising (stop=%s) - manual plain_advert needed to resume", stopOk2 ? "OK" : "FAILED");
       });
     }
 
