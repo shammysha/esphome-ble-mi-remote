@@ -661,13 +661,25 @@ namespace esphome {
     // Falls back to normal undirected advertising once the burst window
     // elapses without a connection.
     void BleMiRemote::start_reconnect_advert_() {
-      NimBLEAdvertising *adv = pServer->getAdvertising();
-
       if (!this->_has_target_mac) {
-        adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
-        adv->setHighDutyCycleDirected(false);
-        bool startOk = adv->start();
-        ESP_LOGI(TAG, "start_reconnect_advert_: no target_mac_address learned yet, plain start()=%s", startOk ? "OK" : "FAILED");
+        // Nothing to send a directed burst *to* yet (first-ever boot) -
+        // plain/discoverable advertising is the only option, same as every
+        // other legitimate automatic-plain-advert trigger below.
+        ESP_LOGI(TAG, "start_reconnect_advert_: no target_mac_address learned yet, falling back to plain advertising");
+        this->plainAdvertStart();
+        return;
+      }
+
+      NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
+      if (!NimBLEDevice::isBonded(dirAddr)) {
+        // We know *who* to target but hold no bond (LTK/IRK) for them -
+        // e.g. NVS bond storage was wiped/never persisted, or the target
+        // was learned from a connection that never actually bonded. A
+        // directed burst only makes sense as a reconnect to an already-
+        // bonded peer; without a bond there's nothing to reconnect to, so
+        // don't waste the 30s retry window on it.
+        ESP_LOGI(TAG, "start_reconnect_advert_: no saved bond for %s, falling back to plain advertising", dirAddr.toString().c_str());
+        this->plainAdvertStart();
         return;
       }
 
@@ -775,6 +787,21 @@ namespace esphome {
     // unlike guessing from bonded/encrypted state on a later reconnect.
     void BleMiRemote::onAuthenticationComplete(NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onAuthenticationComplete: bonded=%s encrypted=%s authenticated=%s", connInfo.isBonded() ? "true" : "false", connInfo.isEncrypted() ? "true" : "false", connInfo.isAuthenticated() ? "true" : "false");
+
+      if (!connInfo.isBonded()) {
+        // startSecurity() ran against a peer we believed we already held
+        // keys for (onConnect() only calls it when !isBonded() at connect
+        // time, so getting here at all with a still-failed bond means our
+        // saved keys were rejected) - the box has typically already started
+        // tearing the link down on its own by this point (observed:
+        // Disconnected reason=0x213 a few ms later), which would let
+        // onDisconnect() handle the plain-advertising fallback anyway. Don't
+        // rely on that happening though: force the disconnect here so
+        // onDisconnect()'s plainAdvertStart() fallback is guaranteed to run
+        // promptly even if the peer stays connected-but-unauthenticated.
+        ESP_LOGW(TAG, "onAuthenticationComplete: saved-key authentication failed, disconnecting to trigger plain-advertising fallback");
+        pServer->disconnect(connInfo.getConnHandle());
+      }
     }
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
