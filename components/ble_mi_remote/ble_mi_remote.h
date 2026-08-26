@@ -94,6 +94,25 @@ namespace esphome {
         virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
         virtual void onAuthenticationComplete(NimBLEConnInfo& connInfo) override;
         virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
+        // Diagnostic-only overrides (2026-08-26) - trying to catch what the
+        // real Mi TV does in the ~18.5s window between bonding and its own
+        // deliberate disconnect (0x213), since neither the sniffer
+        // (CONNECT_IND never captured, can't follow the connection) nor
+        // anything we've tried on our own side (startSecurity(),
+        // updateConnParams(), HID Information flags, esp-nimble-cpp
+        // 2.5.0-vs-master) has changed the timing at all across 4
+        // independent tests. Previously only outputKeyboard had callbacks
+        // attached at all - none of the actual input report
+        // characteristics did, so we had zero visibility into reads/
+        // subscribe-unsubscribe/notify-status on the very characteristics
+        // sendReport() uses.
+        virtual void onMTUChange(uint16_t mtu, NimBLEConnInfo& connInfo) override;
+        virtual void onConnParamsUpdate(NimBLEConnInfo& connInfo) override;
+        virtual void onIdentity(NimBLEConnInfo& connInfo) override;
+        virtual void onPhyUpdate(NimBLEConnInfo& connInfo, uint8_t txPhy, uint8_t rxPhy) override;
+        virtual void onRead(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
+        virtual void onSubscribe(NimBLECharacteristic* me, NimBLEConnInfo& connInfo, uint16_t subValue) override;
+        virtual void onStatus(NimBLECharacteristic* me, NimBLEConnInfo& connInfo, int code) override;
         virtual void on_shutdown() override;
         virtual void on_safe_shutdown() override;
 
@@ -153,6 +172,11 @@ namespace esphome {
 				// replayed to any (re)attaching client, unlike plain ESP_LOGI.
 				uint32_t			_connect_count = 0;
 				uint32_t			_disconnect_count = 0;
+					// millis() at the most recent onConnect() - lets every diagnostic
+					// callback (and onDisconnect() itself) log elapsed-since-connect,
+					// instead of reconstructing the ~18.5s figure by hand from
+					// wall-clock log timestamps every time.
+					uint32_t			_connect_millis = 0;
 				bool				_target_mac_from_config = false;
 				ESPPreferenceObject	_target_mac_pref;
 
