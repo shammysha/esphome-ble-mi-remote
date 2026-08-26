@@ -180,7 +180,15 @@ namespace esphome {
 
       hid->setManufacturer(deviceManufacturer);
       hid->setPnp(sid, vid, pid, version);
-      hid->setHidInfo(0x00, 0x00);
+      // HID Information flags (2nd arg): bit0 RemoteWake, bit1
+      // NormallyConnectable (Bluetooth HOGP spec). Was 0x00 - claiming
+      // "can't wake the host from suspend" and "not connectable while
+      // bonded-but-disconnected", both flatly false for us: we're
+      // specifically a remote control (RemoteWake is the whole point) and
+      // we do stay connectable via plain/HD-burst advertising whenever not
+      // connected. A host reading this characteristic and believing it may
+      // reasonably not treat us as a stable long-term peer.
+      hid->setHidInfo(0x00, 0x03);
 
       NimBLEDevice::setSecurityAuth(true, true, true);
 
@@ -787,6 +795,11 @@ namespace esphome {
       // forced to, since NOTIFY isn't ENC-gated. Request security ourselves
       // instead of waiting for a central that apparently never will -
       // standard "peripheral-initiated pairing". No-op if already bonded.
+      //
+      // Tested disabling this on the real Mi TV (2026-08-26) to see if the
+      // rc=2/BLE_HS_EALREADY race (Mi TV negotiates security on its own,
+      // unlike AM8) was behind the ~18s-later disconnect - did NOT help,
+      // restored as-is. Not the cause.
       if (!peer.isBonded()) {
         int rc = 0;
         bool startOk = NimBLEDevice::startSecurity(peer.getConnHandle(), &rc);
@@ -838,6 +851,14 @@ namespace esphome {
       // already succeeded, so there's nothing left to race with.
       // min/max interval 15/30ms, no peripheral latency, 4s supervision
       // timeout (400 * 10ms).
+      //
+      // Tested disabling this on the real Mi TV (2026-08-26): the box still
+      // dropped the link ~18.7s after bonding, same as with it enabled
+      // (~18.5s) and same as with startSecurity() also disabled (~18.6s) -
+      // three separate tests, three near-identical intervals regardless of
+      // what our code does here. Not the cause - the box has some fixed
+      // timeout of its own that fires this consistently after bonding
+      // completes, unrelated to connection parameters. Restored as-is.
       pServer->updateConnParams(connInfo.getConnHandle(), 12, 24, 0, 400);
       ESP_LOGI(TAG, "onAuthenticationComplete: updateConnParams() requested");
     }
