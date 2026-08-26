@@ -59,7 +59,7 @@ nRF52840 sniffer capture). See https://github.com/shammysha/esp-nimble-cpp/tree/
 """
 NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
 NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
-NIMBLE_CPP_COMPONENT_REF: Final = "ble-mi-remote-hd-directed"
+NIMBLE_CPP_COMPONENT_REF: Final = "nimble-2-5-0-test"
 
 """Special buttons"""
 SPECIAL_KEY: Final = [
