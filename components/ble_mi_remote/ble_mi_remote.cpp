@@ -844,14 +844,15 @@ namespace esphome {
       // min/max interval 15/30ms, no peripheral latency, 4s supervision
       // timeout (400 * 10ms).
       //
-      // TEMP TEST (2026-08-26, smallroom-only): real Mi TV drops the link
-      // ~18.5s after this exact point in a previous test - testing whether
-      // this connection-parameter request itself is what the box dislikes.
-      // If this fixes it, investigate less aggressive params rather than
-      // dropping this entirely, since it's real protection against a
-      // silently-vanished peer.
-      // pServer->updateConnParams(connInfo.getConnHandle(), 12, 24, 0, 400);
-      ESP_LOGW(TAG, "onAuthenticationComplete: TEMP TEST - updateConnParams() call disabled");
+      // Tested disabling this on the real Mi TV (2026-08-26): the box still
+      // dropped the link ~18.7s after bonding, same as with it enabled
+      // (~18.5s) and same as with startSecurity() also disabled (~18.6s) -
+      // three separate tests, three near-identical intervals regardless of
+      // what our code does here. Not the cause - the box has some fixed
+      // timeout of its own that fires this consistently after bonding
+      // completes, unrelated to connection parameters. Restored as-is.
+      pServer->updateConnParams(connInfo.getConnHandle(), 12, 24, 0, 400);
+      ESP_LOGI(TAG, "onAuthenticationComplete: updateConnParams() requested");
     }
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
