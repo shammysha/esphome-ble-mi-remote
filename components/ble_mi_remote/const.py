@@ -59,7 +59,7 @@ nRF52840 sniffer capture). See https://github.com/shammysha/esp-nimble-cpp/tree/
 """
 NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
 NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
-NIMBLE_CPP_COMPONENT_REF: Final = "ble-mi-remote-hd-directed"
+NIMBLE_CPP_COMPONENT_REF: Final = "nimble-2-5-0-test"  # TEMP TEST (2026-08-26): pinned to the pre-rebase 2.5.0-based fork state to isolate whether the master/3.x rebase (specifically the Oct 2025 notify/indicate refactor) is behind the real-Mi-TV ~18.5s disconnect. Revert to "ble-mi-remote-hd-directed" after testing.
 
 """Special buttons"""
 SPECIAL_KEY: Final = [
