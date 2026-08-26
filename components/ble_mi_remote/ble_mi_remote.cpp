@@ -173,6 +173,13 @@ namespace esphome {
       inputKeyboard = hid->getInputReport(KEYBOARD_ID);
       outputKeyboard = hid->getOutputReport(KEYBOARD_ID);
       outputKeyboard->setCallbacks(this);
+      // Diagnostic-only (2026-08-26): previously only outputKeyboard had
+      // callbacks attached, so onRead/onSubscribe/onStatus never fired for
+      // the actual input-report characteristics sendReport() writes to -
+      // exactly the ones a real HID host would read/subscribe to during
+      // its own setup handshake.
+      inputSpecialKeys->setCallbacks(this);
+      inputKeyboard->setCallbacks(this);
 
       vendorReport_06 = hid->getInputReport(0x06);
       vendorReport_07 = hid->getInputReport(0x07);
@@ -777,6 +784,7 @@ namespace esphome {
     void BleMiRemote::onConnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo) {
       this->_connected = true;
       this->_connect_count++;
+      this->_connect_millis = millis();
       NimBLEConnInfo peer = connInfo;
 
       ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
@@ -867,7 +875,7 @@ namespace esphome {
       this->_connected = false;
       this->_disconnect_count++;
 
-      ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
+      ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x, elapsed_since_connect_ms=%u", connInfo.getAddress().toString().c_str(), reason, (unsigned) (millis() - this->_connect_millis));
 
       // Also cancel any still-pending HD-burst retry from a sequence that
       // hadn't finished its own 30s window yet.
@@ -924,6 +932,39 @@ namespace esphome {
       uint8_t *value = (uint8_t*) (me->getValue().c_str());
       (void) value;
       ESP_LOGD(TAG, "special keys: %d", *value);
+    }
+
+    // Diagnostic-only overrides (2026-08-26) - see the block comment on
+    // their declarations in ble_mi_remote.h. Every one logs
+    // elapsed_since_connect_ms so a real-Mi-TV capture can be lined up
+    // against the ~18.5s mark where the TV has, so far, always disconnected
+    // regardless of what we've tried on our own side.
+    void BleMiRemote::onMTUChange(uint16_t mtu, NimBLEConnInfo& connInfo) {
+      ESP_LOGI(TAG, "onMTUChange: mtu=%u, elapsed_since_connect_ms=%u", (unsigned) mtu, (unsigned) (millis() - this->_connect_millis));
+    }
+
+    void BleMiRemote::onConnParamsUpdate(NimBLEConnInfo& connInfo) {
+      ESP_LOGI(TAG, "onConnParamsUpdate: interval=%u latency=%u timeout=%u, elapsed_since_connect_ms=%u", (unsigned) connInfo.getConnInterval(), (unsigned) connInfo.getConnLatency(), (unsigned) connInfo.getConnTimeout(), (unsigned) (millis() - this->_connect_millis));
+    }
+
+    void BleMiRemote::onIdentity(NimBLEConnInfo& connInfo) {
+      ESP_LOGI(TAG, "onIdentity: %s, elapsed_since_connect_ms=%u", connInfo.getAddress().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
+    }
+
+    void BleMiRemote::onPhyUpdate(NimBLEConnInfo& connInfo, uint8_t txPhy, uint8_t rxPhy) {
+      ESP_LOGI(TAG, "onPhyUpdate: txPhy=%u rxPhy=%u, elapsed_since_connect_ms=%u", (unsigned) txPhy, (unsigned) rxPhy, (unsigned) (millis() - this->_connect_millis));
+    }
+
+    void BleMiRemote::onRead(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
+      ESP_LOGI(TAG, "onRead: uuid=%s, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
+    }
+
+    void BleMiRemote::onSubscribe(NimBLECharacteristic *me, NimBLEConnInfo& connInfo, uint16_t subValue) {
+      ESP_LOGI(TAG, "onSubscribe: uuid=%s subValue=%u (%s), elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) subValue, subValue == 0 ? "unsubscribed" : (subValue & 0x0001 ? "notify" : (subValue & 0x0002 ? "indicate" : "?")), (unsigned) (millis() - this->_connect_millis));
+    }
+
+    void BleMiRemote::onStatus(NimBLECharacteristic *me, NimBLEConnInfo& connInfo, int code) {
+      ESP_LOGI(TAG, "onStatus: uuid=%s code=%d, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), code, (unsigned) (millis() - this->_connect_millis));
     }
 
     void BleMiRemote::on_shutdown() {
