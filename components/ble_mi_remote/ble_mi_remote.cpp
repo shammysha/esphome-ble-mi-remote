@@ -864,8 +864,18 @@ namespace esphome {
       // goodbye and shows up as a supervision-timeout disconnect instead
       // (a different reason code) - that case is unaffected and still
       // triggers the reconnect dispatcher below as before.
+      //
+      // Don't go fully silent here either though - stay genuinely
+      // discoverable via plain undirected advertising (explicit user
+      // instruction: "надо запускать обычный широкополосный адверт", "без
+      // hd-burst") so a human can still deliberately re-pair via a fresh
+      // "Add device" scan. Only the automatic HD-burst-targeted-reconnect-
+      // to-this-same-peer behavior is what's unwanted here.
       if (reason == BLE_HS_ERR_HCI_BASE + BLE_ERR_REM_USER_CONN_TERM) {
-        ESP_LOGI(TAG, "Disconnected: peer deliberately terminated the link (reason=0x%02x) - not auto-reconnecting, waiting for manual plain_advert", reason);
+        ESP_LOGI(TAG, "Disconnected: peer deliberately terminated the link (reason=0x%02x) - plain advertising only, no HD-burst reconnect", reason);
+        if (this->_reconnect && this->_should_readvertise) {
+          this->startPlainAdvertising();
+        }
         return;
       }
 
