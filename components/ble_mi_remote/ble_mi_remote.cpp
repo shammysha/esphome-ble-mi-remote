@@ -890,14 +890,20 @@ namespace esphome {
       // (a different reason code) - that case is unaffected and still
       // triggers the reconnect dispatcher below as before.
       //
-      // Don't go fully silent here either though - stay genuinely
-      // discoverable via plain undirected advertising (explicit user
-      // instruction: "надо запускать обычный широкополосный адверт", "без
-      // hd-burst") so a human can still deliberately re-pair via a fresh
-      // "Add device" scan. Only the automatic HD-burst-targeted-reconnect-
-      // to-this-same-peer behavior is what's unwanted here.
+      // Explicit user instruction (2026-08-26): always delete this one
+      // peer's bond here too, not just on a confirmed auth rejection
+      // (targeted deleteBond(), not deleteAllBonds() - same reasoning as
+      // onAuthenticationComplete()'s point deletion). A deliberate peer-
+      // initiated termination has consistently correlated with the peer
+      // also dropping its own side of the bond in this session's real
+      // testing (both the manual "forget device" case and the real Mi
+      // TV's own "Add device" cleanup) - keeping our half around after
+      // that just means the next reconnect attempt silently fails against
+      // a peer that no longer recognizes us, instead of properly falling
+      // through to a fresh, discoverable plain advert.
       if (reason == BLE_HS_ERR_HCI_BASE + BLE_ERR_REM_USER_CONN_TERM) {
-        ESP_LOGI(TAG, "Disconnected: peer deliberately terminated the link (reason=0x%02x) - plain advertising only, no HD-burst reconnect", reason);
+        bool deleteOk = NimBLEDevice::deleteBond(connInfo.getAddress());
+        ESP_LOGI(TAG, "Disconnected: peer deliberately terminated the link (reason=0x%02x), deleteBond(%s)=%s - plain advertising only, no HD-burst reconnect", reason, connInfo.getAddress().toString().c_str(), deleteOk ? "OK" : "FAILED");
         this->startPlainAdvertising();
         return;
       }
