@@ -852,6 +852,10 @@ namespace esphome {
       // hadn't finished its own 30s window yet.
       this->cancel_timeout("ble_mi_remote_reconnect_burst");
 
+      if (!this->_reconnect || !this->_should_readvertise) {
+        return;
+      }
+
       // BLE_ERR_REM_USER_CONN_TERM (0x13, reported here offset by
       // BLE_HS_ERR_HCI_BASE = 0x200, i.e. 0x213) means the peer's own BLE
       // stack was still fully alive and *chose* to end the link - this is
@@ -873,9 +877,7 @@ namespace esphome {
       // to-this-same-peer behavior is what's unwanted here.
       if (reason == BLE_HS_ERR_HCI_BASE + BLE_ERR_REM_USER_CONN_TERM) {
         ESP_LOGI(TAG, "Disconnected: peer deliberately terminated the link (reason=0x%02x) - plain advertising only, no HD-burst reconnect", reason);
-        if (this->_reconnect && this->_should_readvertise) {
-          this->startPlainAdvertising();
-        }
+        this->startPlainAdvertising();
         return;
       }
 
@@ -888,9 +890,7 @@ namespace esphome {
       // out HD-burst here is expected and must not touch saved keys. Only
       // a target-less or bond-less state falls through to plain
       // advertising.
-      if (this->_reconnect && this->_should_readvertise) {
-        this->startReconnectAdvert();
-      }
+      this->startReconnectAdvert();
     }
 
     void BleMiRemote::onWrite(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
