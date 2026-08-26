@@ -788,20 +788,15 @@ namespace esphome {
       // instead of waiting for a central that apparently never will -
       // standard "peripheral-initiated pairing". No-op if already bonded.
       //
-      // TEMP TEST (2026-08-26, smallroom-only): on the real Mi TV this call
-      // came back rc=2 (BLE_HS_EALREADY) - the box was *already* negotiating
-      // security on its own before we got here, unlike AM8 which never did.
-      // Testing whether this forced/redundant call is what leads to the
-      // observed ~18s-later disconnect on the real Mi TV specifically -
-      // disabled here to isolate. If this fixes it, make it properly
-      // conditional (skip only when a security procedure is already under
-      // way) rather than removing it outright, since AM8 still needs it.
-      // if (!peer.isBonded()) {
-      //   int rc = 0;
-      //   bool startOk = NimBLEDevice::startSecurity(peer.getConnHandle(), &rc);
-      //   ESP_LOGI(TAG, "Connected: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
-      // }
-      ESP_LOGW(TAG, "Connected: TEMP TEST - startSecurity() call disabled, letting the peer initiate on its own");
+      // Tested disabling this on the real Mi TV (2026-08-26) to see if the
+      // rc=2/BLE_HS_EALREADY race (Mi TV negotiates security on its own,
+      // unlike AM8) was behind the ~18s-later disconnect - did NOT help,
+      // restored as-is. Not the cause.
+      if (!peer.isBonded()) {
+        int rc = 0;
+        bool startOk = NimBLEDevice::startSecurity(peer.getConnHandle(), &rc);
+        ESP_LOGI(TAG, "Connected: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
+      }
 
       this->learnTargetMac(peer.getAddress());
 
@@ -848,8 +843,15 @@ namespace esphome {
       // already succeeded, so there's nothing left to race with.
       // min/max interval 15/30ms, no peripheral latency, 4s supervision
       // timeout (400 * 10ms).
-      pServer->updateConnParams(connInfo.getConnHandle(), 12, 24, 0, 400);
-      ESP_LOGI(TAG, "onAuthenticationComplete: updateConnParams() requested");
+      //
+      // TEMP TEST (2026-08-26, smallroom-only): real Mi TV drops the link
+      // ~18.5s after this exact point in a previous test - testing whether
+      // this connection-parameter request itself is what the box dislikes.
+      // If this fixes it, investigate less aggressive params rather than
+      // dropping this entirely, since it's real protection against a
+      // silently-vanished peer.
+      // pServer->updateConnParams(connInfo.getConnHandle(), 12, 24, 0, 400);
+      ESP_LOGW(TAG, "onAuthenticationComplete: TEMP TEST - updateConnParams() call disabled");
     }
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
