@@ -180,7 +180,15 @@ namespace esphome {
 
       hid->setManufacturer(deviceManufacturer);
       hid->setPnp(sid, vid, pid, version);
-      hid->setHidInfo(0x00, 0x00);
+      // HID Information flags (2nd arg): bit0 RemoteWake, bit1
+      // NormallyConnectable (Bluetooth HOGP spec). Was 0x00 - claiming
+      // "can't wake the host from suspend" and "not connectable while
+      // bonded-but-disconnected", both flatly false for us: we're
+      // specifically a remote control (RemoteWake is the whole point) and
+      // we do stay connectable via plain/HD-burst advertising whenever not
+      // connected. A host reading this characteristic and believing it may
+      // reasonably not treat us as a stable long-term peer.
+      hid->setHidInfo(0x00, 0x03);
 
       NimBLEDevice::setSecurityAuth(true, true, true);
 
