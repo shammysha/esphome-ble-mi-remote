@@ -787,11 +787,21 @@ namespace esphome {
       // forced to, since NOTIFY isn't ENC-gated. Request security ourselves
       // instead of waiting for a central that apparently never will -
       // standard "peripheral-initiated pairing". No-op if already bonded.
-      if (!peer.isBonded()) {
-        int rc = 0;
-        bool startOk = NimBLEDevice::startSecurity(peer.getConnHandle(), &rc);
-        ESP_LOGI(TAG, "Connected: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
-      }
+      //
+      // TEMP TEST (2026-08-26, smallroom-only): on the real Mi TV this call
+      // came back rc=2 (BLE_HS_EALREADY) - the box was *already* negotiating
+      // security on its own before we got here, unlike AM8 which never did.
+      // Testing whether this forced/redundant call is what leads to the
+      // observed ~18s-later disconnect on the real Mi TV specifically -
+      // disabled here to isolate. If this fixes it, make it properly
+      // conditional (skip only when a security procedure is already under
+      // way) rather than removing it outright, since AM8 still needs it.
+      // if (!peer.isBonded()) {
+      //   int rc = 0;
+      //   bool startOk = NimBLEDevice::startSecurity(peer.getConnHandle(), &rc);
+      //   ESP_LOGI(TAG, "Connected: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
+      // }
+      ESP_LOGW(TAG, "Connected: TEMP TEST - startSecurity() call disabled, letting the peer initiate on its own");
 
       this->learnTargetMac(peer.getAddress());
 
