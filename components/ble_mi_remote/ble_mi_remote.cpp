@@ -197,6 +197,19 @@ namespace esphome {
       // (confirmed: this TV box) won't show the device at all in a fresh
       // "add device" scan - only bonded/directed reconnects worked.
       advertising->enableScanResponse(true);
+      // enableScanResponse() alone only flips a flag - NimBLEAdvertising::start()
+      // only actually transmits scan response *content* if m_scanData already
+      // has a non-empty payload (see NimBLEAdvertising.cpp: `if (m_scanResp &&
+      // m_scanData.getPayload().size() > 0)`). Without this call the scan
+      // response goes out completely empty (confirmed via live sniffer capture:
+      // "Scan Response Data: <MISSING>", length 6 = address only, zero payload) -
+      // a still-bonded central doesn't care (it already has the name cached from
+      // the original pairing), but a scanner seeing this device for the first
+      // time (nRF Connect, a fresh "add device" scan) sees a nameless device and
+      // may not offer to pair with it at all. setName() with m_scanResp already
+      // true routes the name into the scan response specifically, not the main
+      // advertisement.
+      advertising->setName(deviceName);
 
       this->startReconnectAdvert();
 
