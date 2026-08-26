@@ -848,6 +848,27 @@ namespace esphome {
 
       ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
 
+      // Also cancel any still-pending HD-burst retry from a sequence that
+      // hadn't finished its own 30s window yet.
+      this->cancel_timeout("ble_mi_remote_reconnect_burst");
+
+      // BLE_ERR_REM_USER_CONN_TERM (0x13, reported here offset by
+      // BLE_HS_ERR_HCI_BASE = 0x200, i.e. 0x213) means the peer's own BLE
+      // stack was still fully alive and *chose* to end the link - this is
+      // what a human manually disconnecting/forgetting the device in the
+      // box's Bluetooth settings produces (confirmed live: user forgot the
+      // device, our HD-burst reconnected within ~400ms and silently
+      // re-bonded via Just Works before they could even open "Add device" -
+      // explicitly unwanted, "он не должен возвращаться"). A genuine power
+      // loss/reboot of the box gives its BLE stack no time for a graceful
+      // goodbye and shows up as a supervision-timeout disconnect instead
+      // (a different reason code) - that case is unaffected and still
+      // triggers the reconnect dispatcher below as before.
+      if (reason == BLE_HS_ERR_HCI_BASE + BLE_ERR_REM_USER_CONN_TERM) {
+        ESP_LOGI(TAG, "Disconnected: peer deliberately terminated the link (reason=0x%02x) - not auto-reconnecting, waiting for manual plain_advert", reason);
+        return;
+      }
+
       // A mid-session disconnect is just as legitimate a reconnect scenario
       // as the boot-time one - most commonly the box simply being powered
       // off (it's not a 24/7 device). Reuse the same dispatcher setup()/
@@ -856,9 +877,7 @@ namespace esphome {
       // it's powered back on, exactly like a real remote; a failed/timed-
       // out HD-burst here is expected and must not touch saved keys. Only
       // a target-less or bond-less state falls through to plain
-      // advertising. Also cancel any still-pending HD-burst retry from a
-      // sequence that hadn't finished its own 30s window yet.
-      this->cancel_timeout("ble_mi_remote_reconnect_burst");
+      // advertising.
       if (this->_reconnect && this->_should_readvertise) {
         this->startReconnectAdvert();
       }
