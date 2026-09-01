@@ -169,8 +169,35 @@ namespace esphome {
       pServer->advertiseOnDisconnect(false);
 
       hid = new NimBLEHIDDevice(pServer);
-      inputSpecialKeys = hid->getInputReport(CONSUMER_ID);
-      inputKeyboard = hid->getInputReport(KEYBOARD_ID);
+
+      // Real-Mi-TV ground truth (2026-09-01, read directly off the genuine
+      // remote via pub.home's own BLE adapter): EVERY one of its ~23 Report
+      // characteristics has both "read" and "write" flags, including the
+      // ones with notify (Client Characteristic Configuration present).
+      // NimBLEHIDDevice::getInputReport() only ever grants
+      // READ | NOTIFY | READ_ENC - no WRITE at all. If the TV's own setup
+      // handshake tries to write to one of our input reports (plausible,
+      // given every one of the real remote's does accept writes), that
+      // write fails at the raw ATT layer (Write Not Permitted) before it
+      // could ever reach our onWrite() callback - we'd have zero visibility
+      // into exactly this kind of failure, matching the otherwise totally
+      // invisible ~17-20s window before the TV gives up and disconnects.
+      // Bypassing getInputReport() to add WRITE|WRITE_ENC, replicating what
+      // it does internally (see NimBLEHIDDevice.cpp) - it doesn't expose a
+      // way to override its hardcoded property set.
+      NimBLEService* hidSvc = hid->getHidService();
+      auto makeWritableInputReport = [hidSvc](uint8_t reportId) {
+        NimBLECharacteristic* chr = hidSvc->createCharacteristic(
+            (uint16_t) 0x2a4d,
+            NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY |
+                NIMBLE_PROPERTY::READ_ENC | NIMBLE_PROPERTY::WRITE_ENC);
+        NimBLEDescriptor* dsc = chr->createDescriptor((uint16_t) 0x2908, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::READ_ENC);
+        uint8_t dscVal[] = {reportId, 0x01};
+        dsc->setValue(dscVal, 2);
+        return chr;
+      };
+      inputSpecialKeys = makeWritableInputReport(CONSUMER_ID);
+      inputKeyboard = makeWritableInputReport(KEYBOARD_ID);
       outputKeyboard = hid->getOutputReport(KEYBOARD_ID);
       outputKeyboard->setCallbacks(this);
       // Diagnostic-only (2026-08-26): previously only outputKeyboard had
@@ -181,9 +208,14 @@ namespace esphome {
       inputSpecialKeys->setCallbacks(this);
       inputKeyboard->setCallbacks(this);
 
-      vendorReport_06 = hid->getInputReport(0x06);
-      vendorReport_07 = hid->getInputReport(0x07);
-      vendorReport_08 = hid->getInputReport(0x08);
+      vendorReport_06 = makeWritableInputReport(0x06);
+      vendorReport_07 = makeWritableInputReport(0x07);
+      vendorReport_08 = makeWritableInputReport(0x08);
+      // Now writable too (see makeWritableInputReport above) - wire
+      // callbacks here as well for the same onWrite/onRead visibility.
+      vendorReport_06->setCallbacks(this);
+      vendorReport_07->setCallbacks(this);
+      vendorReport_08->setCallbacks(this);
 
       hid->setManufacturer(deviceManufacturer);
       hid->setPnp(sid, vid, pid, version);
