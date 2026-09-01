@@ -249,6 +249,18 @@ namespace esphome {
         dis->createCharacteristic((uint16_t) 0x2a23, NIMBLE_PROPERTY::READ)->setValue(sysIdVal, sizeof(sysIdVal)); // System ID
       }
 
+      // Vendor-extension service (2026-09-01) - see the member declarations
+      // in the header for the full rationale. Not modeled on either real
+      // device's specific vendor protocol - testing presence, not content.
+      {
+        vendorService = pServer->createService("6c9de001-6287-4b13-8e48-14fe2e4da212");
+        vendorServiceChr = vendorService->createCharacteristic(
+            "6c9de002-6287-4b13-8e48-14fe2e4da212",
+            NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+        static const uint8_t vendorPlaceholder[1] = {0x00};
+        vendorServiceChr->setValue(vendorPlaceholder, sizeof(vendorPlaceholder));
+      }
+
       NimBLEDevice::setSecurityAuth(true, true, true);
 
       hid->setReportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));

@@ -154,6 +154,21 @@ namespace esphome {
 				NimBLECharacteristic*	vendorReport_06;
 				NimBLECharacteristic*	vendorReport_07;
 				NimBLECharacteristic*	vendorReport_08;
+				// Vendor-extension SERVICE (2026-09-01), distinct from the
+				// vendorReport_0x members above (those are Report IDs inside the
+				// HID service's own Report Map, not a separate GATT service).
+				// Ground truth from pub.home: BOTH real devices tested against
+				// this same TV (the genuine Xiaomi remote AND an unrelated
+				// third-party gamepad, SBDV-00022) carry at least one extra
+				// vendor-specific service beyond the standard HID/DIS/Battery/
+				// GAP set - our emulation has none at all. Not replicating
+				// either real device's specific vendor protocol (Xiaomi's is
+				// Aliro/ICCE digital-key related, unrelated to a TV remote;
+				// the gamepad's is unidentified) - testing whether the mere
+				// *presence* of some vendor service matters to the TV's own
+				// validation, not its content.
+				NimBLEService*			vendorService;
+				NimBLECharacteristic*	vendorServiceChr;
 				NimBLEAdvertising*		advertising;
 
 				bool 				_reconnect{true};
