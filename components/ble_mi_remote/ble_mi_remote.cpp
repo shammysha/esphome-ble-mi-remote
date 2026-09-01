@@ -200,6 +200,31 @@ namespace esphome {
       NimBLEDevice::setSecurityAuth(true, true, true);
 
       hid->setReportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
+
+      // Descriptor-level diagnostics (2026-09-01) - see the block comment on
+      // onRead(NimBLEDescriptor*, ...) in the header. Report Reference
+      // (0x2908) is the descriptor a real HOGP host reads on each Report
+      // characteristic during service discovery to learn its report ID/type -
+      // exactly the kind of activity that could fill the ~17s the real Mi TV
+      // spends connected+subscribed before giving up, invisible to us until
+      // now since only characteristic-level callbacks were ever wired.
+      inputSpecialKeys->getDescriptorByUUID((uint16_t) 0x2908)->setCallbacks(this);
+      inputKeyboard->getDescriptorByUUID((uint16_t) 0x2908)->setCallbacks(this);
+      outputKeyboard->getDescriptorByUUID((uint16_t) 0x2908)->setCallbacks(this);
+      vendorReport_06->getDescriptorByUUID((uint16_t) 0x2908)->setCallbacks(this);
+      vendorReport_07->getDescriptorByUUID((uint16_t) 0x2908)->setCallbacks(this);
+      vendorReport_08->getDescriptorByUUID((uint16_t) 0x2908)->setCallbacks(this);
+      // Also wire the standard HID/DIS characteristics a real host reads
+      // during its own initial setup handshake (HID Information, Report
+      // Map, Protocol Mode, PnP ID, Battery Level) - previously none of
+      // these had callbacks either, so a read on any of them was equally
+      // invisible to us.
+      hid->getHidInfo()->setCallbacks(this);
+      hid->getReportMap()->setCallbacks(this);
+      hid->getProtocolMode()->setCallbacks(this);
+      hid->getPnp()->setCallbacks(this);
+      hid->getBatteryLevel()->setCallbacks(this);
+
       bool serverStartOk = pServer->start();
       ESP_LOGI(TAG, "setup: pServer->start()=%s", serverStartOk ? "OK" : "FAILED");
 
@@ -965,6 +990,22 @@ namespace esphome {
 
     void BleMiRemote::onStatus(NimBLECharacteristic *me, NimBLEConnInfo& connInfo, int code) {
       ESP_LOGI(TAG, "onStatus: uuid=%s code=%d, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), code, (unsigned) (millis() - this->_connect_millis));
+    }
+
+    // Descriptor-level diagnostics (2026-09-01) - see the block comment on
+    // the declaration in ble_mi_remote.h. Wired onto the Report Reference
+    // descriptor (0x2908) of every Report characteristic plus the standard
+    // HID/DIS characteristics themselves, to catch the real Mi TV's ~17s of
+    // otherwise-invisible activity between subscribing and unsubscribing/
+    // disconnecting - a real capture (2026-09-01) showed a full live,
+    // encrypted, subscribed connection with zero onRead/onWrite/onStatus at
+    // the characteristic level in that whole window.
+    void BleMiRemote::onRead(NimBLEDescriptor *me, NimBLEConnInfo& connInfo) {
+      ESP_LOGI(TAG, "onRead (descriptor): uuid=%s, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
+    }
+
+    void BleMiRemote::onWrite(NimBLEDescriptor *me, NimBLEConnInfo& connInfo) {
+      ESP_LOGI(TAG, "onWrite (descriptor): uuid=%s, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
     }
 
     void BleMiRemote::on_shutdown() {

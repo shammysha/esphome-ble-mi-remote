@@ -8,6 +8,7 @@
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
+#include "NimBLEDescriptor.h"
 #include "NimBLEHIDDevice.h"
 #include <string>
 
@@ -54,7 +55,7 @@ typedef struct {
 
 namespace esphome {
 	namespace ble_mi_remote {
-		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks {
+		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks {
 			public:
 				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
@@ -113,6 +114,18 @@ namespace esphome {
         virtual void onRead(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
         virtual void onSubscribe(NimBLECharacteristic* me, NimBLEConnInfo& connInfo, uint16_t subValue) override;
         virtual void onStatus(NimBLECharacteristic* me, NimBLEConnInfo& connInfo, int code) override;
+        // Descriptor-level diagnostics (2026-09-01) - onRead()/onWrite() on
+        // NimBLECharacteristic only ever fires for the characteristic's own
+        // value, never for its descriptors (a separate NimBLEDescriptorCallbacks
+        // interface). Added after a real capture showed the Mi TV holding a
+        // live, subscribed, encrypted connection for ~17s with *zero* visible
+        // activity on our side before unsubscribing and disconnecting - the
+        // TV is very likely reading descriptors during that window (most
+        // notably the Report Reference descriptor, 0x2908, HOGP's standard
+        // way to map a Report characteristic to its report ID/type) that we
+        // had no visibility into at all.
+        virtual void onRead(NimBLEDescriptor* me, NimBLEConnInfo& connInfo) override;
+        virtual void onWrite(NimBLEDescriptor* me, NimBLEConnInfo& connInfo) override;
         virtual void on_shutdown() override;
         virtual void on_safe_shutdown() override;
 
