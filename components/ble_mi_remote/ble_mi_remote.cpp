@@ -262,6 +262,22 @@ namespace esphome {
       }
 
       NimBLEDevice::setSecurityAuth(true, true, true);
+      // Real code diff, not a guess (2026-09-01): compared NimBLEDevice::init()
+      // across NimBLE-Arduino 1.4.0 (works with the real Mi TV) and the
+      // current esp-nimble-cpp (drops it every time at ~18-20s) - the
+      // default ble_hs_cfg.sm_our_key_dist differs (1.4.0: 1 = ENC only;
+      // current: 3 = ENC|ID) and our own component never calls
+      // setSecurityInitKey() to override it either way, so this default
+      // genuinely reaches production. On the current build we therefore
+      // claim (in the SMP Pairing Request's key-distribution field) that
+      // we'll distribute an identity key (IRK) during pairing - something
+      // 1.4.0 never claimed. onIdentity() (BLE_GAP_EVENT_IDENTITY_RESOLVED,
+      // a callback that doesn't even exist in 1.4.0's API) has never once
+      // fired in any real-Mi-TV test this whole investigation, same as
+      // onMTUChange() - matching a pattern of claimed-but-never-completed
+      // capabilities. Reverting to 1.4.0's default (ENC only) to test
+      // directly.
+      NimBLEDevice::setSecurityInitKey(0x01 /* BLE_SM_PAIR_KEY_DIST_ENC only, matches NimBLE-Arduino 1.4.0's default */);
 
       hid->setReportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
 
