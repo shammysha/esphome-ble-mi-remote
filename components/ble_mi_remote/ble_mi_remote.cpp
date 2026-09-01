@@ -1006,22 +1006,6 @@ namespace esphome {
 
     void BleMiRemote::onSubscribe(NimBLECharacteristic *me, NimBLEConnInfo& connInfo, uint16_t subValue) {
       ESP_LOGI(TAG, "onSubscribe: uuid=%s subValue=%u (%s), elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) subValue, subValue == 0 ? "unsubscribed" : (subValue & 0x0001 ? "notify" : (subValue & 0x0002 ? "indicate" : "?")), (unsigned) (millis() - this->_connect_millis));
-
-      // Real-Mi-TV test (2026-09-01): setup()'s own release() call at boot
-      // sends its two sendReport()s well before any peer has subscribed -
-      // dropped silently, no subscriber yet (confirmed: onSubscribe fires
-      // at ~3.3s into the connection, sendReport() at ~0s). After that
-      // subscribe, nothing ever sends another report until a human presses
-      // a button - and a real capture showed the TV then just sitting
-      // subscribed+idle for ~17s before giving up and disconnecting
-      // (0x213), unsubscribing 8ms before. Sending a neutral/"keys up"
-      // report right when notifications actually get enabled - once real
-      // subscribers exist to receive it - tests whether the TV is simply
-      // waiting to see the link is alive before it considers the HID
-      // device valid.
-      if (subValue != 0) {
-        this->release();
-      }
     }
 
     void BleMiRemote::onStatus(NimBLECharacteristic *me, NimBLEConnInfo& connInfo, int code) {
