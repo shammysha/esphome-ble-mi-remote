@@ -187,15 +187,35 @@ namespace esphome {
 
       hid->setManufacturer(deviceManufacturer);
       hid->setPnp(sid, vid, pid, version);
-      // HID Information flags (2nd arg): bit0 RemoteWake, bit1
-      // NormallyConnectable (Bluetooth HOGP spec). Was 0x00 - claiming
-      // "can't wake the host from suspend" and "not connectable while
-      // bonded-but-disconnected", both flatly false for us: we're
-      // specifically a remote control (RemoteWake is the whole point) and
-      // we do stay connectable via plain/HD-burst advertising whenever not
-      // connected. A host reading this characteristic and believing it may
-      // reasonably not treat us as a stable long-term peer.
-      hid->setHidInfo(0x00, 0x03);
+      // HID Information flags (2026-09-01): read directly off the genuine
+      // Xiaomi remote via pub.home's own BLE adapter (bluetoothctl paired +
+      // busctl GattCharacteristic1.ReadValue) - bcdHID=0x0000, CountryCode=0,
+      // Flags=0x01 (RemoteWake only, NOT NormallyConnectable). We'd
+      // previously tried 0x00 (both false) and 0x03 (both true) - neither
+      // matched the real device and neither changed the ~17-20s real-Mi-TV
+      // disconnect timing at all. This exact value is untested.
+      hid->setHidInfo(0x00, 0x01);
+
+      // Device Information Service fields (2026-09-01): the genuine remote
+      // (paired directly via pub.home's Bluetooth adapter) has these set to
+      // completely unmodified Realtek "RTKBee" BLE SDK reference-firmware
+      // defaults, not anything Xiaomi-branded - Manufacturer Name is the
+      // only field previously set here (via the existing, user-configurable
+      // deviceManufacturer), everything below was entirely absent. Added
+      // verbatim from the real device in case the TV's own compatibility/
+      // validation layer keys off any of it during the otherwise-invisible
+      // ~17s window before it disconnects.
+      {
+        NimBLEService* dis = hid->getDeviceInfoService();
+        dis->createCharacteristic((uint16_t) 0x2a24, NIMBLE_PROPERTY::READ)->setValue("Model Nbr 0.9");    // Model Number String
+        dis->createCharacteristic((uint16_t) 0x2a25, NIMBLE_PROPERTY::READ)->setValue("RTKBeeSerialNum");  // Serial Number String
+        dis->createCharacteristic((uint16_t) 0x2a26, NIMBLE_PROPERTY::READ)->setValue("19415");            // Firmware Revision String
+        dis->createCharacteristic((uint16_t) 0x2a27, NIMBLE_PROPERTY::READ)->setValue("2.0.1.4");          // Hardware Revision String
+        dis->createCharacteristic((uint16_t) 0x2a28, NIMBLE_PROPERTY::READ)->setValue("2.3");              // Software Revision String
+        dis->createCharacteristic((uint16_t) 0x2a2a, NIMBLE_PROPERTY::READ)->setValue("RTKBeeIEEEDatalist"); // IEEE 11073-20601 Regulatory Cert. Data List
+        static const uint8_t sysIdVal[8] = {0x00, 0x01, 0x02, 0x00, 0x00, 0x03, 0x04, 0x05};
+        dis->createCharacteristic((uint16_t) 0x2a23, NIMBLE_PROPERTY::READ)->setValue(sysIdVal, sizeof(sysIdVal)); // System ID
+      }
 
       NimBLEDevice::setSecurityAuth(true, true, true);
 
