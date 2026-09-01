@@ -200,6 +200,28 @@ namespace esphome {
 				// replayed to any (re)attaching client, unlike plain ESP_LOGI.
 				uint32_t			_connect_count = 0;
 				uint32_t			_disconnect_count = 0;
+					// Event trace ring buffer (2026-09-01): live serial/API log
+					// listeners are unreliable for catching a connection's very
+					// first seconds - they routinely attach mid-connection (missing
+					// the start entirely) or die silently without anyone noticing.
+					// dump_config() output, unlike plain ESP_LOGI, is reliably
+					// replayed to any (re)subscribing client regardless of *when*
+					// it (re)subscribes - so this records every diagnostic event
+					// (onConnect/onAuthenticationComplete/onSubscribe/onMTUChange/
+					// onIdentity/onRead/onStatus/onDisconnect/etc.) with its
+					// elapsed-since-connect timestamp into a small fixed buffer,
+					// reset on each new onConnect(), so the *entire* timeline of
+					// the most recent connection can be recovered after the fact
+					// via dump_config() - no live listener needed at the right
+					// moment at all.
+					static const uint8_t EVENT_LOG_SIZE = 32;
+					struct EventLogEntry {
+						char		label[48];
+						uint32_t	elapsed_ms;
+					};
+					EventLogEntry		_eventLog[EVENT_LOG_SIZE];
+					uint8_t				_eventLogCount = 0;
+					void logEvent(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
 					// millis() at the most recent onConnect() - lets every diagnostic
 					// callback (and onDisconnect() itself) log elapsed-since-connect,
 					// instead of reconstructing the ~18.5s figure by hand from

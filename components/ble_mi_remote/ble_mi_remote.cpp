@@ -17,6 +17,7 @@
 #include "sdkconfig.h"
 #include <string>
 #include <list>
+#include <cstdarg>
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
@@ -402,6 +403,27 @@ namespace esphome {
       } else {
         ESP_LOGCONFIG(TAG, "  Target MAC: none yet");
       }
+      // Event trace for the most recent connection (see the member
+      // declarations in the header) - reliably replayed to any (re)
+      // subscribing client no matter when they attach, unlike plain
+      // ESP_LOGI from a live listener that may have missed the actual
+      // connection window entirely.
+      ESP_LOGCONFIG(TAG, "  Event trace (most recent connection, %u entries):", (unsigned) this->_eventLogCount);
+      for (uint8_t i = 0; i < this->_eventLogCount; i++) {
+        ESP_LOGCONFIG(TAG, "    [%6ums] %s", (unsigned) this->_eventLog[i].elapsed_ms, this->_eventLog[i].label);
+      }
+    }
+
+    void BleMiRemote::logEvent(const char* fmt, ...) {
+      if (this->_eventLogCount >= EVENT_LOG_SIZE) {
+        return;
+      }
+      EventLogEntry& entry = this->_eventLog[this->_eventLogCount++];
+      entry.elapsed_ms = millis() - this->_connect_millis;
+      va_list args;
+      va_start(args, fmt);
+      vsnprintf(entry.label, sizeof(entry.label), fmt, args);
+      va_end(args);
     }
 
     bool BleMiRemote::isConnected() {
@@ -911,9 +933,11 @@ namespace esphome {
       this->_connected = true;
       this->_connect_count++;
       this->_connect_millis = millis();
+      this->_eventLogCount = 0;
       NimBLEConnInfo peer = connInfo;
 
       ESP_LOGI(TAG, "Connected: %s", peer.getAddress().toString().c_str());
+      this->logEvent("onConnect: %s", peer.getAddress().toString().c_str());
       // Diagnostic: NimBLEHIDDevice's input report characteristic requires
       // encryption (READ_ENC) for a direct read, but its NOTIFY property is
       // granted unconditionally - so an unbonded/unencrypted central can, in
@@ -923,6 +947,7 @@ namespace esphome {
       // unauthenticated link per HOGP policy, while we see local success).
       // Logging this to confirm/rule out on the next real connect.
       ESP_LOGI(TAG, "Connected: bonded=%s encrypted=%s authenticated=%s", peer.isBonded() ? "true" : "false", peer.isEncrypted() ? "true" : "false", peer.isAuthenticated() ? "true" : "false");
+      this->logEvent("onConnect: bonded=%d enc=%d auth=%d", peer.isBonded(), peer.isEncrypted(), peer.isAuthenticated());
 
       // Confirmed via the above diagnostic (real hardware, 2026-08-25): the
       // box connects without ever bonding/encrypting on its own - it's never
@@ -938,6 +963,7 @@ namespace esphome {
         int rc = 0;
         bool startOk = NimBLEDevice::startSecurity(peer.getConnHandle(), &rc);
         ESP_LOGI(TAG, "Connected: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
+        this->logEvent("onConnect: startSecurity()=%d rc=%d", startOk, rc);
       }
 
       this->learnTargetMac(peer.getAddress());
@@ -953,6 +979,7 @@ namespace esphome {
     // unlike guessing from bonded/encrypted state on a later reconnect.
     void BleMiRemote::onAuthenticationComplete(NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onAuthenticationComplete: bonded=%s encrypted=%s authenticated=%s", connInfo.isBonded() ? "true" : "false", connInfo.isEncrypted() ? "true" : "false", connInfo.isAuthenticated() ? "true" : "false");
+      this->logEvent("onAuthComplete: bonded=%d enc=%d auth=%d", connInfo.isBonded(), connInfo.isEncrypted(), connInfo.isAuthenticated());
 
       if (!connInfo.isBonded()) {
         // startSecurity() ran against a peer we believed we already held
@@ -968,6 +995,7 @@ namespace esphome {
         // forever instead of ever reaching the plain-advertising fallback.
         bool deleteOk = NimBLEDevice::deleteBond(connInfo.getAddress());
         ESP_LOGW(TAG, "onAuthenticationComplete: saved-key authentication failed, deleteBond(%s)=%s, disconnecting to trigger plain-advertising fallback", connInfo.getAddress().toString().c_str(), deleteOk ? "OK" : "FAILED");
+        this->logEvent("onAuthComplete: FAILED, deleteBond=%d, forcing disconnect", deleteOk);
         pServer->disconnect(connInfo.getConnHandle());
         return;
       }
@@ -995,6 +1023,7 @@ namespace esphome {
       // completes, unrelated to connection parameters. Restored as-is.
       pServer->updateConnParams(connInfo.getConnHandle(), 12, 24, 0, 400);
       ESP_LOGI(TAG, "onAuthenticationComplete: updateConnParams() requested");
+      this->logEvent("onAuthComplete: OK, updateConnParams() requested");
     }
 
     void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
@@ -1002,6 +1031,7 @@ namespace esphome {
       this->_disconnect_count++;
 
       ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x, elapsed_since_connect_ms=%u", connInfo.getAddress().toString().c_str(), reason, (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onDisconnect: reason=0x%02x", (unsigned) reason);
 
       // Also cancel any still-pending HD-burst retry from a sequence that
       // hadn't finished its own 30s window yet.
@@ -1058,6 +1088,7 @@ namespace esphome {
       uint8_t *value = (uint8_t*) (me->getValue().c_str());
       (void) value;
       ESP_LOGD(TAG, "special keys: %d", *value);
+      this->logEvent("onWrite(chr): uuid=%s", me->getUUID().toString().c_str());
     }
 
     // Diagnostic-only overrides (2026-08-26) - see the block comment on
@@ -1067,30 +1098,37 @@ namespace esphome {
     // regardless of what we've tried on our own side.
     void BleMiRemote::onMTUChange(uint16_t mtu, NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onMTUChange: mtu=%u, elapsed_since_connect_ms=%u", (unsigned) mtu, (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onMTUChange: mtu=%u", (unsigned) mtu);
     }
 
     void BleMiRemote::onConnParamsUpdate(NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onConnParamsUpdate: interval=%u latency=%u timeout=%u, elapsed_since_connect_ms=%u", (unsigned) connInfo.getConnInterval(), (unsigned) connInfo.getConnLatency(), (unsigned) connInfo.getConnTimeout(), (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onConnParamsUpdate: interval=%u latency=%u timeout=%u", (unsigned) connInfo.getConnInterval(), (unsigned) connInfo.getConnLatency(), (unsigned) connInfo.getConnTimeout());
     }
 
     void BleMiRemote::onIdentity(NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onIdentity: %s, elapsed_since_connect_ms=%u", connInfo.getAddress().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onIdentity: %s", connInfo.getAddress().toString().c_str());
     }
 
     void BleMiRemote::onPhyUpdate(NimBLEConnInfo& connInfo, uint8_t txPhy, uint8_t rxPhy) {
       ESP_LOGI(TAG, "onPhyUpdate: txPhy=%u rxPhy=%u, elapsed_since_connect_ms=%u", (unsigned) txPhy, (unsigned) rxPhy, (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onPhyUpdate: txPhy=%u rxPhy=%u", (unsigned) txPhy, (unsigned) rxPhy);
     }
 
     void BleMiRemote::onRead(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onRead: uuid=%s, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onRead(chr): uuid=%s", me->getUUID().toString().c_str());
     }
 
     void BleMiRemote::onSubscribe(NimBLECharacteristic *me, NimBLEConnInfo& connInfo, uint16_t subValue) {
       ESP_LOGI(TAG, "onSubscribe: uuid=%s subValue=%u (%s), elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) subValue, subValue == 0 ? "unsubscribed" : (subValue & 0x0001 ? "notify" : (subValue & 0x0002 ? "indicate" : "?")), (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onSubscribe: uuid=%s subValue=%u", me->getUUID().toString().c_str(), (unsigned) subValue);
     }
 
     void BleMiRemote::onStatus(NimBLECharacteristic *me, NimBLEConnInfo& connInfo, int code) {
       ESP_LOGI(TAG, "onStatus: uuid=%s code=%d, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), code, (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onStatus: uuid=%s code=%d", me->getUUID().toString().c_str(), code);
     }
 
     // Descriptor-level diagnostics (2026-09-01) - see the block comment on
@@ -1103,10 +1141,12 @@ namespace esphome {
     // the characteristic level in that whole window.
     void BleMiRemote::onRead(NimBLEDescriptor *me, NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onRead (descriptor): uuid=%s, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onRead(dsc): uuid=%s", me->getUUID().toString().c_str());
     }
 
     void BleMiRemote::onWrite(NimBLEDescriptor *me, NimBLEConnInfo& connInfo) {
       ESP_LOGI(TAG, "onWrite (descriptor): uuid=%s, elapsed_since_connect_ms=%u", me->getUUID().toString().c_str(), (unsigned) (millis() - this->_connect_millis));
+      this->logEvent("onWrite(dsc): uuid=%s", me->getUUID().toString().c_str());
     }
 
     void BleMiRemote::on_shutdown() {
