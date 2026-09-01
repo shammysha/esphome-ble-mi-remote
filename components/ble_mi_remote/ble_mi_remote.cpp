@@ -350,7 +350,28 @@ namespace esphome {
       this->startReconnectAdvert();
     }
 
-    void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
+    void BleMiRemote::update() {
+      state_sensor_->publish_state(this->_connected);
+      // Diagnostic (2026-09-01): onMTUChange() has never once fired across
+      // this entire investigation's real-Mi-TV tests, matching a symptom
+      // independently reported upstream (h2zero/esp-nimble-cpp#259) - but
+      // that report's actual root cause turned out unrelated (NVS_PERSIST,
+      // already set here). Since only the CENTRAL can initiate an ATT
+      // Exchange MTU Request (a server can't push this unilaterally),
+      // there's nothing we can proactively do about it either way - this
+      // just polls the connection's *actual* negotiated MTU directly
+      // (bypassing the possibly-broken callback entirely) to settle
+      // whether the exchange genuinely never happens at the protocol
+      // level, or happens fine and only our own event dispatch is silently
+      // broken.
+      if (this->_connected) {
+        std::vector<uint16_t> ids = pServer->getPeerDevices();
+        if (!ids.empty()) {
+          uint16_t mtu = pServer->getPeerMTU(ids[0]);
+          ESP_LOGI(TAG, "update: peer MTU poll=%u, elapsed_since_connect_ms=%u", (unsigned) mtu, (unsigned) (millis() - this->_connect_millis));
+        }
+      }
+    }
 
     // dump_config() output is cached and replayed to any client that
     // (re)subscribes to logs, unlike plain ESP_LOGI - the only reliable way
