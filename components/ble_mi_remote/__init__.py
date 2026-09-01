@@ -104,6 +104,18 @@ async def to_code(config: dict) -> None:
     # remembers from the prior bonding. This is ESP-IDF's own documented
     # requirement for "reconnect without rebonding after reset/power-cycle".
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_NVS_PERSIST", True)
+    # TEMPORARY DIAGNOSTIC (2026-09-01): verbose nimble host stack logging -
+    # trying to catch protocol-level (SMP/L2CAP/ATT) activity during the
+    # real Mi TV's ~18.5-20.5s otherwise-invisible window before it
+    # disconnects, now that GATT-content differences from the genuine
+    # remote have been ruled out (6 consecutive real-hardware negative
+    # results) and the actual root cause is confirmed to be somewhere in
+    # the nimble host stack version itself (a NimBLE-Arduino 1.4.0 legacy
+    # build - completely different, much older vendored nimble host -
+    # stayed connected 5+ minutes where every 2.x/3.x variant dropped at
+    # ~20s). Revert once this diagnostic pass is done.
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_LOG_LEVEL_DEBUG", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_DEBUG", True)
 
     add_idf_component(name=NIMBLE_CPP_COMPONENT, repo=NIMBLE_CPP_COMPONENT_REPO, ref=NIMBLE_CPP_COMPONENT_REF)
 
