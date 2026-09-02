@@ -104,25 +104,27 @@ async def to_code(config: dict) -> None:
     # remembers from the prior bonding. This is ESP-IDF's own documented
     # requirement for "reconnect without rebonding after reset/power-cycle".
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_NVS_PERSIST", True)
-    # Tested and ruled out (2026-09-02, real hardware, two back-to-back
-    # tests): disabling BT modem sleep changed nothing (~18.5s-from-bond
-    # disconnect, identical to every prior config) - reverted to default.
-    # Also ruled out this same session, all via direct code comparison
-    # against the known-working NimBLE-Arduino 1.4.0 baseline: GATT/HID
-    # profile content, connParams/timeout values, security key-distribution
-    # config, GAP service characteristic set, TV-side cache (full TV
-    # reboot before re-pairing).
+    # Ruled out this session (2026-09-02), all via direct code comparison
+    # against the known-working NimBLE-Arduino 1.4.0 baseline, real
+    # hardware tests, or both: BT modem sleep, GATT/HID profile content,
+    # connParams/timeout values, security key-distribution config (incl.
+    # sm_sc - matches after our own setSecurityAuth() call), GAP service
+    # characteristic set, TV-side cache (full TV reboot before re-pairing),
+    # NimBLE host debug logging (genuinely silent, confirmed via live
+    # serial capture, not a log-transport artifact), ATT Read Blob/offset
+    # handling in ble_gatts.c (verified correct by tracing the actual
+    # source).
     #
-    # TEMPORARY DIAGNOSTIC (2026-09-02): every application/config-level
-    # surface checked so far is a dead end - trying raw NimBLE host debug
-    # logging again, this time captured over serial with a listener
-    # attached *live* during the actual connect attempt (the previous
-    # attempt at this, weeks ago, went through the network API log
-    # stream and produced nothing - plausibly just dropped under load
-    # rather than genuinely absent). Revert once this diagnostic pass is
-    # done.
-    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_LOG_LEVEL_DEBUG", True)
-    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_DEBUG", True)
+    # The one genuinely different compiled artifact found by comparing the
+    # *legacy* Arduino framework's own baked-in sdkconfig.h against this
+    # build's sdkconfig: the underlying BT CONTROLLER build variant itself.
+    # Legacy: CONFIG_BTDM_CTRL_MODE_BTDM=1 (dual-mode controller, Classic
+    # BT + BLE, even though Classic is never used). Current (default for
+    # this build): CONFIG_BTDM_CTRL_MODE_BLE_ONLY. These link genuinely
+    # different compiled controller code (not just a config value our own
+    # component could override at runtime) with potentially different
+    # internal scheduling/timing - testing dual-mode directly.
+    add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODE_BTDM", True)
 
     add_idf_component(name=NIMBLE_CPP_COMPONENT, repo=NIMBLE_CPP_COMPONENT_REPO, ref=NIMBLE_CPP_COMPONENT_REF)
 
