@@ -20,6 +20,7 @@ from esphome.const import (
     CONF_DISABLED_BY_DEFAULT,
     CONF_RESTORE_MODE    
 )
+from esphome.components.esp32 import add_idf_sdkconfig_option
 from esphome.core import CORE, ID
 from esphome.cpp_generator import LambdaExpression, MockObj, TemplateArguments
 
@@ -70,6 +71,13 @@ async def to_code(config: dict) -> None:
 
     if not CORE.using_arduino:
         raise cv.Invalid("The component only supports the Arduino framework.")
+
+    # Current ESPHome's Arduino framework builds arduino-esp32/NimBLE-Arduino as
+    # ESP-IDF components on top of ESP-IDF proper, instead of the old prebuilt
+    # Arduino core that had BT baked in by default - so these have to be enabled
+    # explicitly now for NimBLE-Arduino's sources to even find esp_bt.h.
+    add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
 
     var = cg.new_Pvariable(
         config[CONF_ID],
