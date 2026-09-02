@@ -50,6 +50,7 @@ ACTION_PRINT_CLASS: Final = "BleMiRemotePrintAction"
 ACTION_PRESS_CLASS: Final = "BleMiRemotePressAction"
 ACTION_RELEASE_CLASS: Final = "BleMiRemoteReleaseAction"
 ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
+ACTION_CONNECT_WAKE_CLASS: Final = "BleMiRemoteConnectWakeAction"
 
 """NimBLE C++ wrapper library.
 

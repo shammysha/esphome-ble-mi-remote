@@ -81,6 +81,12 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
+				// own-commits bisection: connectWakeStart, ported for full
+				// structural parity with esp-idf (per user request, even
+				// though it's only ever invoked via its own button action -
+				// dead code otherwise, can't affect a normal pairing test).
+				void connectWakeStart();
+
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 

@@ -26,6 +26,7 @@ from esphome.cpp_generator import MockObj, TemplateArguments
 
 from .const import (
     ACTION_COMBINATION_CLASS,
+    ACTION_CONNECT_WAKE_CLASS,
     ACTION_PRESS_CLASS,
     ACTION_PRINT_CLASS,
     ACTION_RELEASE_CLASS,
@@ -226,6 +227,32 @@ async def ble_mi_remote_press_to_code(
                 cg.add(var.set_special(await cg.templatable(k[CONF_VALUE], args, cg.uint8)))
                 break
     return var
+
+
+BleMiRemoteConnectWakeAction = ble_mi_remote_ns.class_(ACTION_CONNECT_WAKE_CLASS, automation.Action)
+
+
+@automation.register_action(
+    f"{DOMAIN}.connect_wake",
+    BleMiRemoteConnectWakeAction,
+    maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
+)
+async def ble_mi_remote_connect_wake_to_code(
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: list
+) -> MockObj:
+    """Action connect_wake
+
+    :param config: dict
+    :param action_id: ID
+    :param template_arg: TemplateArguments
+    :param args: list
+    :return: MockObj
+    """
+
+    paren: MockObj = await cg.get_variable(config[CONF_ID])
+
+    return cg.new_Pvariable(action_id, template_arg, paren)
 
 
 BleMiRemoteStartAction = ble_mi_remote_ns.class_(ACTION_START_CLASS, automation.Action)

@@ -46,6 +46,16 @@ namespace esphome {
 				BleMiRemote *ble_mi_remote_;
 		};
 
+		template<typename... Ts> class BleMiRemoteConnectWakeAction : public Action<Ts...> {
+			public:
+				explicit BleMiRemoteConnectWakeAction(BleMiRemote *ble_mi_remote) : ble_mi_remote_(ble_mi_remote) {}
+
+				void play(Ts... x) override { this->ble_mi_remote_->connectWakeStart(); }
+
+			protected:
+				BleMiRemote *ble_mi_remote_;
+		};
+
 		template<typename... Ts> class BleMiRemoteStopAction : public Action<Ts...> {
 			public:
 				explicit BleMiRemoteStopAction(BleMiRemote *ble_mi_remote) : ble_mi_remote_(ble_mi_remote) {}
