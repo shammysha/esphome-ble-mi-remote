@@ -173,7 +173,10 @@ namespace esphome {
 			NimBLEDevice::setSecurityAuth(true, true, true);
 
 			hid->setReportMap((uint8_t*) _hidReportDescriptor, sizeof(_hidReportDescriptor));
-			hid->startServices();
+			// nimble-cpp-bisect: hid->startServices() deprecated as of 2.5.0
+			// ("Services are now started by the server when start() is
+			// called") - pServer->start() is the direct replacement.
+			pServer->start();
 
 			onStarted(pServer);
 
