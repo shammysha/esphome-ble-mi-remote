@@ -180,7 +180,9 @@ namespace esphome {
 			advertising = pServer->getAdvertising();
 			advertising->setAppearance(HID_KEYBOARD);
 			advertising->addServiceUUID(hid->getHidService()->getUUID());
-			advertising->setScanResponse(false);
+			// nimble-cpp-bisect: setScanResponse() renamed to
+			// enableScanResponse() by tag 2.0.0, same bool-argument shape.
+			advertising->enableScanResponse(false);
 
 			advertising->start();
 
