@@ -1129,10 +1129,20 @@ namespace esphome {
     }
 
     void BleMiRemote::onWrite(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {
-      uint8_t *value = (uint8_t*) (me->getValue().c_str());
-      (void) value;
-      ESP_LOGD(TAG, "special keys: %d", *value);
-      this->logEvent("onWrite(chr): uuid=%s", me->getUUID().toString().c_str());
+      // Full-value hex dump added 2026-09-02: a real capture showed a
+      // write of decimal 100 (0x64) to Protocol Mode (0x2a4e), which is
+      // spec-invalid (only 0x00/0x01 are defined) if that really is the
+      // whole value - the old single-byte %d read can't tell a genuine
+      // 1-byte invalid write apart from silently truncating a longer one.
+      std::string val = me->getValue();
+      char hex[3 * 20 + 1] = {0};
+      size_t n = val.size() < 20 ? val.size() : 20;
+      for (size_t i = 0; i < n; i++) {
+        snprintf(hex + i * 3, 4, "%02x ", (unsigned) (uint8_t) val[i]);
+      }
+      ESP_LOGD(TAG, "special keys: %d", val.empty() ? 0 : (uint8_t) val[0]);
+      ESP_LOGI(TAG, "onWrite(chr): uuid=%s len=%u bytes=[%s%s]", me->getUUID().toString().c_str(), (unsigned) val.size(), hex, val.size() > 20 ? "..." : "");
+      this->logEvent("onWrite(chr): uuid=%s len=%u b0=%02x", me->getUUID().toString().c_str(), (unsigned) val.size(), val.empty() ? 0 : (uint8_t) val[0]);
     }
 
     // Diagnostic-only overrides (2026-08-26) - see the block comment on
