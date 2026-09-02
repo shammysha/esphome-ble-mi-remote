@@ -115,21 +115,26 @@ async def to_code(config: dict) -> None:
     # handling in ble_gatts.c (verified correct by tracing the actual
     # source).
     #
-    # Tested (2026-09-02): the legacy Arduino framework's own baked-in
-    # sdkconfig.h links CONFIG_BTDM_CTRL_MODE_BTDM=1 (dual-mode controller,
-    # Classic BT + BLE) where this build defaults to
+    # The legacy Arduino framework's own baked-in sdkconfig.h links
+    # CONFIG_BTDM_CTRL_MODE_BTDM=1 (dual-mode controller, Classic BT + BLE,
+    # even though Classic is never used) where this build defaulted to
     # CONFIG_BTDM_CTRL_MODE_BLE_ONLY - a genuinely different compiled
-    # controller binary, not just a runtime value. Flipping just the
-    # Kconfig choice on real hardware confirmed this is NOT a drop-in
-    # swap: the device hung completely (WiFi/ping/mDNS still answered,
-    # but the ESPHome API never came up and serial produced zero output
-    # even long after boot) - NimBLEDevice::init()'s
-    # `while (!m_synced) { ble_npl_time_delay(1); }` sync-wait loop
-    # apparently never completes under BTDM without some additional
-    # Classic-BT-side initialization neither esp-nimble-cpp nor this
-    # component currently performs. Reverted to the working default
-    # (BLE_ONLY, i.e. simply not setting this option) - pursuing BTDM
-    # properly would mean writing that missing init, not a config flag.
+    # controller binary, not just a runtime value. First attempt at
+    # flipping this Kconfig choice crashed real hardware in a hard
+    # boot-loop (LoadProhibited inside NimBLEDevice::init()) - root-caused
+    # by tracing actual ESP-IDF source, not assumption: nimble_port_init()
+    # (ESP-IDF's own controller bring-up helper for IDF>=5.0) hardcodes
+    # esp_bt_controller_enable(ESP_BT_MODE_BLE), which
+    # esp_bt_controller_enable() (components/bt/controller/esp32/bt.c)
+    # rejects outright whenever it doesn't exactly match the mode the
+    # controller was actually built for - and our fork's
+    # NimBLEDevice::init() never checked nimble_port_init()'s return value,
+    # so the host task got spawned over never-initialized state instead of
+    # a clean failure. Fixed directly in our fork (shammysha/esp-nimble-cpp,
+    # commit 7319ea1): for IDF>=5.0 we now do the same controller bring-up
+    # ourselves, matching bt_cfg.mode instead of hardcoding BLE, checking
+    # every step. Re-enabling BTDM now that the actual blocker is fixed.
+    add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODE_BTDM", True)
 
     add_idf_component(name=NIMBLE_CPP_COMPONENT, repo=NIMBLE_CPP_COMPONENT_REPO, ref=NIMBLE_CPP_COMPONENT_REF)
 
