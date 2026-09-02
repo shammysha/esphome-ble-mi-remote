@@ -159,6 +159,30 @@ namespace esphome {
       this->loadTargetMac();
 
       NimBLEDevice::init(deviceName);
+
+      // TEMPORARY DIAGNOSTIC (2026-09-02): our own identity address is
+      // fixed (public, tied to the WiFi MAC) and has been paired to this
+      // exact real Mi TV under many different GATT profile shapes across
+      // this whole investigation (DIS fields, vendor service, WRITE perms
+      // on Input Reports, etc. all changed at various points). A real
+      // TV-side symptom (Bluedroid's own bta_hh_co_send_hid_info hands the
+      // kernel only 5 bytes of our ~199-byte Report Map, confirmed via adb
+      // bugreport) is consistent with Android holding a *stale* GATT
+      // service/attribute-handle cache keyed by our address from an
+      // earlier profile shape - independent of the SMP bond itself
+      // (already ruled out: deleteAllBonds() on our side + fresh pairing
+      // every test) and NOT necessarily cleared by a plain TV reboot
+      // (Android's own Bluetooth app cache lives on persistent flash, not
+      // just RAM). Switching to a random static address we know this TV
+      // has never seen before removes even the possibility of a stale
+      // per-address cache being the culprit - if the failure changes, the
+      // cache theory is confirmed; if not, it's cleanly ruled out instead
+      // of remaining an open question. BLE_OWN_ADDR_RANDOM (0x01);
+      // 0xc0 as the first byte's top bits (11) makes this a spec-valid
+      // static random address.
+      NimBLEDevice::setOwnAddrType(BLE_OWN_ADDR_RANDOM);
+      NimBLEDevice::setOwnAddr(NimBLEAddress("c0:ff:ee:5b:b0:01", BLE_ADDR_RANDOM));
+
       this->pServer = NimBLEDevice::createServer();
 
       pServer->setCallbacks(this);
