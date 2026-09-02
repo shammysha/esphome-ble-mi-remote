@@ -67,7 +67,10 @@ component's original commit (2023-07-19).
 """
 NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
 NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
-NIMBLE_CPP_COMPONENT_REF: Final = "v1.4.1"
+# Branched off the v1.4.1 tag (kept as-is for reference) with the one fix
+# needed to compile under plain ESP-IDF instead of the old Arduino core -
+# see that branch's own commit message for details.
+NIMBLE_CPP_COMPONENT_REF: Final = "ble-mi-remote-v1.4.1-port"
 
 """Binary sensors"""
 BINARY_SENSOR_STATE: Final = {
