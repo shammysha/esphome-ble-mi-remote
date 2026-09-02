@@ -133,8 +133,22 @@ async def to_code(config: dict) -> None:
     # a clean failure. Fixed directly in our fork (shammysha/esp-nimble-cpp,
     # commit 7319ea1): for IDF>=5.0 we now do the same controller bring-up
     # ourselves, matching bt_cfg.mode instead of hardcoding BLE, checking
-    # every step. Re-enabling BTDM now that the actual blocker is fixed.
-    add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODE_BTDM", True)
+    # every step - confirmed on real hardware, BTDM now boots cleanly, no
+    # more crash-loop.
+    #
+    # But BTDM introduces a *different*, equally blocking problem
+    # (real hardware, 2026-09-02, timing independently confirmed twice by
+    # the user with a stopwatch): SMP pairing itself never completes -
+    # startSecurity()=OK (rc=0) fires immediately, then nothing at all for
+    # exactly 30000ms (the BLE spec's own SMP procedure timeout) before our
+    # own onAuthenticationComplete sees bonded=false and force-disconnects
+    # (reason=0x216, local - not the familiar TV-initiated 0x213). Doesn't
+    # even reach the original ~18.5s-after-bond TV-initiated-disconnect
+    # symptom this whole investigation is about, since bonding never
+    # succeeds under BTDM at all. Controller mode as an avenue is exhausted
+    # either way (BLE_ONLY: pairing works but hits the original bug; BTDM:
+    # crash, now fixed, but SMP hangs instead) - back to BLE_ONLY, the only
+    # mode where pairing reliably completes at all.
 
     add_idf_component(name=NIMBLE_CPP_COMPONENT, repo=NIMBLE_CPP_COMPONENT_REPO, ref=NIMBLE_CPP_COMPONENT_REF)
 
