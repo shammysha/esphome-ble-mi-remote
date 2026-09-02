@@ -22,7 +22,7 @@ from esphome.const import (
 )
 from esphome.components.esp32 import add_idf_component, add_idf_sdkconfig_option
 from esphome.core import CORE, ID
-from esphome.cpp_generator import LambdaExpression, MockObj, TemplateArguments
+from esphome.cpp_generator import MockObj, TemplateArguments
 
 from .const import (
     ACTION_COMBINATION_CLASS,
@@ -199,26 +199,28 @@ async def ble_mi_remote_press_to_code(
     paren: MockObj = await cg.get_variable(config[CONF_ID])
     var: MockObj = cg.new_Pvariable(action_id, template_arg, paren)
 
-
-    template_: LambdaExpression = await cg.templatable(config[CONF_CODE], args, cg.std_string)
-    
     is_number = True;
 
     try:
-        config[CONF_CODE] = int(template_)
+        config[CONF_CODE] = int(config[CONF_CODE])
     except:
         try:
-            config[CONF_CODE] = int(template_, 16)
+            config[CONF_CODE] = int(config[CONF_CODE], 16)
         except:
             is_number = False
-    
+
+    # set_key()/set_special() are both TEMPLATABLE_VALUE(uint8_t, ...) - current
+    # ESPHome's TemplatableFn requires every value passed to one, literal or not,
+    # to go through cg.templatable() typed to match (uint8_t here, not the
+    # cg.std_string this used to be called with once up front - that only ever
+    # worked by accident, per the TemplatableFn migration notes).
     if is_number:
-        cg.add(var.set_key(template_))
+        cg.add(var.set_key(await cg.templatable(config[CONF_CODE], args, cg.uint8)))
     else:
-        template_ = template_.lower()
+        template_ = config[CONF_CODE].lower()
         for i, k in enumerate(SPECIAL_KEY):
             if k[CONF_NAME].lower() == template_:
-                cg.add(var.set_special(k[CONF_VALUE]))
+                cg.add(var.set_special(await cg.templatable(k[CONF_VALUE], args, cg.uint8)))
                 break
     return var
 
