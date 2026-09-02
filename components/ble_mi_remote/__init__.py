@@ -138,6 +138,7 @@ BleMiRemoteReleaseAction = ble_mi_remote_ns.class_(
     f"{DOMAIN}.release",
     BleMiRemoteReleaseAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
 )
 async def ble_mi_remote_release_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
@@ -169,7 +170,8 @@ BleMiRemotePressAction = ble_mi_remote_ns.class_(ACTION_PRESS_CLASS, automation.
                 cv.templatable(cv.string)
             )
         }
-    )
+    ),
+    synchronous=True,
 )
 
 async def ble_mi_remote_press_to_code(
@@ -188,7 +190,7 @@ async def ble_mi_remote_press_to_code(
     var: MockObj = cg.new_Pvariable(action_id, template_arg, paren)
 
 
-    template_: LambdaExpression = await cg.templatable(config[CONF_CODE], args, cv.string)
+    template_: LambdaExpression = await cg.templatable(config[CONF_CODE], args, cg.std_string)
     
     is_number = True;
 
@@ -218,6 +220,7 @@ BleMiRemoteStartAction = ble_mi_remote_ns.class_(ACTION_START_CLASS, automation.
     f"{DOMAIN}.start",
     BleMiRemoteStartAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
 )
 async def ble_mi_remote_start_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
@@ -243,6 +246,7 @@ BleMiRemoteStopAction = ble_mi_remote_ns.class_(ACTION_STOP_CLASS, automation.Ac
     f"{DOMAIN}.stop",
     BleMiRemoteStopAction,
     maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
 )
 async def ble_mi_remote_stop_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
