@@ -216,7 +216,17 @@ namespace esphome {
 					// moment at all.
 					static const uint8_t EVENT_LOG_SIZE = 32;
 					struct EventLogEntry {
-						char		label[48];
+						// 48 was too small - several format strings (e.g.
+						// onConnParamsUpdate's "interval=%u latency=%u timeout=%u")
+						// were silently truncated by vsnprintf right before the
+						// actual data, confirmed 2026-09-02 by a real capture that
+						// cut off exactly at "timeo" with the timeout value itself
+						// never printed - the one number most relevant to the
+						// current investigation (Apple's BT guidelines flag
+						// supervision-timeout misconfiguration as a real disconnect
+						// cause via a very similar upstream report, h2zero/esp-
+						// nimble-cpp#313).
+						char		label[72];
 						uint32_t	elapsed_ms;
 					};
 					EventLogEntry		_eventLog[EVENT_LOG_SIZE];
