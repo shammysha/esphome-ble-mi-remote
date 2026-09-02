@@ -51,14 +51,23 @@ ACTION_PRESS_CLASS: Final = "BleMiRemotePressAction"
 ACTION_RELEASE_CLASS: Final = "BleMiRemoteReleaseAction"
 ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 
-"""Libraries"""
-LIBS_ADDITIONAL: Final = [
-    (
-        "h2zero/NimBLE-Arduino",
-        "1.4.0",
-        None,
-    )
-]
+"""NimBLE C++ wrapper library.
+
+Original 2023 code pulled h2zero/NimBLE-Arduino 1.4.0 via the Arduino/
+PlatformIO lib_deps mechanism (see git history). Current ESPHome's Arduino
+framework builds that same library as an ESP-IDF component instead, and hit
+real upstream ESP-IDF-5.5.5-compatibility gaps in NimBLE-Arduino's own
+porting layer unrelated to this component's code. Pinning our own fork of
+h2zero/esp-nimble-cpp (the ESP-IDF-native sibling library, same vintage) at
+its last pre-2.x tag instead avoids that path entirely while keeping the
+exact same NimBLE host generation the original code was written against -
+esp-nimble-cpp had no tagged release between v1.4.1 (2022-10-30) and 2.0.0
+(2024-12-14), so v1.4.1 is the version genuinely contemporary with this
+component's original commit (2023-07-19).
+"""
+NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
+NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
+NIMBLE_CPP_COMPONENT_REF: Final = "v1.4.1"
 
 """Binary sensors"""
 BINARY_SENSOR_STATE: Final = {

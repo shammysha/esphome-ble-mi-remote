@@ -20,7 +20,7 @@ from esphome.const import (
     CONF_DISABLED_BY_DEFAULT,
     CONF_RESTORE_MODE    
 )
-from esphome.components.esp32 import add_idf_sdkconfig_option
+from esphome.components.esp32 import add_idf_component, add_idf_sdkconfig_option
 from esphome.core import CORE, ID
 from esphome.cpp_generator import LambdaExpression, MockObj, TemplateArguments
 
@@ -38,7 +38,9 @@ from .const import (
     CONF_RECONNECT,
     CONF_TEXT,
     DOMAIN,
-    LIBS_ADDITIONAL
+    NIMBLE_CPP_COMPONENT,
+    NIMBLE_CPP_COMPONENT_REF,
+    NIMBLE_CPP_COMPONENT_REPO,
 )
 
 CODEOWNERS: Final = ["@shammysha"]
@@ -69,13 +71,10 @@ async def to_code(config: dict) -> None:
     if not CORE.is_esp32:
         raise cv.Invalid("The component only supports ESP32.")
 
-    if not CORE.using_arduino:
-        raise cv.Invalid("The component only supports the Arduino framework.")
-
-    # Current ESPHome's Arduino framework builds arduino-esp32/NimBLE-Arduino as
-    # ESP-IDF components on top of ESP-IDF proper, instead of the old prebuilt
-    # Arduino core that had BT baked in by default - so these have to be enabled
-    # explicitly now for NimBLE-Arduino's sources to even find esp_bt.h.
+    # The old prebuilt Arduino core (used when this component was originally
+    # written) had BT baked in by default - these have to be enabled
+    # explicitly now, same as ESPHome's own esp32_ble component does, for
+    # the bt/nimble component to be part of the build at all.
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
 
@@ -93,8 +92,11 @@ async def to_code(config: dict) -> None:
 
     await adding_special_keys(var)
 
-    for lib in LIBS_ADDITIONAL:  # type: ignore
-        cg.add_library(*lib)
+    add_idf_component(
+        name=NIMBLE_CPP_COMPONENT,
+        repo=NIMBLE_CPP_COMPONENT_REPO,
+        ref=NIMBLE_CPP_COMPONENT_REF,
+    )
 
 
 async def adding_special_keys(var: MockObj) -> None:
