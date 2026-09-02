@@ -482,6 +482,17 @@ namespace esphome {
 		void BleMiRemote::onConnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo) {
 			this->_connected = true;
 
+			// own-commits bisection stage 2/5: peripheral-initiated pairing.
+			// Ported from esp-idf branch's onConnect() (4e3dd6e) - request
+			// security ourselves on an unbonded connect rather than waiting
+			// for the peer, since NimBLEHIDDevice's NOTIFY property isn't
+			// ENC-gated so a central is never forced to bond on its own.
+			if (!connInfo.isBonded()) {
+				int rc = 0;
+				bool startOk = NimBLEDevice::startSecurity(connInfo.getConnHandle(), &rc);
+				ESP_LOGI(TAG, "onConnect: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
+			}
+
 			release();
 		}
 
