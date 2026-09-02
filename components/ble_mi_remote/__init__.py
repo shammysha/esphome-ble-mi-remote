@@ -104,22 +104,25 @@ async def to_code(config: dict) -> None:
     # remembers from the prior bonding. This is ESP-IDF's own documented
     # requirement for "reconnect without rebonding after reset/power-cycle".
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_NVS_PERSIST", True)
-    # TEMPORARY DIAGNOSTIC (2026-09-02): the real Mi TV disconnects us
-    # (reason=0x213, peer-initiated) with extremely tight ~18.5s-from-bond
-    # reproducibility, unaffected by TV reboot, GATT profile content,
-    # connParams/timeout values, or security key-distribution config - all
-    # ruled out via direct code comparison against the known-working
-    # NimBLE-Arduino 1.4.0 baseline (identical in every one of those
-    # respects). The one genuinely different subsystem between that
-    # baseline (Arduino framework) and this build (native ESP-IDF) is
-    # WiFi/BT coexistence - this device keeps WiFi associated the whole
-    # time (API/OTA), and BT modem sleep + SW coexistence arbitration are
-    # both on by default here. Testing whether disabling BT modem sleep
-    # changes the disconnect timing at all - matches the general shape of
-    # a real upstream report (h2zero/esp-nimble-cpp#313: WiFi active +
-    # BLE disconnects after some time, absent on WiFi-less/Linux peers).
-    # Revert if this doesn't change anything.
-    add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODEM_SLEEP", False)
+    # Tested and ruled out (2026-09-02, real hardware, two back-to-back
+    # tests): disabling BT modem sleep changed nothing (~18.5s-from-bond
+    # disconnect, identical to every prior config) - reverted to default.
+    # Also ruled out this same session, all via direct code comparison
+    # against the known-working NimBLE-Arduino 1.4.0 baseline: GATT/HID
+    # profile content, connParams/timeout values, security key-distribution
+    # config, GAP service characteristic set, TV-side cache (full TV
+    # reboot before re-pairing).
+    #
+    # TEMPORARY DIAGNOSTIC (2026-09-02): every application/config-level
+    # surface checked so far is a dead end - trying raw NimBLE host debug
+    # logging again, this time captured over serial with a listener
+    # attached *live* during the actual connect attempt (the previous
+    # attempt at this, weeks ago, went through the network API log
+    # stream and produced nothing - plausibly just dropped under load
+    # rather than genuinely absent). Revert once this diagnostic pass is
+    # done.
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_LOG_LEVEL_DEBUG", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_DEBUG", True)
 
     add_idf_component(name=NIMBLE_CPP_COMPONENT, repo=NIMBLE_CPP_COMPONENT_REPO, ref=NIMBLE_CPP_COMPONENT_REF)
 
