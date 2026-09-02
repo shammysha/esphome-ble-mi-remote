@@ -150,6 +150,9 @@ namespace esphome {
 		void BleMiRemote::setup() {
 			ESP_LOGI(TAG, "Setting up...");
 
+			// own-commits bisection stage 3/5
+			this->loadTargetMac();
+
 			NimBLEDevice::init (deviceName);
 			NimBLEServer *pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
@@ -493,11 +496,84 @@ namespace esphome {
 				ESP_LOGI(TAG, "onConnect: not bonded, requesting security: startSecurity()=%s rc=%d", startOk ? "OK" : "FAILED", rc);
 			}
 
+			// own-commits bisection stage 3/5
+			this->learnTargetMac(connInfo.getAddress());
+
 			release();
+		}
+
+		// own-commits bisection stage 3/5: ported from esp-idf branch
+		// (loadTargetMac/learnTargetMac/startPlainAdvertising/startReconnectAdvert),
+		// minus the HD-burst call in startReconnectAdvert (stage 4) - falls back
+		// to plain advertising even when bonded, for now.
+		void BleMiRemote::loadTargetMac() {
+			this->_target_mac_pref = global_preferences->make_preference<uint64_t>(fnv1_hash("ble_mi_remote_target_mac"));
+
+			if (this->_target_mac_from_config) {
+				ESP_LOGI(TAG, "loadTargetMac: using target_mac_address from config: %s", NimBLEAddress(this->_target_mac, BLE_ADDR_PUBLIC).toString().c_str());
+				return;
+			}
+
+			uint64_t stored = 0;
+			if (this->_target_mac_pref.load(&stored) && stored != 0) {
+				this->_target_mac = stored;
+				this->_has_target_mac = true;
+				ESP_LOGI(TAG, "loadTargetMac: loaded learned target %s from flash", NimBLEAddress(stored, BLE_ADDR_PUBLIC).toString().c_str());
+			} else {
+				ESP_LOGI(TAG, "loadTargetMac: no target_mac_address configured and nothing learned yet");
+			}
+		}
+
+		void BleMiRemote::learnTargetMac(NimBLEAddress addr) {
+			if (this->_target_mac_from_config) {
+				return;
+			}
+
+			uint64_t mac = (uint64_t) addr;
+			if (mac == 0 || mac == this->_target_mac) {
+				return;
+			}
+
+			this->_target_mac = mac;
+			this->_has_target_mac = true;
+
+			bool ok = this->_target_mac_pref.save(&mac);
+			ESP_LOGI(TAG, "learnTargetMac: learned peer %s, saved to flash=%s", addr.toString().c_str(), ok ? "OK" : "FAILED");
+		}
+
+		void BleMiRemote::startPlainAdvertising() {
+			NimBLEAdvertising *adv = pServer->getAdvertising();
+			adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
+			bool stopOk = adv->stop();
+			bool startOk = adv->start();
+			ESP_LOGI(TAG, "startPlainAdvertising: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+		}
+
+		void BleMiRemote::startReconnectAdvert() {
+			// Stage 3 doesn't have HD-burst yet (stage 4) - always plain,
+			// whether or not a bond exists for the target. Still exercises the
+			// dispatcher structure/target-MAC bookkeeping itself.
+			ESP_LOGI(TAG, "startReconnectAdvert: falling back to plain advertising (no HD-burst yet)");
+			this->startPlainAdvertising();
 		}
 
 		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
 			this->_connected = false;
+
+			ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
+
+			if (!this->_reconnect || !this->_should_readvertise) {
+				return;
+			}
+
+			if (reason == BLE_HS_ERR_HCI_BASE + BLE_ERR_REM_USER_CONN_TERM) {
+				bool deleteOk = NimBLEDevice::deleteBond(connInfo.getAddress());
+				ESP_LOGI(TAG, "Disconnected: peer deliberately terminated the link (reason=0x%02x), deleteBond(%s)=%s - plain advertising only", reason, connInfo.getAddress().toString().c_str(), deleteOk ? "OK" : "FAILED");
+				this->startPlainAdvertising();
+				return;
+			}
+
+			this->startReconnectAdvert();
 		}
 
 		void BleMiRemote::onWrite(NimBLECharacteristic *me, NimBLEConnInfo& connInfo) {

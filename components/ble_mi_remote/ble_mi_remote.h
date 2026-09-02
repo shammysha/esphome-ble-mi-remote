@@ -3,6 +3,7 @@
 #ifdef USE_ESP32
 
 #include "esphome/core/component.h"
+#include "esphome/core/preferences.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
@@ -88,6 +89,13 @@ namespace esphome {
 				void update_timer();
 				void delay_ms(uint64_t ms);
 
+				// own-commits bisection stage 3/5: bond-preservation/reconnect
+				// dispatch, ported from esp-idf branch minus HD-burst (stage 4).
+				void loadTargetMac();
+				void learnTargetMac(NimBLEAddress addr);
+				void startPlainAdvertising();
+				void startReconnectAdvert();
+
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
 				NimBLECharacteristic*	inputKeyboard;
@@ -108,6 +116,13 @@ namespace esphome {
 				uint8_t				batteryLevel;
 				bool				_connected = false;
 				uint32_t			_delay_ms = 7;
+
+				// own-commits bisection stage 3/5
+				bool				_should_readvertise{true};
+				uint64_t			_target_mac = 0;
+				bool				_has_target_mac = false;
+				bool				_target_mac_from_config = false;
+				ESPPreferenceObject	_target_mac_pref;
 
 
 				uint16_t sid		= 0x01;
