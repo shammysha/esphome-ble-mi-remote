@@ -86,6 +86,11 @@ namespace esphome {
 				// though it's only ever invoked via its own button action -
 				// dead code otherwise, can't affect a normal pairing test).
 				void connectWakeStart();
+				// own-commits bisection: powerAdvertStart/Stop, ditto - reached
+				// via pressSpecial(SPECIAL_POWER) while disconnected, which the
+				// auto-generated "Power" special-key button already calls.
+				void powerAdvertStart();
+				void powerAdvertStop();
 
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
@@ -94,6 +99,9 @@ namespace esphome {
 				bool is_connected();
 				void update_timer();
 				void delay_ms(uint64_t ms);
+				// own-commits bisection: powerAdvertData1/2 (internal, timer-chained)
+				void powerAdvertData1();
+				void powerAdvertData2();
 
 				// own-commits bisection stage 3/5: bond-preservation/reconnect
 				// dispatch, ported from esp-idf branch minus HD-burst (stage 4).
@@ -133,6 +141,9 @@ namespace esphome {
 				ESPPreferenceObject	_target_mac_pref;
 				// own-commits bisection stage 4/5
 				uint32_t			_reconnect_retry_until_ms = 0;
+				// own-commits bisection: powerAdvert*
+				uint32_t			_power_advert_delay = 1000;
+				uint8_t				_power_advert_cycle = 0;
 
 
 				uint16_t sid		= 0x01;
