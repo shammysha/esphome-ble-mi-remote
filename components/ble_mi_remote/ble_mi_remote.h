@@ -117,9 +117,12 @@ namespace esphome {
 
 			protected:
 				virtual void onStarted(NimBLEServer *pServer) { };
-				virtual void onConnect(NimBLEServer* pServer) override;
-				virtual void onDisconnect(NimBLEServer* pServer) override;
-				virtual void onWrite(NimBLECharacteristic* me) override;
+				// nimble-cpp-bisect: tag 2.0.0 added NimBLEConnInfo& to every
+				// callback (and a reason code to onDisconnect) - [Breaking]
+				// Update callbacks to use NimBLEConnInfo (ba79a1b).
+				virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
+				virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
+				virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome

@@ -67,10 +67,12 @@ component's original commit (2023-07-19).
 """
 NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
 NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
-# Branched off the v1.4.1 tag (kept as-is for reference) with the one fix
-# needed to compile under plain ESP-IDF instead of the old Arduino core -
-# see that branch's own commit message for details.
-NIMBLE_CPP_COMPONENT_REF: Final = "ble-mi-remote-v1.4.1-port"
+# BISECTION BUILD (nimble-cpp-bisect branch, not the reference - see
+# mi-tv-nimble140-work). Pinned to a plain upstream tag pushed to our fork,
+# advanced one step at a time toward current master to find which release
+# introduced the real-Mi-TV ~18.5-20.5s post-bond disconnect. Change only
+# this one line between rounds.
+NIMBLE_CPP_COMPONENT_REF: Final = "2.0.0"
 
 """Binary sensors"""
 BINARY_SENSOR_STATE: Final = {
