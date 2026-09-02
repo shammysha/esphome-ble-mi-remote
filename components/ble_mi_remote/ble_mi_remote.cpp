@@ -544,23 +544,70 @@ namespace esphome {
 		void BleMiRemote::startPlainAdvertising() {
 			NimBLEAdvertising *adv = pServer->getAdvertising();
 			adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
+			// own-commits bisection stage 4/5: reset the sticky HD flag now
+			// that fireDirectedBurst() below can set it.
+			adv->setHighDutyCycleDirected(false);
 			bool stopOk = adv->stop();
 			bool startOk = adv->start();
 			ESP_LOGI(TAG, "startPlainAdvertising: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 		}
 
+		// own-commits bisection stage 4/5: now uses real HD-burst when bonded,
+		// ported from esp-idf branch's startReconnectAdvert()/fireDirectedBurst().
 		void BleMiRemote::startReconnectAdvert() {
-			// Stage 3 doesn't have HD-burst yet (stage 4) - always plain,
-			// whether or not a bond exists for the target. Still exercises the
-			// dispatcher structure/target-MAC bookkeeping itself.
-			ESP_LOGI(TAG, "startReconnectAdvert: falling back to plain advertising (no HD-burst yet)");
-			this->startPlainAdvertising();
+			if (!this->_has_target_mac) {
+				ESP_LOGI(TAG, "startReconnectAdvert: no target_mac_address learned yet, falling back to plain advertising");
+				this->startPlainAdvertising();
+				return;
+			}
+
+			NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
+			if (!NimBLEDevice::isBonded(dirAddr)) {
+				ESP_LOGI(TAG, "startReconnectAdvert: no saved bond for %s, falling back to plain advertising", dirAddr.toString().c_str());
+				this->startPlainAdvertising();
+				return;
+			}
+
+			this->_reconnect_retry_until_ms = millis() + 30000;
+			ESP_LOGI(TAG, "startReconnectAdvert: bonded to %s -> starting HD-burst retry (30s window)", dirAddr.toString().c_str());
+			this->fireDirectedBurst();
+		}
+
+		void BleMiRemote::fireDirectedBurst() {
+			NimBLEAdvertising *adv = pServer->getAdvertising();
+			NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
+			adv->setConnectableMode(BLE_GAP_CONN_MODE_DIR);
+			adv->setHighDutyCycleDirected(true);
+			bool stopOk = adv->stop();
+			bool startOk = adv->start(1280, &dirAddr);
+			ESP_LOGI(TAG, "fireDirectedBurst: HD directed burst to %s, stop=%s start=%s, retry_remaining_ms=%d", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", (int) (this->_reconnect_retry_until_ms - millis()));
+
+			this->set_timeout("ble_mi_remote_reconnect_burst", 1300, [this]() {
+				if (this->_connected) {
+					ESP_LOGI(TAG, "fireDirectedBurst: burst window elapsed, already connected - nothing to do");
+					return;
+				}
+
+				if ((int32_t) (millis() - this->_reconnect_retry_until_ms) < 0) {
+					this->fireDirectedBurst();
+					return;
+				}
+
+				NimBLEAdvertising *adv2 = pServer->getAdvertising();
+				bool stopOk2 = adv2->stop();
+				ESP_LOGI(TAG, "fireDirectedBurst: retry window exhausted, stopping advertising (stop=%s) - manual plain_advert needed to resume", stopOk2 ? "OK" : "FAILED");
+			});
 		}
 
 		void BleMiRemote::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
 			this->_connected = false;
 
 			ESP_LOGI(TAG, "Disconnected: %s, reason=0x%02x", connInfo.getAddress().toString().c_str(), reason);
+
+			// own-commits bisection stage 4/5: cancel any still-pending
+			// HD-burst retry from a sequence that hadn't finished its own 30s
+			// window yet.
+			this->cancel_timeout("ble_mi_remote_reconnect_burst");
 
 			if (!this->_reconnect || !this->_should_readvertise) {
 				return;

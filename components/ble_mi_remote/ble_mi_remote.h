@@ -95,6 +95,8 @@ namespace esphome {
 				void learnTargetMac(NimBLEAddress addr);
 				void startPlainAdvertising();
 				void startReconnectAdvert();
+				// own-commits bisection stage 4/5
+				void fireDirectedBurst();
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
@@ -123,6 +125,8 @@ namespace esphome {
 				bool				_has_target_mac = false;
 				bool				_target_mac_from_config = false;
 				ESPPreferenceObject	_target_mac_pref;
+				// own-commits bisection stage 4/5
+				uint32_t			_reconnect_retry_until_ms = 0;
 
 
 				uint16_t sid		= 0x01;

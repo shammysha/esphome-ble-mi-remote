@@ -72,7 +72,7 @@ NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
 # advanced one step at a time toward current master to find which release
 # introduced the real-Mi-TV ~18.5-20.5s post-bond disconnect. Change only
 # this one line between rounds.
-NIMBLE_CPP_COMPONENT_REF: Final = "master"
+NIMBLE_CPP_COMPONENT_REF: Final = "ble-mi-remote-hd-directed"
 
 """Binary sensors"""
 BINARY_SENSOR_STATE: Final = {
