@@ -77,6 +77,9 @@ async def to_code(config: dict) -> None:
     # the bt/nimble component to be part of the build at all.
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ENABLED", True)
+    # own-commits bisection stage 1/5: sdkconfig only, no code changes yet.
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ROLE_CENTRAL", True)
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_NVS_PERSIST", True)
 
     var = cg.new_Pvariable(
         config[CONF_ID],
