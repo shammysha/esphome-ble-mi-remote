@@ -222,6 +222,23 @@ namespace esphome {
 					EventLogEntry		_eventLog[EVENT_LOG_SIZE];
 					uint8_t				_eventLogCount = 0;
 					void logEvent(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+					// Persistent (never reset) advertising-lifecycle trace (2026-09-02):
+					// the connection-scoped _eventLog above is empty whenever the peer
+					// never even reaches onConnect() at all - exactly the new failure
+					// mode being investigated (TV shows the device as available/cached
+					// but the actual GAP connection attempt never lands, Connect count
+					// stays 0). Records every startPlainAdvertising()/plainAdvertStart()/
+					// startReconnectAdvert()/fireDirectedBurst() call with an absolute
+					// millis() timestamp, so dump_config() can show what our own
+					// advertising state actually did - independent of whether a
+					// connection ever resulted - at any later point, same reasoning as
+					// the connection event trace.
+					void noteAdvertAction(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+					static const uint8_t ADVERT_LOG_SIZE = 16;
+					EventLogEntry		_advertLog[ADVERT_LOG_SIZE];
+					uint8_t				_advertLogHead = 0;
+					uint8_t				_advertLogCount = 0;
+					uint32_t			_plain_advert_button_count = 0;
 					// millis() at the most recent onConnect() - lets every diagnostic
 					// callback (and onDisconnect() itself) log elapsed-since-connect,
 					// instead of reconstructing the ~18.5s figure by hand from

@@ -412,6 +412,42 @@ namespace esphome {
       for (uint8_t i = 0; i < this->_eventLogCount; i++) {
         ESP_LOGCONFIG(TAG, "    [%6ums] %s", (unsigned) this->_eventLog[i].elapsed_ms, this->_eventLog[i].label);
       }
+
+      // Live state, queried fresh at dump_config() time (2026-09-02) - not a
+      // trace of a past event, the *current* radio/bond state. Needed for
+      // exactly the failure mode where Connect count stays 0: was the radio
+      // actually (still) advertising when this was queried, and are we
+      // (still) bonded to the target from our own side, independent of
+      // whatever the TV's own UI currently shows (proven unreliable/cached).
+      bool advNow = advertising != nullptr && advertising->isAdvertising();
+      ESP_LOGCONFIG(TAG, "  Currently advertising (live query): %s", advNow ? "true" : "false");
+      if (this->_has_target_mac) {
+        NimBLEAddress dirAddr(this->_target_mac, BLE_ADDR_PUBLIC);
+        ESP_LOGCONFIG(TAG, "  Bonded to target (live query): %s", NimBLEDevice::isBonded(dirAddr) ? "true" : "false");
+      }
+      ESP_LOGCONFIG(TAG, "  Plain-advert button presses (this boot): %u", (unsigned) this->_plain_advert_button_count);
+
+      // Persistent advertising-lifecycle trace (never reset on connect,
+      // unlike _eventLog above) - see the member comment in the header.
+      ESP_LOGCONFIG(TAG, "  Advertising-lifecycle trace (%u entries, oldest first):", (unsigned) this->_advertLogCount);
+      uint8_t advStart = (this->_advertLogHead + ADVERT_LOG_SIZE - this->_advertLogCount) % ADVERT_LOG_SIZE;
+      for (uint8_t i = 0; i < this->_advertLogCount; i++) {
+        EventLogEntry& entry = this->_advertLog[(advStart + i) % ADVERT_LOG_SIZE];
+        ESP_LOGCONFIG(TAG, "    [t=%10ums] %s", (unsigned) entry.elapsed_ms, entry.label);
+      }
+    }
+
+    void BleMiRemote::noteAdvertAction(const char* fmt, ...) {
+      EventLogEntry& entry = this->_advertLog[this->_advertLogHead];
+      entry.elapsed_ms = millis();
+      va_list args;
+      va_start(args, fmt);
+      vsnprintf(entry.label, sizeof(entry.label), fmt, args);
+      va_end(args);
+      this->_advertLogHead = (this->_advertLogHead + 1) % ADVERT_LOG_SIZE;
+      if (this->_advertLogCount < ADVERT_LOG_SIZE) {
+        this->_advertLogCount++;
+      }
     }
 
     void BleMiRemote::logEvent(const char* fmt, ...) {
@@ -819,6 +855,7 @@ namespace esphome {
       bool stopOk = adv->stop();
       bool startOk = adv->start();
       ESP_LOGI(TAG, "startPlainAdvertising: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+      this->noteAdvertAction("startPlainAdvertising: stop=%d start=%d isAdvertising=%d", stopOk, startOk, adv->isAdvertising());
     }
 
     // Manual test/escape-hatch action (ble_mi_remote.plain_advert): explicit
@@ -833,6 +870,8 @@ namespace esphome {
       // for why every automatic path avoids this.
       bool deleteOk = NimBLEDevice::deleteAllBonds();
       ESP_LOGI(TAG, "plainAdvertStart: deleteAllBonds()=%s", deleteOk ? "OK" : "FAILED");
+      this->_plain_advert_button_count++;
+      this->noteAdvertAction("plainAdvertStart: deleteAllBonds=%d (button press #%u)", deleteOk, (unsigned) this->_plain_advert_button_count);
 
       this->startPlainAdvertising();
     }
@@ -854,6 +893,7 @@ namespace esphome {
         // plain/discoverable advertising is the only option, same as every
         // other legitimate automatic-plain-advert trigger below.
         ESP_LOGI(TAG, "startReconnectAdvert: no target_mac_address learned yet, falling back to plain advertising");
+        this->noteAdvertAction("startReconnectAdvert: no target MAC yet -> plain");
         this->startPlainAdvertising();
         return;
       }
@@ -868,6 +908,7 @@ namespace esphome {
         // nothing to reconnect to, so don't waste the 30s retry window on
         // it. No bond to preserve here either way - nothing to delete.
         ESP_LOGI(TAG, "startReconnectAdvert: no saved bond for %s, falling back to plain advertising", dirAddr.toString().c_str());
+        this->noteAdvertAction("startReconnectAdvert: no bond for %s -> plain", dirAddr.toString().c_str());
         this->startPlainAdvertising();
         return;
       }
@@ -881,6 +922,7 @@ namespace esphome {
       // controller hard-caps each one at 1.28s regardless) for up to 30s
       // before giving up to plain undirected advertising.
       this->_reconnect_retry_until_ms = millis() + 30000;
+      this->noteAdvertAction("startReconnectAdvert: bonded to %s -> starting HD-burst retry (30s window)", dirAddr.toString().c_str());
       this->fireDirectedBurst();
     }
 
@@ -901,6 +943,7 @@ namespace esphome {
       bool stopOk = adv->stop();
       bool startOk = adv->start(1280, &dirAddr);
       ESP_LOGI(TAG, "fireDirectedBurst: HD directed burst to %s, stop=%s start=%s, retry_remaining_ms=%d", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", (int) (this->_reconnect_retry_until_ms - millis()));
+      this->noteAdvertAction("fireDirectedBurst: stop=%d start=%d remaining_ms=%d", stopOk, startOk, (int) (this->_reconnect_retry_until_ms - millis()));
 
       this->set_timeout("ble_mi_remote_reconnect_burst", 1300, [this]() {
         if (this->_connected) {
@@ -926,6 +969,7 @@ namespace esphome {
         NimBLEAdvertising *adv2 = pServer->getAdvertising();
         bool stopOk2 = adv2->stop();
         ESP_LOGI(TAG, "fireDirectedBurst: retry window exhausted, stopping advertising (stop=%s) - manual plain_advert needed to resume", stopOk2 ? "OK" : "FAILED");
+        this->noteAdvertAction("fireDirectedBurst: retry window exhausted, stop=%d - advertising HALTED, needs manual plain_advert", stopOk2);
       });
     }
 
