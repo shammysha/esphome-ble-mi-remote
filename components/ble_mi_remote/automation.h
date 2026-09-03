@@ -56,6 +56,16 @@ namespace esphome {
 				BleMiRemote *ble_mi_remote_;
 		};
 
+		template<typename... Ts> class BleMiRemotePlainAdvertAction : public Action<Ts...> {
+			public:
+				explicit BleMiRemotePlainAdvertAction(BleMiRemote *ble_mi_remote) : ble_mi_remote_(ble_mi_remote) {}
+
+				void play(Ts... x) override { this->ble_mi_remote_->plainAdvertStart(); }
+
+			protected:
+				BleMiRemote *ble_mi_remote_;
+		};
+
 		template<typename... Ts> class BleMiRemoteStopAction : public Action<Ts...> {
 			public:
 				explicit BleMiRemoteStopAction(BleMiRemote *ble_mi_remote) : ble_mi_remote_(ble_mi_remote) {}

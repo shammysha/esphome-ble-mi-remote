@@ -100,6 +100,20 @@ namespace esphome {
 				void powerAdvertStart();
 				void powerAdvertStop();
 
+				// Manual recovery action (2026-09-03): startReconnectAdvert()/
+				// fireDirectedBurst() deliberately never fall back from
+				// HD-directed-only retry to plain/discoverable on their own -
+				// that protects a still-live bond from being evicted by a
+				// stray pairing just because the real peer is briefly
+				// unreachable (off/rebooting). But it also means a bond that
+				// went stale WITHOUT a clean reason=0x213 disconnect (e.g. the
+				// peer forgot/unpaired us while we were powered off) has no
+				// automatic way back to discoverability. Only a human has the
+				// missing context (genuinely gone vs. just asleep) to make
+				// that call safely, so this exposes it as an explicit action
+				// instead of guessing from elapsed time.
+				void plainAdvertStart();
+
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 
