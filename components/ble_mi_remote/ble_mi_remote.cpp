@@ -548,6 +548,17 @@ namespace esphome {
 			ESP_LOGI(TAG, "powerAdvertStop: setManufacturerData=%s stop=%s start=%s", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 		}
 
+		// Manual recovery action - see the doc comment on the declaration in
+		// ble_mi_remote.h. Cancel any still-scheduled HD-burst retry first:
+		// if one were still pending (mid its own 30s window), it would fire
+		// later and call fireDirectedBurst(), silently undoing this and
+		// reverting advertising back to directed-only.
+		void BleMiRemote::plainAdvertStart() {
+			this->cancel_timeout("ble_mi_remote_reconnect_burst");
+			ESP_LOGI(TAG, "plainAdvertStart: manual override, forcing plain/discoverable advertising");
+			this->startPlainAdvertising();
+		}
+
 		void BleMiRemote::release() {
 			if (this->is_connected()) {
 				this->cancel_timeout(TAG);
