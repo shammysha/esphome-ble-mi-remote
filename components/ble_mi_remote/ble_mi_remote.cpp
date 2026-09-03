@@ -153,7 +153,20 @@ namespace esphome {
 			this->loadTargetMac();
 
 			NimBLEDevice::init (deviceName);
-			NimBLEServer *pServer = NimBLEDevice::createServer();
+			// Real bug, found 2026-09-03: this used to redeclare pServer as
+			// a local ("NimBLEServer *pServer = ..."), which shadows the
+			// class member of the same name for the rest of setup() - the
+			// member this->pServer was therefore NEVER actually assigned
+			// anywhere, staying null/garbage for the object's whole
+			// lifetime. Every OTHER method that reads pServer (stop(),
+			// powerAdvertData1/2/Stop, fireDirectedBurst, etc.) reads the
+			// real member, not a local - some of those calls happened to
+			// tolerate a null this (probably touching mostly-static NimBLE
+			// internals), which is why this went unnoticed for so long;
+			// pServer->getAdvertising() does not, and crashed hardware
+			// (LoadProhibited) the first time powerAdvertStart() actually
+			// got exercised. Assign the member directly - no local.
+			pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
 			hid = new NimBLEHIDDevice(pServer);
@@ -188,6 +201,12 @@ namespace esphome {
 			// nimble-cpp-bisect: setScanResponse() renamed to
 			// enableScanResponse() by tag 2.0.0, same bool-argument shape.
 			advertising->enableScanResponse(false);
+
+			// Gap fix 2026-09-03: save the real advertising payload now,
+			// while it's still whatever setup() above just built, so
+			// powerAdvertStop() can restore it later - see the doc comment
+			// on _normal_advert_data in the header.
+			this->_normal_advert_data = advertising->getAdvertisementData();
 
 			advertising->start();
 
@@ -517,20 +536,37 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertData1() {
+			// Gap fix 2026-09-03: the normal payload (set in setup()) is
+			// already at the 31-byte legacy cap with nothing free, so
+			// setManufacturerData() on it was failing on every call,
+			// including an empty one - measured on hardware, not a guess
+			// (see _normal_advert_data doc comment in the header). Build a
+			// fresh, minimal payload instead and swap the whole thing in.
+			// Gap fix, second round: stop advertising BEFORE touching the
+			// data this time, not after - setAdvertisementData() goes
+			// straight to the raw ble_gap_adv_set_data() HCI call with no
+			// stopped-first check of its own, and calling it while actively
+			// advertising crashed hardware (LoadProhibited) in the first
+			// attempt at this fix, which kept the original mutate-then-stop
+			// order.
 			NimBLEAdvertising *adv = pServer->getAdvertising();
-			bool setOk = adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
 			bool stopOk = adv->stop();
+			NimBLEAdvertisementData burstData;
+			bool setOk = burstData.setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
+			bool applyOk = adv->setAdvertisementData(burstData);
 			bool startOk = adv->start();
-			ESP_LOGI(TAG, "powerAdvertData1: setManufacturerData=%s stop=%s start=%s", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+			ESP_LOGI(TAG, "powerAdvertData1: stop=%s setManufacturerData=%s applyOk=%s start=%s", stopOk ? "OK" : "FAILED", setOk ? "OK" : "FAILED", applyOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 			this->set_timeout("ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData2(); });
 		}
 
 		void BleMiRemote::powerAdvertData2() {
 			NimBLEAdvertising *adv = pServer->getAdvertising();
-			bool setOk = adv->setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
 			bool stopOk = adv->stop();
+			NimBLEAdvertisementData burstData;
+			bool setOk = burstData.setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
+			bool applyOk = adv->setAdvertisementData(burstData);
 			bool startOk = adv->start();
-			ESP_LOGI(TAG, "powerAdvertData2: setManufacturerData=%s stop=%s start=%s cycle=%d", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", _power_advert_cycle);
+			ESP_LOGI(TAG, "powerAdvertData2: stop=%s setManufacturerData=%s applyOk=%s start=%s cycle=%d", stopOk ? "OK" : "FAILED", setOk ? "OK" : "FAILED", applyOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", _power_advert_cycle);
 			if (_power_advert_cycle > 3) {
 				this->powerAdvertStop();
 			} else {
@@ -540,11 +576,14 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertStop() {
+			// Restore the real advertising payload (HID appearance/service
+			// UUID) that burstData temporarily replaced, instead of trying
+			// to clear manufacturer data on it in place.
 			NimBLEAdvertising *adv = pServer->getAdvertising();
-			bool setOk = adv->setManufacturerData(std::vector<uint8_t>{});
 			bool stopOk = adv->stop();
+			bool setOk = adv->setAdvertisementData(this->_normal_advert_data);
 			bool startOk = adv->start();
-			ESP_LOGI(TAG, "powerAdvertStop: setManufacturerData=%s stop=%s start=%s", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+			ESP_LOGI(TAG, "powerAdvertStop: stop=%s restoreNormalAdvertData=%s start=%s", stopOk ? "OK" : "FAILED", setOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 		}
 
 		// Manual recovery action - see the doc comment on the declaration in

@@ -9,6 +9,9 @@
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
+// Explicit, not relying on a transitive include (order varies per
+// translation unit) - needed for NimBLEAdvertisementData below.
+#include "NimBLEAdvertising.h"
 #include <string>
 
 
@@ -168,6 +171,18 @@ namespace esphome {
 				// own-commits bisection: powerAdvert*
 				uint32_t			_power_advert_delay = 1000;
 				uint8_t				_power_advert_cycle = 0;
+				// Gap fix 2026-09-03: the normal advertising payload (flags +
+				// appearance + HID service UUID, set up once in setup()) sits
+				// at the legacy 31-byte cap with zero bytes to spare - real,
+				// measured on hardware (advData=31, scanData=31, budget 31),
+				// not a guess. setManufacturerData() on the live advertising
+				// object was therefore FAILING on every single call, even an
+				// empty one, so the whole powerAdvertStart() burst has never
+				// actually transmitted anything. Fix: swap in a fresh,
+				// minimal NimBLEAdvertisementData (just the manufacturer
+				// data) for the duration of the burst, saved here once in
+				// setup() so powerAdvertStop() can restore the real one.
+				NimBLEAdvertisementData _normal_advert_data;
 
 
 				uint16_t sid		= 0x01;
