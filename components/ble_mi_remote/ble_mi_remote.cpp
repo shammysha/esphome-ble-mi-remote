@@ -153,7 +153,20 @@ namespace esphome {
 			this->loadTargetMac();
 
 			NimBLEDevice::init (deviceName);
-			NimBLEServer *pServer = NimBLEDevice::createServer();
+			// Real bug, found 2026-09-03: this used to redeclare pServer as
+			// a local ("NimBLEServer *pServer = ..."), which shadows the
+			// class member of the same name for the rest of setup() - the
+			// member this->pServer was therefore NEVER actually assigned
+			// anywhere, staying null/garbage for the object's whole
+			// lifetime. Every OTHER method that reads pServer (stop(),
+			// powerAdvertData1/2/Stop, fireDirectedBurst, etc.) reads the
+			// real member, not a local - some of those calls happened to
+			// tolerate a null this (probably touching mostly-static NimBLE
+			// internals), which is why this went unnoticed for so long;
+			// pServer->getAdvertising() does not, and crashed hardware
+			// (LoadProhibited) the first time powerAdvertStart() actually
+			// got exercised. Assign the member directly - no local.
+			pServer = NimBLEDevice::createServer();
 			pServer->setCallbacks(this);
 
 			hid = new NimBLEHIDDevice(pServer);
