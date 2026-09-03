@@ -553,9 +553,17 @@ namespace esphome {
 		// if one were still pending (mid its own 30s window), it would fire
 		// later and call fireDirectedBurst(), silently undoing this and
 		// reverting advertising back to directed-only.
+		//
+		// Also deleteAllBonds() before opening up - matches the pre-bisection
+		// esp-idf design (2026-08-25 bond-preservation redesign) that this
+		// action was reconstructed from: a human pressing this button is
+		// explicit intent to force a totally fresh pairing, so don't rely on
+		// a new pairing merely superseding a stale local bond entry on its
+		// own - clear it up front instead.
 		void BleMiRemote::plainAdvertStart() {
 			this->cancel_timeout("ble_mi_remote_reconnect_burst");
-			ESP_LOGI(TAG, "plainAdvertStart: manual override, forcing plain/discoverable advertising");
+			bool deleteOk = NimBLEDevice::deleteAllBonds();
+			ESP_LOGI(TAG, "plainAdvertStart: manual override, deleteAllBonds()=%s, forcing plain/discoverable advertising", deleteOk ? "OK" : "FAILED");
 			this->startPlainAdvertising();
 		}
 

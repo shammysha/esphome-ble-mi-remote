@@ -111,7 +111,9 @@ namespace esphome {
 				// automatic way back to discoverability. Only a human has the
 				// missing context (genuinely gone vs. just asleep) to make
 				// that call safely, so this exposes it as an explicit action
-				// instead of guessing from elapsed time.
+				// instead of guessing from elapsed time. Reconstructed from
+				// (and matches) the pre-bisection esp-idf design's own manual
+				// plain_advert action, deleteAllBonds() included.
 				void plainAdvertStart();
 
 			protected:
