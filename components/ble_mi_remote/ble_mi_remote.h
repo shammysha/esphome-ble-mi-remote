@@ -9,6 +9,9 @@
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
 #include "NimBLEHIDDevice.h"
+// Explicit, not relying on a transitive include (order varies per
+// translation unit) - needed for NimBLEAdvertisementData below.
+#include "NimBLEAdvertising.h"
 #include <string>
 
 
@@ -176,10 +179,10 @@ namespace esphome {
 				// object was therefore FAILING on every single call, even an
 				// empty one, so the whole powerAdvertStart() burst has never
 				// actually transmitted anything. Fix: swap in a fresh,
-				// minimal BLEAdvertisementData (just the manufacturer
+				// minimal NimBLEAdvertisementData (just the manufacturer
 				// data) for the duration of the burst, saved here once in
 				// setup() so powerAdvertStop() can restore the real one.
-				BLEAdvertisementData _normal_advert_data;
+				NimBLEAdvertisementData _normal_advert_data;
 
 
 				uint16_t sid		= 0x01;
