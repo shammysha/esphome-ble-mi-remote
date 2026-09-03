@@ -536,9 +536,6 @@ namespace esphome {
 		}
 
 		void BleMiRemote::powerAdvertData1() {
-			// TEMP diagnostic - confirm pServer/advertising are actually
-			// sane pointers now, remove once understood.
-			ESP_LOGI(TAG, "powerAdvertData1: DIAG this->pServer=%p this->advertising=%p", (void*) pServer, (void*) advertising);
 			// Gap fix 2026-09-03: the normal payload (set in setup()) is
 			// already at the 31-byte legacy cap with nothing free, so
 			// setManufacturerData() on it was failing on every call,
