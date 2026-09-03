@@ -200,7 +200,23 @@ namespace esphome {
 			advertising->addServiceUUID(hid->getHidService()->getUUID());
 			// nimble-cpp-bisect: setScanResponse() renamed to
 			// enableScanResponse() by tag 2.0.0, same bool-argument shape.
-			advertising->enableScanResponse(false);
+			//
+			// Real regression, found 2026-09-03: this reference was rebuilt
+			// from the ancient pre-2026-08-25 baseline, which predates a
+			// real, already-shipped fix (84ecd47) - enableScanResponse(true)
+			// + setName() below, without which the device advertises with
+			// no name anywhere at all (confirmed via sniffer: Flags +
+			// Appearance + Service UUID only, no Complete Local Name).
+			// enableScanResponse() only flips a flag; NimBLEAdvertising::
+			// start() only actually transmits scan-response content if
+			// m_scanData already has a payload, so the flag alone isn't
+			// enough - setName() is what populates it. A nameless device
+			// still transmits fine at the radio level (this session's own
+			// sniffer capture confirmed that) but real-world TV/phone
+			// "Add device" pickers commonly filter out unnamed devices
+			// entirely, which is exactly the symptom that surfaced this.
+			advertising->enableScanResponse(true);
+			advertising->setName(deviceName);
 
 			// Gap fix 2026-09-03: save the real advertising payload now,
 			// while it's still whatever setup() above just built, so
