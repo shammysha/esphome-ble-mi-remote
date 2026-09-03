@@ -8,7 +8,6 @@
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
-#include "NimBLEDescriptor.h"
 #include "NimBLEHIDDevice.h"
 #include <string>
 
@@ -55,13 +54,12 @@ typedef struct {
 
 namespace esphome {
 	namespace ble_mi_remote {
-		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks, public NimBLEDescriptorCallbacks {
+		class BleMiRemote : public PollingComponent, public NimBLEServerCallbacks, public NimBLECharacteristicCallbacks {
 			public:
 				BleMiRemote(std::string name, std::string manufacturer_id, uint8_t battery_level = 100, bool reconnect = true);
 
 				void setup() override;
 				void update() override;
-				void dump_config() override;
 
 				float get_setup_priority() const override { return setup_priority::AFTER_BLUETOOTH; }
 
@@ -83,68 +81,44 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
+				// Gap fix, functional (not stage 5): real Component lifecycle
+				// hooks, fire automatically on any reboot (incl. OTA) - not
+				// button-gated, not diagnostics. Both just call stop() on
+				// esp-idf, for a clean disconnect/advertising-stop before the
+				// actual reboot instead of relying on the hardware reset alone.
+				void on_shutdown() override;
+				void on_safe_shutdown() override;
+
+				// own-commits bisection: connectWakeStart, ported for full
+				// structural parity with esp-idf (per user request, even
+				// though it's only ever invoked via its own button action -
+				// dead code otherwise, can't affect a normal pairing test).
+				void connectWakeStart();
+				// own-commits bisection: powerAdvertStart/Stop, ditto - reached
+				// via pressSpecial(SPECIAL_POWER) while disconnected, which the
+				// auto-generated "Power" special-key button already calls.
 				void powerAdvertStart();
 				void powerAdvertStop();
-
-				void set_target_mac(uint64_t mac) { _target_mac = mac; _has_target_mac = true; _target_mac_from_config = true; }
-				void connectWakeStart();
-				void plainAdvertStart();
-
-        virtual void onStarted(NimBLEServer *pServer) { };
-        virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
-        virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
-        virtual void onAuthenticationComplete(NimBLEConnInfo& connInfo) override;
-        virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
-        // Diagnostic-only overrides (2026-08-26) - trying to catch what the
-        // real Mi TV does in the ~18.5s window between bonding and its own
-        // deliberate disconnect (0x213), since neither the sniffer
-        // (CONNECT_IND never captured, can't follow the connection) nor
-        // anything we've tried on our own side (startSecurity(),
-        // updateConnParams(), HID Information flags, esp-nimble-cpp
-        // 2.5.0-vs-master) has changed the timing at all across 4
-        // independent tests. Previously only outputKeyboard had callbacks
-        // attached at all - none of the actual input report
-        // characteristics did, so we had zero visibility into reads/
-        // subscribe-unsubscribe/notify-status on the very characteristics
-        // sendReport() uses.
-        virtual void onMTUChange(uint16_t mtu, NimBLEConnInfo& connInfo) override;
-        virtual void onConnParamsUpdate(NimBLEConnInfo& connInfo) override;
-        virtual void onIdentity(NimBLEConnInfo& connInfo) override;
-        virtual void onPhyUpdate(NimBLEConnInfo& connInfo, uint8_t txPhy, uint8_t rxPhy) override;
-        virtual void onRead(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
-        virtual void onSubscribe(NimBLECharacteristic* me, NimBLEConnInfo& connInfo, uint16_t subValue) override;
-        virtual void onStatus(NimBLECharacteristic* me, NimBLEConnInfo& connInfo, int code) override;
-        // Descriptor-level diagnostics (2026-09-01) - onRead()/onWrite() on
-        // NimBLECharacteristic only ever fires for the characteristic's own
-        // value, never for its descriptors (a separate NimBLEDescriptorCallbacks
-        // interface). Added after a real capture showed the Mi TV holding a
-        // live, subscribed, encrypted connection for ~17s with *zero* visible
-        // activity on our side before unsubscribing and disconnecting - the
-        // TV is very likely reading descriptors during that window (most
-        // notably the Report Reference descriptor, 0x2908, HOGP's standard
-        // way to map a Report characteristic to its report ID/type) that we
-        // had no visibility into at all.
-        virtual void onRead(NimBLEDescriptor* me, NimBLEConnInfo& connInfo) override;
-        virtual void onWrite(NimBLEDescriptor* me, NimBLEConnInfo& connInfo) override;
-        virtual void on_shutdown() override;
-        virtual void on_safe_shutdown() override;
 
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 
 			private:
-				bool isConnected();
-				void updateTimer();
-				void delayMs(uint64_t ms);
-
+				bool is_connected();
+				void update_timer();
+				void delay_ms(uint64_t ms);
+				// own-commits bisection: powerAdvertData1/2 (internal, timer-chained)
 				void powerAdvertData1();
 				void powerAdvertData2();
 
+				// own-commits bisection stage 3/5: bond-preservation/reconnect
+				// dispatch, ported from esp-idf branch minus HD-burst (stage 4).
 				void loadTargetMac();
 				void learnTargetMac(NimBLEAddress addr);
-				void startReconnectAdvert();
-				void fireDirectedBurst();
 				void startPlainAdvertising();
+				void startReconnectAdvert();
+				// own-commits bisection stage 4/5
+				void fireDirectedBurst();
 
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
@@ -154,30 +128,9 @@ namespace esphome {
 				NimBLECharacteristic*	vendorReport_06;
 				NimBLECharacteristic*	vendorReport_07;
 				NimBLECharacteristic*	vendorReport_08;
-				// Vendor-extension SERVICE (2026-09-01), distinct from the
-				// vendorReport_0x members above (those are Report IDs inside the
-				// HID service's own Report Map, not a separate GATT service).
-				// Ground truth from pub.home: BOTH real devices tested against
-				// this same TV (the genuine Xiaomi remote AND an unrelated
-				// third-party gamepad, SBDV-00022) carry at least one extra
-				// vendor-specific service beyond the standard HID/DIS/Battery/
-				// GAP set - our emulation has none at all. Not replicating
-				// either real device's specific vendor protocol (Xiaomi's is
-				// Aliro/ICCE digital-key related, unrelated to a TV remote;
-				// the gamepad's is unidentified) - testing whether the mere
-				// *presence* of some vendor service matters to the TV's own
-				// validation, not its content.
-				NimBLEService*			vendorService;
-				NimBLECharacteristic*	vendorServiceChr;
 				NimBLEAdvertising*		advertising;
 
 				bool 				_reconnect{true};
-				// Live on/off switch for onDisconnect()'s re-advertise decision -
-				// distinct from _reconnect (the static YAML config): stop()/start()
-				// flip this at runtime so a deliberate stop() doesn't get undone by
-				// the very disconnect it just caused. NimBLE's own
-				// advertiseOnDisconnect is always left false (see setup()).
-				bool				_should_readvertise{true};
 				uint32_t 			_default_delay{100};
 				uint32_t 			_release_delay{8};
 				KeyReport			_keyReport;
@@ -187,81 +140,33 @@ namespace esphome {
 				uint8_t				batteryLevel;
 				bool				_connected = false;
 				uint32_t			_delay_ms = 7;
-				uint32_t			_power_advert_delay = 1000;
-				uint8_t				_power_advert_cycle = 0;
+
+				// own-commits bisection stage 3/5
+				bool				_should_readvertise{true};
 				uint64_t			_target_mac = 0;
 				bool				_has_target_mac = false;
-				uint32_t			_reconnect_retry_until_ms = 0;
-				// RAM-only (not persisted) counters so dump_config() can reveal
-				// whether a connect/disconnect happened at all during a window we
-				// couldn't observe live (the remote API log listener routinely
-				// takes 7-25+ seconds to reattach after a reboot, well past a
-				// brief connect-then-drop) - dump_config() output is reliably
-				// replayed to any (re)attaching client, unlike plain ESP_LOGI.
-				uint32_t			_connect_count = 0;
-				uint32_t			_disconnect_count = 0;
-					// Event trace ring buffer (2026-09-01): live serial/API log
-					// listeners are unreliable for catching a connection's very
-					// first seconds - they routinely attach mid-connection (missing
-					// the start entirely) or die silently without anyone noticing.
-					// dump_config() output, unlike plain ESP_LOGI, is reliably
-					// replayed to any (re)subscribing client regardless of *when*
-					// it (re)subscribes - so this records every diagnostic event
-					// (onConnect/onAuthenticationComplete/onSubscribe/onMTUChange/
-					// onIdentity/onRead/onStatus/onDisconnect/etc.) with its
-					// elapsed-since-connect timestamp into a small fixed buffer,
-					// reset on each new onConnect(), so the *entire* timeline of
-					// the most recent connection can be recovered after the fact
-					// via dump_config() - no live listener needed at the right
-					// moment at all.
-					static const uint8_t EVENT_LOG_SIZE = 32;
-					struct EventLogEntry {
-						// 48 was too small - several format strings (e.g.
-						// onConnParamsUpdate's "interval=%u latency=%u timeout=%u")
-						// were silently truncated by vsnprintf right before the
-						// actual data, confirmed 2026-09-02 by a real capture that
-						// cut off exactly at "timeo" with the timeout value itself
-						// never printed - the one number most relevant to the
-						// current investigation (Apple's BT guidelines flag
-						// supervision-timeout misconfiguration as a real disconnect
-						// cause via a very similar upstream report, h2zero/esp-
-						// nimble-cpp#313).
-						char		label[72];
-						uint32_t	elapsed_ms;
-					};
-					EventLogEntry		_eventLog[EVENT_LOG_SIZE];
-					uint8_t				_eventLogCount = 0;
-					void logEvent(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
-					// Persistent (never reset) advertising-lifecycle trace (2026-09-02):
-					// the connection-scoped _eventLog above is empty whenever the peer
-					// never even reaches onConnect() at all - exactly the new failure
-					// mode being investigated (TV shows the device as available/cached
-					// but the actual GAP connection attempt never lands, Connect count
-					// stays 0). Records every startPlainAdvertising()/plainAdvertStart()/
-					// startReconnectAdvert()/fireDirectedBurst() call with an absolute
-					// millis() timestamp, so dump_config() can show what our own
-					// advertising state actually did - independent of whether a
-					// connection ever resulted - at any later point, same reasoning as
-					// the connection event trace.
-					void noteAdvertAction(const char* fmt, ...) __attribute__((format(printf, 2, 3)));
-					static const uint8_t ADVERT_LOG_SIZE = 16;
-					EventLogEntry		_advertLog[ADVERT_LOG_SIZE];
-					uint8_t				_advertLogHead = 0;
-					uint8_t				_advertLogCount = 0;
-					uint32_t			_plain_advert_button_count = 0;
-					// millis() at the most recent onConnect() - lets every diagnostic
-					// callback (and onDisconnect() itself) log elapsed-since-connect,
-					// instead of reconstructing the ~18.5s figure by hand from
-					// wall-clock log timestamps every time.
-					uint32_t			_connect_millis = 0;
 				bool				_target_mac_from_config = false;
 				ESPPreferenceObject	_target_mac_pref;
+				// own-commits bisection stage 4/5
+				uint32_t			_reconnect_retry_until_ms = 0;
+				// own-commits bisection: powerAdvert*
+				uint32_t			_power_advert_delay = 1000;
+				uint8_t				_power_advert_cycle = 0;
+
 
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;
 				uint16_t pid		= 0x32b9;
 				uint16_t version	= 0x4a4f;
 
+			protected:
+				virtual void onStarted(NimBLEServer *pServer) { };
+				// nimble-cpp-bisect: tag 2.0.0 added NimBLEConnInfo& to every
+				// callback (and a reason code to onDisconnect) - [Breaking]
+				// Update callbacks to use NimBLEConnInfo (ba79a1b).
+				virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override;
+				virtual void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override;
+				virtual void onWrite(NimBLECharacteristic* me, NimBLEConnInfo& connInfo) override;
 		};
 	}  // namespace ble_mi_remote
 }  // namespace esphome

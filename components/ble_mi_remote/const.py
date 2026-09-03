@@ -10,6 +10,9 @@ import esphome.config_validation as cv
 from esphome.components import binary_sensor
 from esphome.components.number import NumberMode
 from esphome.const import (
+    CONF_DEVICE_CLASS,
+    CONF_DISABLED_BY_DEFAULT,
+    CONF_ENTITY_CATEGORY,
     CONF_ICON,
     CONF_ID,
     CONF_INITIAL_VALUE,
@@ -23,6 +26,8 @@ from esphome.const import (
     CONF_TYPE,
     CONF_UNIT_OF_MEASUREMENT,
     CONF_VALUE,
+    DEVICE_CLASS_CONNECTIVITY,
+    ENTITY_CATEGORY_CONFIG,
     UNIT_MILLISECOND,
     UNIT_PERCENT,
 )
@@ -34,7 +39,6 @@ CONF_KEYS: Final = "keys"
 CONF_RECONNECT: Final = "reconnect"
 CONF_BUTTONS: Final = "buttons"
 CONF_USE_DEFAULT_LIBS: Final = "use_default_libs"
-CONF_TARGET_MAC_ADDRESS: Final = "target_mac_address"
 
 COMPONENT_CLASS: Final = "BleMiRemote"
 COMPONENT_NUMBER_CLASS: Final = "BleMiRemoteNumber"
@@ -47,19 +51,37 @@ ACTION_PRESS_CLASS: Final = "BleMiRemotePressAction"
 ACTION_RELEASE_CLASS: Final = "BleMiRemoteReleaseAction"
 ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 ACTION_CONNECT_WAKE_CLASS: Final = "BleMiRemoteConnectWakeAction"
-ACTION_PLAIN_ADVERT_CLASS: Final = "BleMiRemotePlainAdvertAction"
 
-"""ESP-IDF component: NimBLE C++ wrapper (native ESP-IDF port of NimBLE-Arduino).
-Pinned to a fork (branched off the upstream 2.5.0 tag) that adds
-NimBLEAdvertising::setHighDutyCycleDirected() - upstream esp-nimble-cpp has no
-public way to request true high-duty-cycle directed advertising
-(ble_gap_adv_params.high_duty_cycle), which is the actual mechanism a real
-Xiaomi remote uses to reconnect fast after a power loss (confirmed via a live
-nRF52840 sniffer capture). See https://github.com/shammysha/esp-nimble-cpp/tree/ble-mi-remote-hd-directed
+"""NimBLE C++ wrapper library.
+
+Original 2023 code pulled h2zero/NimBLE-Arduino 1.4.0 via the Arduino/
+PlatformIO lib_deps mechanism (see git history). Current ESPHome's Arduino
+framework builds that same library as an ESP-IDF component instead, and hit
+real upstream ESP-IDF-5.5.5-compatibility gaps in NimBLE-Arduino's own
+porting layer unrelated to this component's code. Pinning our own fork of
+h2zero/esp-nimble-cpp (the ESP-IDF-native sibling library, same vintage) at
+its last pre-2.x tag instead avoids that path entirely while keeping the
+exact same NimBLE host generation the original code was written against -
+esp-nimble-cpp had no tagged release between v1.4.1 (2022-10-30) and 2.0.0
+(2024-12-14), so v1.4.1 is the version genuinely contemporary with this
+component's original commit (2023-07-19).
 """
 NIMBLE_CPP_COMPONENT: Final = "h2zero/esp-nimble-cpp"
 NIMBLE_CPP_COMPONENT_REPO: Final = "https://github.com/shammysha/esp-nimble-cpp"
+# BISECTION BUILD (nimble-cpp-bisect branch, not the reference - see
+# mi-tv-nimble140-work). Pinned to a plain upstream tag pushed to our fork,
+# advanced one step at a time toward current master to find which release
+# introduced the real-Mi-TV ~18.5-20.5s post-bond disconnect. Change only
+# this one line between rounds.
 NIMBLE_CPP_COMPONENT_REF: Final = "ble-mi-remote-hd-directed"
+
+"""Binary sensors"""
+BINARY_SENSOR_STATE: Final = {
+    CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
+    CONF_NAME: "Connected",
+    CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
+    CONF_DISABLED_BY_DEFAULT: False
+}
 
 """Special buttons"""
 SPECIAL_KEY: Final = [
@@ -137,7 +159,7 @@ SPECIAL_KEY: Final = [
     },{
         CONF_NAME: "Email",
         CONF_ID: "key_email",
-        CONF_ICON: "mdi:email-outline",
+        CONF_ICON: "mdi:radiobox-marked",
         CONF_VALUE: 14
     },{
         CONF_NAME: "Calculator",
@@ -149,11 +171,11 @@ SPECIAL_KEY: Final = [
         CONF_ID: "key_files",
         CONF_ICON: "mdi:folder-file-outline",
         CONF_VALUE: 16
-    },{
-        CONF_NAME: "Menu",
-        CONF_ID: "key_menu",
-        CONF_ICON: "mdi:menu",
-        CONF_VALUE: 17
+    },{ 
+        CONF_NAME: "Voice2",
+        CONF_ID: "key_voice2",
+        CONF_ICON: "mdi:account-voice",
+        CONF_VALUE: 17 
     },{ 
         CONF_NAME: "Android TV",
         CONF_ID: "key_androidtv",
