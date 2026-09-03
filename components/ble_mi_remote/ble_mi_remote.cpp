@@ -529,24 +529,31 @@ namespace esphome {
 			// including an empty one - measured on hardware, not a guess
 			// (see _normal_advert_data doc comment in the header). Build a
 			// fresh, minimal payload instead and swap the whole thing in.
+			// Gap fix, second round: stop advertising BEFORE touching the
+			// data this time, not after - setAdvertisementData() goes
+			// straight to the raw ble_gap_adv_set_data() HCI call with no
+			// stopped-first check of its own, and calling it while actively
+			// advertising crashed hardware (LoadProhibited) in the first
+			// attempt at this fix, which kept the original mutate-then-stop
+			// order.
 			NimBLEAdvertising *adv = pServer->getAdvertising();
+			bool stopOk = adv->stop();
 			NimBLEAdvertisementData burstData;
 			bool setOk = burstData.setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
 			bool applyOk = adv->setAdvertisementData(burstData);
-			bool stopOk = adv->stop();
 			bool startOk = adv->start();
-			ESP_LOGI(TAG, "powerAdvertData1: setManufacturerData=%s applyOk=%s stop=%s start=%s", setOk ? "OK" : "FAILED", applyOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+			ESP_LOGI(TAG, "powerAdvertData1: stop=%s setManufacturerData=%s applyOk=%s start=%s", stopOk ? "OK" : "FAILED", setOk ? "OK" : "FAILED", applyOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 			this->set_timeout("ble_mi_remote_power_advert", _power_advert_delay, [this]() { this->powerAdvertData2(); });
 		}
 
 		void BleMiRemote::powerAdvertData2() {
 			NimBLEAdvertising *adv = pServer->getAdvertising();
+			bool stopOk = adv->stop();
 			NimBLEAdvertisementData burstData;
 			bool setOk = burstData.setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
 			bool applyOk = adv->setAdvertisementData(burstData);
-			bool stopOk = adv->stop();
 			bool startOk = adv->start();
-			ESP_LOGI(TAG, "powerAdvertData2: setManufacturerData=%s applyOk=%s stop=%s start=%s cycle=%d", setOk ? "OK" : "FAILED", applyOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", _power_advert_cycle);
+			ESP_LOGI(TAG, "powerAdvertData2: stop=%s setManufacturerData=%s applyOk=%s start=%s cycle=%d", stopOk ? "OK" : "FAILED", setOk ? "OK" : "FAILED", applyOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", _power_advert_cycle);
 			if (_power_advert_cycle > 3) {
 				this->powerAdvertStop();
 			} else {
@@ -560,10 +567,10 @@ namespace esphome {
 			// UUID) that burstData temporarily replaced, instead of trying
 			// to clear manufacturer data on it in place.
 			NimBLEAdvertising *adv = pServer->getAdvertising();
-			bool setOk = adv->setAdvertisementData(this->_normal_advert_data);
 			bool stopOk = adv->stop();
+			bool setOk = adv->setAdvertisementData(this->_normal_advert_data);
 			bool startOk = adv->start();
-			ESP_LOGI(TAG, "powerAdvertStop: restoreNormalAdvertData=%s stop=%s start=%s", setOk ? "OK" : "FAILED", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+			ESP_LOGI(TAG, "powerAdvertStop: stop=%s restoreNormalAdvertData=%s start=%s", stopOk ? "OK" : "FAILED", setOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 		}
 
 		// Manual recovery action - see the doc comment on the declaration in
