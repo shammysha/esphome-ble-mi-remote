@@ -81,6 +81,14 @@ namespace esphome {
 				void sendReport(KeyReport* keys);
 				void sendReport(SpecialKeyReport* keys);
 
+				// Gap fix, functional (not stage 5): real Component lifecycle
+				// hooks, fire automatically on any reboot (incl. OTA) - not
+				// button-gated, not diagnostics. Both just call stop() on
+				// esp-idf, for a clean disconnect/advertising-stop before the
+				// actual reboot instead of relying on the hardware reset alone.
+				void on_shutdown() override;
+				void on_safe_shutdown() override;
+
 				// own-commits bisection: connectWakeStart, ported for full
 				// structural parity with esp-idf (per user request, even
 				// though it's only ever invoked via its own button action -

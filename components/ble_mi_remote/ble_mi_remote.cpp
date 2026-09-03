@@ -198,15 +198,29 @@ namespace esphome {
 
 			pServer = NimBLEDevice::getServer();
 
-			pServer->advertiseOnDisconnect(this->_reconnect);
+			// Gap fix, belongs to stage 4 (082953f, same commit that introduced
+			// HD-burst itself): NimBLE's own advertiseOnDisconnect auto-restart
+			// only knows plain undirected advertising and would race right after
+			// our own onDisconnect() dispatcher, undoing a directed HD-burst it
+			// just started. Always off - onDisconnect() is the sole place
+			// deciding whether/how to re-advertise (already gated on
+			// _should_readvertise there since stage 3).
+			pServer->advertiseOnDisconnect(false);
 
 			release();
 		}
 
+		// Gap fix, functional (not stage 5): esp-idf's stop()/start() moved off
+		// the old advertiseOnDisconnect toggle (no longer meaningful now that
+		// it's permanently false, set once in setup()) onto _should_readvertise
+		// + the reconnect dispatcher directly - start() now actually goes
+		// through startReconnectAdvert() (HD-burst if bonded) instead of a
+		// bare advertising->start().
 		void BleMiRemote::stop() {
-			if (this->_reconnect) {
-				pServer->advertiseOnDisconnect(false);
-			}
+			this->_should_readvertise = false;
+			// A pending reconnect-burst fallback (startReconnectAdvert()) would
+			// otherwise fire later and re-start advertising, undoing this stop().
+			this->cancel_timeout("ble_mi_remote_reconnect_burst");
 
 			std::vector<uint16_t> ids = pServer->getPeerDevices();
 
@@ -220,11 +234,16 @@ namespace esphome {
 		}
 
 		void BleMiRemote::start() {
-			if (this->_reconnect) {
-				pServer->advertiseOnDisconnect(true);
-			}
+			this->_should_readvertise = true;
+			this->startReconnectAdvert();
+		}
 
-			pServer->startAdvertising();
+		void BleMiRemote::on_shutdown() {
+			this->stop();
+		}
+
+		void BleMiRemote::on_safe_shutdown() {
+			this->stop();
 		}
 
 		void BleMiRemote::update() { state_sensor_->publish_state(this->_connected); }
