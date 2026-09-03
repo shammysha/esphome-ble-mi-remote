@@ -176,10 +176,10 @@ namespace esphome {
 				// object was therefore FAILING on every single call, even an
 				// empty one, so the whole powerAdvertStart() burst has never
 				// actually transmitted anything. Fix: swap in a fresh,
-				// minimal NimBLEAdvertisementData (just the manufacturer
+				// minimal BLEAdvertisementData (just the manufacturer
 				// data) for the duration of the burst, saved here once in
 				// setup() so powerAdvertStop() can restore the real one.
-				NimBLEAdvertisementData _normal_advert_data;
+				BLEAdvertisementData _normal_advert_data;
 
 
 				uint16_t sid		= 0x01;

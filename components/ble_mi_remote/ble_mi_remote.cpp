@@ -530,7 +530,7 @@ namespace esphome {
 			// (see _normal_advert_data doc comment in the header). Build a
 			// fresh, minimal payload instead and swap the whole thing in.
 			NimBLEAdvertising *adv = pServer->getAdvertising();
-			NimBLEAdvertisementData burstData;
+			BLEAdvertisementData burstData;
 			bool setOk = burstData.setManufacturerData(std::vector<uint8_t>{0x46, 0x00, 0xe7, 0x12, 0x97, 0x30, 0x35, 0xf2, 0x78, 0xff, 0xff, 0xff, 0x30, 0x43, 0x52, 0x4b, 0x54, 0x4d});
 			bool applyOk = adv->setAdvertisementData(burstData);
 			bool stopOk = adv->stop();
@@ -541,7 +541,7 @@ namespace esphome {
 
 		void BleMiRemote::powerAdvertData2() {
 			NimBLEAdvertising *adv = pServer->getAdvertising();
-			NimBLEAdvertisementData burstData;
+			BLEAdvertisementData burstData;
 			bool setOk = burstData.setManufacturerData(std::vector<uint8_t>{0x46, 0x00});
 			bool applyOk = adv->setAdvertisementData(burstData);
 			bool stopOk = adv->stop();
