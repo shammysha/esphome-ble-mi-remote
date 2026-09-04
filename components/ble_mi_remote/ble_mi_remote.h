@@ -139,6 +139,19 @@ namespace esphome {
 				// own-commits bisection stage 4/5
 				void fireDirectedBurst();
 
+				// Feature 2026-09-04: any button press while disconnected
+				// used to silently do nothing (except SPECIAL_POWER, which
+				// stays separate - that's a wake-an-OFF-TV attempt, not a
+				// reconnect, and HD-burst can't reach a TV whose BLE radio
+				// is off anyway). Matches the industry-standard BLE HID
+				// remote pattern found via research: a key press is the
+				// "external event" that (re-)starts the reconnect-
+				// advertising cycle, not a timer or network check. Queues
+				// the command and re-arms startReconnectAdvert(); onConnect()
+				// fires it once actually reconnected. Only the latest
+				// press wins if pressed repeatedly while still reconnecting.
+				void queuePendingCommand(uint8_t key, bool is_special);
+
 				NimBLEServer 			*pServer;
 				NimBLEHIDDevice*		hid;
 				NimBLECharacteristic*	inputKeyboard;
@@ -183,6 +196,12 @@ namespace esphome {
 				// data) for the duration of the burst, saved here once in
 				// setup() so powerAdvertStop() can restore the real one.
 				NimBLEAdvertisementData _normal_advert_data;
+
+				// Feature 2026-09-04: queuePendingCommand() state - see its
+				// doc comment above.
+				bool				_has_pending_command = false;
+				bool				_pending_is_special = false;
+				uint8_t				_pending_key = 0;
 
 
 				uint16_t sid		= 0x01;
