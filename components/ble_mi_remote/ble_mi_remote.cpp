@@ -776,6 +776,22 @@ namespace esphome {
 			adv->setConnectableMode(BLE_GAP_CONN_MODE_DIR);
 			adv->setHighDutyCycleDirected(true);
 			bool stopOk = adv->stop();
+			// Real bug, found 2026-09-04 on real hardware against the real
+			// Mi TV (a bisect-test round had never caught this - it needs
+			// an actual disconnect/reconnect cycle to surface, which the
+			// queued-command feature's own test finally exercised): NimBLE
+			// host logs "E NimBLE: ble_gap_adv_validate rc=3" (BLE_HS_EINVAL)
+			// periodically here - per the actual NimBLE source, the most
+			// likely cause is ble_gap_adv_validate seeing the PREVIOUS
+			// advertising op not yet cleared ("duplicate advertising") -
+			// stop()'s host-side call returning OK doesn't guarantee the
+			// controller has already settled that state before the very
+			// next start() call fires. A real reconnect test with the TV
+			// confirmed genuinely reachable failed end to end (two full 30s
+			// windows, zero successful connects) while this was recurring.
+			// Small settle delay as a first pragmatic mitigation - exact
+			// value not verified, just a starting guess.
+			this->delay_ms(20);
 			bool startOk = adv->start(1280, &dirAddr);
 			ESP_LOGI(TAG, "fireDirectedBurst: HD directed burst to %s, stop=%s start=%s, retry_remaining_ms=%d", dirAddr.toString().c_str(), stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED", (int) (this->_reconnect_retry_until_ms - millis()));
 
