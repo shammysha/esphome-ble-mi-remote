@@ -5,6 +5,7 @@
 #include "esphome/core/component.h"
 #include "esphome/core/preferences.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 #include "sdkconfig.h"
 #include <NimBLEServer.h>
 #include "NimBLECharacteristic.h"
@@ -71,6 +72,10 @@ namespace esphome {
 				void set_battery_level(uint8_t level = 100);
 
 				void set_state_sensor(binary_sensor::BinarySensor *state_sensor) { state_sensor_ = state_sensor; }
+				// Feature 2026-09-04: expose our own BLE MAC (diagnostic) -
+				// needed it directly ourselves this session to correlate
+				// sniffer captures, no reason not to surface it in HA too.
+				void set_mac_address_sensor(text_sensor::TextSensor *mac_address_sensor) { mac_address_sensor_ = mac_address_sensor; }
 
 				void press(uint8_t key, bool with_timer = true);
 				void pressSpecial(uint8_t key, bool with_timer = true);
@@ -121,6 +126,7 @@ namespace esphome {
 
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
+				text_sensor::TextSensor *mac_address_sensor_;
 
 			private:
 				bool is_connected();

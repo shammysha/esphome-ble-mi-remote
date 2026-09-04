@@ -8,7 +8,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
 from esphome.automation import maybe_simple_id
-from esphome.components import binary_sensor, button, number
+from esphome.components import binary_sensor, button, number, text_sensor
 from esphome.const import (
     CONF_BATTERY_LEVEL,
     CONF_CODE,
@@ -35,6 +35,7 @@ from .const import (
     ACTION_STOP_CLASS,
     BINARY_SENSOR_STATE,
     SPECIAL_KEY,
+    TEXT_SENSOR_MAC_ADDRESS,
     COMPONENT_BUTTON_CLASS,
     COMPONENT_CLASS,
     CONF_RECONNECT,
@@ -46,7 +47,7 @@ from .const import (
 )
 
 CODEOWNERS: Final = ["@shammysha"]
-AUTO_LOAD: Final = ["binary_sensor", "button"]
+AUTO_LOAD: Final = ["binary_sensor", "button", "text_sensor"]
 
 ble_mi_remote_ns = cg.esphome_ns.namespace(DOMAIN)
 
@@ -95,6 +96,8 @@ async def to_code(config: dict) -> None:
 
     await adding_binary_sensors(var)
 
+    await adding_text_sensors(var)
+
     await adding_special_keys(var)
 
     add_idf_component(
@@ -135,6 +138,17 @@ async def adding_binary_sensors(var: MockObj) -> None:
 
     cg.add(
         var.set_state_sensor(await binary_sensor.new_binary_sensor(BINARY_SENSOR_STATE))
+    )
+
+
+async def adding_text_sensors(var: MockObj) -> None:
+    """Adding text sensor
+
+    :param var: MockObj
+    """
+
+    cg.add(
+        var.set_mac_address_sensor(await text_sensor.new_text_sensor(TEXT_SENSOR_MAC_ADDRESS))
     )
 
 

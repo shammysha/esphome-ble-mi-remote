@@ -153,6 +153,15 @@ namespace esphome {
 			this->loadTargetMac();
 
 			NimBLEDevice::init (deviceName);
+
+			// Feature 2026-09-04: publish our own BLE MAC as a diagnostic
+			// text_sensor - the address is a fixed hardware value (chip's
+			// own BT MAC), so publish it once here rather than on every
+			// update(). Only if the YAML actually wired one up.
+			if (this->mac_address_sensor_ != nullptr) {
+				this->mac_address_sensor_->publish_state(NimBLEDevice::getAddress().toString());
+			}
+
 			// Real bug, found 2026-09-03: this used to redeclare pServer as
 			// a local ("NimBLEServer *pServer = ..."), which shadows the
 			// class member of the same name for the rest of setup() - the

@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Final
 
 import esphome.config_validation as cv
-from esphome.components import binary_sensor
+from esphome.components import binary_sensor, text_sensor
 from esphome.components.number import NumberMode
 from esphome.const import (
     CONF_DEVICE_CLASS,
@@ -28,6 +28,7 @@ from esphome.const import (
     CONF_VALUE,
     DEVICE_CLASS_CONNECTIVITY,
     ENTITY_CATEGORY_CONFIG,
+    ENTITY_CATEGORY_DIAGNOSTIC,
     UNIT_MILLISECOND,
     UNIT_PERCENT,
 )
@@ -81,6 +82,15 @@ BINARY_SENSOR_STATE: Final = {
     CONF_ID: cv.declare_id(binary_sensor.BinarySensor)("connected"),
     CONF_NAME: "Connected",
     CONF_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
+    CONF_DISABLED_BY_DEFAULT: False
+}
+
+"""Text sensors"""
+TEXT_SENSOR_MAC_ADDRESS: Final = {
+    CONF_ID: cv.declare_id(text_sensor.TextSensor)("mac_address"),
+    CONF_NAME: "BLE MAC Address",
+    CONF_ICON: "mdi:bluetooth",
+    CONF_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
     CONF_DISABLED_BY_DEFAULT: False
 }
 
