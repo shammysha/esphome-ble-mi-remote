@@ -497,6 +497,8 @@ namespace esphome {
 					}
 				}
 				sendReport (&_keyReport);
+			} else {
+				this->queuePendingCommand(k, false);
 			}
 		}
 
@@ -541,6 +543,8 @@ namespace esphome {
 			    sendReport (&_specialKeyReport);
 			} else if (k == SPECIAL_POWER) {
 				this->powerAdvertStart();
+			} else {
+				this->queuePendingCommand(k, true);
 			}
 		}
 
@@ -602,6 +606,17 @@ namespace esphome {
 			ESP_LOGI(TAG, "powerAdvertStop: stop=%s restoreNormalAdvertData=%s start=%s", stopOk ? "OK" : "FAILED", setOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 		}
 
+		// Feature 2026-09-04 - see doc comment on the declaration in the
+		// header. Only remembers the latest press; a repeated press while
+		// still reconnecting overwrites rather than queues multiple.
+		void BleMiRemote::queuePendingCommand(uint8_t key, bool is_special) {
+			this->_has_pending_command = true;
+			this->_pending_is_special = is_special;
+			this->_pending_key = key;
+			ESP_LOGI(TAG, "queuePendingCommand: key=%d is_special=%s, (re)starting reconnect", key, is_special ? "true" : "false");
+			this->startReconnectAdvert();
+		}
+
 		// Manual recovery action - see the doc comment on the declaration in
 		// ble_mi_remote.h. Cancel any still-scheduled HD-burst retry first:
 		// if one were still pending (mid its own 30s window), it would fire
@@ -656,6 +671,30 @@ namespace esphome {
 
 			// own-commits bisection stage 3/5
 			this->learnTargetMac(connInfo.getAddress());
+
+			// Feature 2026-09-04: fire a command that was queued while
+			// disconnected (see queuePendingCommand()) now that we're
+			// actually reconnected. Gated on isBonded() - only fire for a
+			// RESUMED connection to an already-known peer, not a fresh
+			// pairing that still needs its own security handshake first
+			// (startSecurity() above, async) - NOTIFY isn't ENC-gated, so
+			// sending this too early could get silently dropped by the
+			// peer the same way the original onConnect()/HID-NOTIFY bug
+			// this whole project started from did. The trailing release()
+			// below cleans it up either way (also gated on is_connected(),
+			// so harmless if nothing fired here).
+			// NOT yet verified on real hardware whether isBonded() here is
+			// actually early enough to guarantee delivery - needs a real
+			// disconnect/reconnect/press test, not just reasoning.
+			if (this->_has_pending_command && connInfo.isBonded()) {
+				this->_has_pending_command = false;
+				ESP_LOGI(TAG, "onConnect: firing queued command key=%d is_special=%s", this->_pending_key, this->_pending_is_special ? "true" : "false");
+				if (this->_pending_is_special) {
+					this->pressSpecial(this->_pending_key);
+				} else {
+					this->press(this->_pending_key);
+				}
+			}
 
 			release();
 		}
