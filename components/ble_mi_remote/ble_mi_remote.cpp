@@ -636,6 +636,43 @@ namespace esphome {
 			this->startPlainAdvertising();
 		}
 
+		// See doc comment on the declaration in ble_mi_remote.h. Cancel any
+		// still-scheduled HD-burst retry first, same reasoning as
+		// plainAdvertStart() - don't let a pending fireDirectedBurst() retry
+		// silently clobber this test burst moments after it starts.
+		void BleMiRemote::fastWakeAdvertStart() {
+			this->cancel_timeout("ble_mi_remote_reconnect_burst");
+			this->cancel_timeout("ble_mi_remote_fast_wake_burst");
+
+			NimBLEAdvertising *adv = pServer->getAdvertising();
+			adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
+			adv->setHighDutyCycleDirected(false);
+			// 1.875ms, in 0.625ms units - the measured median interval from
+			// the real remote's own cold-wake burst (873 ADV_IND packets,
+			// exact match to 3 units, not rounding). Undirected connectable
+			// advertising's spec floor is nominally 20ms - if NimBLE's own
+			// parameter validation rejects this, startOk below will log
+			// FAILED; not yet confirmed either way on real hardware.
+			adv->setMinInterval(3);
+			adv->setMaxInterval(3);
+			bool stopOk = adv->stop();
+			bool startOk = adv->start(8000);
+			ESP_LOGI(TAG, "fastWakeAdvertStart: fast undirected wake-test burst (1.875ms interval, 8s), stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+
+			this->set_timeout("ble_mi_remote_fast_wake_burst", 8100, [this]() {
+				if (this->_connected) {
+					ESP_LOGI(TAG, "fastWakeAdvertStart: 8s window elapsed, already connected - nothing to do");
+					return;
+				}
+
+				NimBLEAdvertising *adv2 = pServer->getAdvertising();
+				adv2->setMinInterval(0);
+				adv2->setMaxInterval(0);
+				bool stopOk2 = adv2->stop();
+				ESP_LOGI(TAG, "fastWakeAdvertStart: 8s window elapsed, reset interval to default and stopped (stop=%s) - manual re-press needed to resume", stopOk2 ? "OK" : "FAILED");
+			});
+		}
+
 		void BleMiRemote::release() {
 			if (this->is_connected()) {
 				this->cancel_timeout(TAG);
@@ -744,6 +781,15 @@ namespace esphome {
 			// own-commits bisection stage 4/5: reset the sticky HD flag now
 			// that fireDirectedBurst() below can set it.
 			adv->setHighDutyCycleDirected(false);
+			// 2026-09-14: also reset the interval back to NimBLE's own
+			// default (0 = default). fastWakeAdvertStart() sets an explicit
+			// fast (1.875ms) interval on this same shared advertising
+			// object - without resetting here, a plain_advert triggered any
+			// time after an interrupted fast-wake burst (e.g. a reboot
+			// mid-burst, before its own cleanup timeout fires) would
+			// silently inherit that interval instead of the normal default.
+			adv->setMinInterval(0);
+			adv->setMaxInterval(0);
 			bool stopOk = adv->stop();
 			bool startOk = adv->start();
 			ESP_LOGI(TAG, "startPlainAdvertising: stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");

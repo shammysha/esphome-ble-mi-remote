@@ -119,6 +119,20 @@ namespace esphome {
 				// plain_advert action, deleteAllBonds() included.
 				void plainAdvertStart();
 
+				// Manual test action (2026-09-14): a real sniffer capture of
+				// the genuine Xiaomi remote's own cold-power-on burst showed
+				// undirected ADV_IND at a median 1.875ms interval (3 * 0.625ms
+				// units, not a rounding coincidence) sustained ~8s - a pattern
+				// distinct from both startPlainAdvertising() (undirected, but
+				// left at NimBLE's own default interval, tens of ms) and
+				// fireDirectedBurst() (directed ADV_DIRECT_IND, ~3.75ms/1.28s).
+				// Not yet confirmed this specific pattern is what actually
+				// wakes the TV - this action exists to test that hypothesis in
+				// isolation on real hardware. Deliberately does NOT touch
+				// bonds (unlike plainAdvertStart()) - this tests the
+				// advertising pattern itself, not re-pairing.
+				void fastWakeAdvertStart();
+
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 

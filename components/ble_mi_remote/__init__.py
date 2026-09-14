@@ -27,6 +27,7 @@ from esphome.cpp_generator import MockObj, TemplateArguments
 from .const import (
     ACTION_COMBINATION_CLASS,
     ACTION_CONNECT_WAKE_CLASS,
+    ACTION_FAST_WAKE_ADVERT_CLASS,
     ACTION_PLAIN_ADVERT_CLASS,
     ACTION_PRESS_CLASS,
     ACTION_PRINT_CLASS,
@@ -269,6 +270,32 @@ async def ble_mi_remote_plain_advert_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
 ) -> MockObj:
     """Action plain_advert
+
+    :param config: dict
+    :param action_id: ID
+    :param template_arg: TemplateArguments
+    :param args: list
+    :return: MockObj
+    """
+
+    paren: MockObj = await cg.get_variable(config[CONF_ID])
+
+    return cg.new_Pvariable(action_id, template_arg, paren)
+
+
+BleMiRemoteFastWakeAdvertAction = ble_mi_remote_ns.class_(ACTION_FAST_WAKE_ADVERT_CLASS, automation.Action)
+
+
+@automation.register_action(
+    f"{DOMAIN}.fast_wake_advert",
+    BleMiRemoteFastWakeAdvertAction,
+    maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
+)
+async def ble_mi_remote_fast_wake_advert_to_code(
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: list
+) -> MockObj:
+    """Action fast_wake_advert
 
     :param config: dict
     :param action_id: ID
