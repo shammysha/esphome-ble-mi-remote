@@ -647,23 +647,34 @@ namespace esphome {
 			NimBLEAdvertising *adv = pServer->getAdvertising();
 			adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
 			adv->setHighDutyCycleDirected(false);
-			// REAL HARDWARE RESULT 2026-09-14: the real remote's measured
-			// 1.875ms (3 units) interval was REJECTED by NimBLE's own
-			// ble_gap_adv_validate() - "E NimBLE: ble_gap_adv_validate rc=3"
-			// (BLE_HS_EINVAL), start=FAILED. That validation lives in the
-			// NimBLE host stack ESP-IDF bundles (components/bt), not in our
-			// esp-nimble-cpp fork - not something this project can patch
-			// without forking ESP-IDF itself, out of scope for now. Fell
-			// back to 32 units (20ms) - the spec's actual legal floor for
-			// undirected connectable advertising - to at least get SOME
-			// faster-than-default interval onto the air and see if the TV
-			// reacts to that, even though it's ~10x slower than the real
-			// remote's own burst and not a faithful replication of it.
-			adv->setMinInterval(32);
-			adv->setMaxInterval(32);
+			// REAL HARDWARE RESULT 2026-09-14, round 1: the real remote's
+			// measured 1.875ms (3 units) interval was REJECTED by NimBLE's
+			// own ble_gap_adv_validate() - "E NimBLE: ble_gap_adv_validate
+			// rc=3" (BLE_HS_EINVAL), start=FAILED.
+			//
+			// Round 2 used 32 units (20ms, the unconditional spec floor) -
+			// start=OK, ran clean, but the TV did not wake. Negative, but
+			// inconclusive - 20ms is ~10x slower than the real remote.
+			//
+			// Traced the actual cause properly by reading the real
+			// ble_gap_adv_validate() source from the exact ESP-IDF 5.5.5
+			// build this project uses (components/bt/host/nimble/nimble/
+			// nimble/host/src/ble_gap.c) rather than guessing further: the
+			// itvl_min floor is unconditional on conn_mode (checked before
+			// the directed/undirected switch) but gated on itvl_min != 0 -
+			// fireDirectedBurst() never hits it only because it never calls
+			// setMinInterval() at all, leaving itvl_min at its default 0.
+			// The floor itself is 0x20 (20ms) normally, dropping to 0x5
+			// (3.125ms) when CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL is set (see
+			// __init__.py - a plain sdkconfig toggle, not a fork of
+			// anything). 5 units is still short of the real remote's 3, but
+			// the closest reachable without forking ESP-IDF's own nimble
+			// component. Not yet tested.
+			adv->setMinInterval(5);
+			adv->setMaxInterval(5);
 			bool stopOk = adv->stop();
 			bool startOk = adv->start(8000);
-			ESP_LOGI(TAG, "fastWakeAdvertStart: fast undirected wake-test burst (20ms interval, 8s), stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+			ESP_LOGI(TAG, "fastWakeAdvertStart: fast undirected wake-test burst (3.125ms interval, 8s), stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 
 			this->set_timeout("ble_mi_remote_fast_wake_burst", 8100, [this]() {
 				if (this->_connected) {

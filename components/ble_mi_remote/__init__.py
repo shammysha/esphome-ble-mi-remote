@@ -83,6 +83,15 @@ async def to_code(config: dict) -> None:
     # own-commits bisection stage 1/5: sdkconfig only, no code changes yet.
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_ROLE_CENTRAL", True)
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_NVS_PERSIST", True)
+    # 2026-09-14, fast_wake_advert experiment: confirmed by reading the real
+    # ble_gap_adv_validate() in the ESP-IDF-bundled NimBLE host stack
+    # (components/bt/host/nimble/nimble/nimble/host/src/ble_gap.c) - the
+    # itvl_min floor it enforces (0x20 = 20ms) drops to 0x5 (3.125ms) when
+    # this Kconfig option is set, a plain sdkconfig toggle, not a fork of
+    # anything. Still not the real remote's measured 1.875ms (3 units, still
+    # below even this lowered floor), but the closest reachable through
+    # NimBLE's standard API without forking ESP-IDF's own nimble component.
+    add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL", True)
 
     var = cg.new_Pvariable(
         config[CONF_ID],

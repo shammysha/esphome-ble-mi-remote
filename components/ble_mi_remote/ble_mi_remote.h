@@ -126,16 +126,22 @@ namespace esphome {
 				// distinct from both startPlainAdvertising() (undirected, but
 				// left at NimBLE's own default interval, tens of ms) and
 				// fireDirectedBurst() (directed ADV_DIRECT_IND, ~3.75ms/1.28s).
-				// That exact 1.875ms interval turned out to be unreachable
-				// through NimBLE's own API - ble_gap_adv_validate() (part of
-				// the NimBLE host stack ESP-IDF bundles, not our
-				// esp-nimble-cpp fork) rejects it as below the spec's legal
-				// floor for undirected connectable advertising, confirmed on
-				// real hardware ("E NimBLE: ble_gap_adv_validate rc=3",
-				// start=FAILED). Runs at 20ms (32 units, the actual legal
-				// floor) instead - not a faithful replication of the real
-				// remote's burst, just "faster than our own default" - see
-				// the implementation for the full account.
+				// That exact 1.875ms interval was rejected on real hardware
+				// by ble_gap_adv_validate() (part of the NimBLE host stack
+				// ESP-IDF bundles, not our esp-nimble-cpp fork) -
+				// "E NimBLE: ble_gap_adv_validate rc=3", start=FAILED. Read
+				// the actual validate() source from the exact ESP-IDF build
+				// this project uses rather than guess further: the floor is
+				// unconditional on conn_mode but only applies when itvl_min
+				// is explicitly nonzero (fireDirectedBurst() never hits it
+				// because it never sets an interval at all), and drops from
+				// 0x20 (20ms) to 0x5 (3.125ms) with the
+				// CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL sdkconfig option (see
+				// __init__.py - a plain toggle, no fork needed). Runs at
+				// 3.125ms (5 units, that lowered floor) now - still not an
+				// exact match to the real remote's 3 units, but the closest
+				// reachable without forking ESP-IDF's own nimble component -
+				// see the implementation for the full account.
 				// Not yet confirmed this specific pattern is what actually
 				// wakes the TV - this action exists to test that hypothesis in
 				// isolation on real hardware. Deliberately does NOT touch
