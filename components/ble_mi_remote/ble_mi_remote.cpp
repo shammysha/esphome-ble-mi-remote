@@ -647,17 +647,23 @@ namespace esphome {
 			NimBLEAdvertising *adv = pServer->getAdvertising();
 			adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
 			adv->setHighDutyCycleDirected(false);
-			// 1.875ms, in 0.625ms units - the measured median interval from
-			// the real remote's own cold-wake burst (873 ADV_IND packets,
-			// exact match to 3 units, not rounding). Undirected connectable
-			// advertising's spec floor is nominally 20ms - if NimBLE's own
-			// parameter validation rejects this, startOk below will log
-			// FAILED; not yet confirmed either way on real hardware.
-			adv->setMinInterval(3);
-			adv->setMaxInterval(3);
+			// REAL HARDWARE RESULT 2026-09-14: the real remote's measured
+			// 1.875ms (3 units) interval was REJECTED by NimBLE's own
+			// ble_gap_adv_validate() - "E NimBLE: ble_gap_adv_validate rc=3"
+			// (BLE_HS_EINVAL), start=FAILED. That validation lives in the
+			// NimBLE host stack ESP-IDF bundles (components/bt), not in our
+			// esp-nimble-cpp fork - not something this project can patch
+			// without forking ESP-IDF itself, out of scope for now. Fell
+			// back to 32 units (20ms) - the spec's actual legal floor for
+			// undirected connectable advertising - to at least get SOME
+			// faster-than-default interval onto the air and see if the TV
+			// reacts to that, even though it's ~10x slower than the real
+			// remote's own burst and not a faithful replication of it.
+			adv->setMinInterval(32);
+			adv->setMaxInterval(32);
 			bool stopOk = adv->stop();
 			bool startOk = adv->start(8000);
-			ESP_LOGI(TAG, "fastWakeAdvertStart: fast undirected wake-test burst (1.875ms interval, 8s), stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+			ESP_LOGI(TAG, "fastWakeAdvertStart: fast undirected wake-test burst (20ms interval, 8s), stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 
 			this->set_timeout("ble_mi_remote_fast_wake_burst", 8100, [this]() {
 				if (this->_connected) {

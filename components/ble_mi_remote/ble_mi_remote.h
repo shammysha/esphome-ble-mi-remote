@@ -126,6 +126,16 @@ namespace esphome {
 				// distinct from both startPlainAdvertising() (undirected, but
 				// left at NimBLE's own default interval, tens of ms) and
 				// fireDirectedBurst() (directed ADV_DIRECT_IND, ~3.75ms/1.28s).
+				// That exact 1.875ms interval turned out to be unreachable
+				// through NimBLE's own API - ble_gap_adv_validate() (part of
+				// the NimBLE host stack ESP-IDF bundles, not our
+				// esp-nimble-cpp fork) rejects it as below the spec's legal
+				// floor for undirected connectable advertising, confirmed on
+				// real hardware ("E NimBLE: ble_gap_adv_validate rc=3",
+				// start=FAILED). Runs at 20ms (32 units, the actual legal
+				// floor) instead - not a faithful replication of the real
+				// remote's burst, just "faster than our own default" - see
+				// the implementation for the full account.
 				// Not yet confirmed this specific pattern is what actually
 				// wakes the TV - this action exists to test that hypothesis in
 				// isolation on real hardware. Deliberately does NOT touch
