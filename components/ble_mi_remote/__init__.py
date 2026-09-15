@@ -92,6 +92,16 @@ async def to_code(config: dict) -> None:
     # below even this lowered floor), but the closest reachable through
     # NimBLE's standard API without forking ESP-IDF's own nimble component.
     add_idf_sdkconfig_option("CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL", True)
+    # 2026-09-14, fast_wake_advert debugging: two real hardware runs both
+    # logged stop=OK start=FAILED with NO accompanying NIMBLE_LOGE line at
+    # all (not even "Failed to start GATT server" / "Error enabling
+    # advertising" - the three possible failure branches inside
+    # NimBLEAdvertising::start()) - because esp-nimble-cpp's own log level
+    # defaults to NIMBLE_CPP_LOG_LEVEL_NONE (confirmed in its Kconfig),
+    # which #if-compiles those NIMBLE_LOGE calls out entirely, independent
+    # of ESPHome's own `logger: level:`. Raising to ERROR so the actual
+    # failure branch becomes visible on the next test.
+    add_idf_sdkconfig_option("CONFIG_NIMBLE_CPP_LOG_LEVEL_ERROR", True)
 
     var = cg.new_Pvariable(
         config[CONF_ID],
