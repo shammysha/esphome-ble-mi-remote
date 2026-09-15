@@ -151,6 +151,28 @@ namespace esphome {
 				// advertising pattern itself, not re-pairing.
 				void fastWakeAdvertStart();
 
+				// Manual test action (2026-09-15): user's hypothesis - the TV
+				// may remember the genuine remote's specific MAC at the
+				// moment they were first paired, and its wake-from-off
+				// mechanism may key off that exact bonded address (e.g. a
+				// low-power hardware address-match filter) rather than
+				// reacting to any advertising cadence at all. Would explain
+				// why every fastWakeAdvertStart() interval - all the way
+				// down to the controller's real hardware floor - produced
+				// zero TV reaction: cadence was never the variable that
+				// mattered. Tests this directly: temporarily overrides our
+				// own device's public BLE address to the real remote's
+				// (18:46:44:c1:4a:ab, confirmed via sniffer/pub.home
+				// bonding), advertises, then restores our real address -
+				// scoped to just this one action, nothing persisted. The
+				// real remote should be off/out of range during this test
+				// to avoid two devices transmitting the same address at
+				// once. A full connection likely can't complete (we don't
+				// have the TV's real bonded keys for that address) but the
+				// hypothesis only requires the TV to react to the address
+				// being present in the air, not to actually pair.
+				void spoofRemoteMacAdvertStart();
+
 			protected:
 				binary_sensor::BinarySensor *state_sensor_;
 
@@ -235,6 +257,11 @@ namespace esphome {
 				bool				_pending_is_special = false;
 				uint8_t				_pending_key = 0;
 
+				// spoofRemoteMacAdvertStart() state - our real public
+				// address, saved right before overriding it, so it can be
+				// restored once the test burst ends. Only ever holds a
+				// meaningful value while that burst is in flight.
+				uint8_t				_orig_pub_addr[6] = {0};
 
 				uint16_t sid		= 0x01;
 				uint16_t vid		= 0x2717;

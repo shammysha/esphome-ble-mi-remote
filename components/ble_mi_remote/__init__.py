@@ -32,6 +32,7 @@ from .const import (
     ACTION_PRESS_CLASS,
     ACTION_PRINT_CLASS,
     ACTION_RELEASE_CLASS,
+    ACTION_SPOOF_REMOTE_MAC_ADVERT_CLASS,
     ACTION_START_CLASS,
     ACTION_STOP_CLASS,
     BINARY_SENSOR_STATE,
@@ -315,6 +316,34 @@ async def ble_mi_remote_fast_wake_advert_to_code(
     config: dict, action_id: ID, template_arg: TemplateArguments, args: list
 ) -> MockObj:
     """Action fast_wake_advert
+
+    :param config: dict
+    :param action_id: ID
+    :param template_arg: TemplateArguments
+    :param args: list
+    :return: MockObj
+    """
+
+    paren: MockObj = await cg.get_variable(config[CONF_ID])
+
+    return cg.new_Pvariable(action_id, template_arg, paren)
+
+
+BleMiRemoteSpoofRemoteMacAdvertAction = ble_mi_remote_ns.class_(
+    ACTION_SPOOF_REMOTE_MAC_ADVERT_CLASS, automation.Action
+)
+
+
+@automation.register_action(
+    f"{DOMAIN}.spoof_remote_mac_advert",
+    BleMiRemoteSpoofRemoteMacAdvertAction,
+    maybe_simple_id(OPERATION_BASE_SCHEMA),
+    synchronous=True,
+)
+async def ble_mi_remote_spoof_remote_mac_advert_to_code(
+    config: dict, action_id: ID, template_arg: TemplateArguments, args: list
+) -> MockObj:
+    """Action spoof_remote_mac_advert
 
     :param config: dict
     :param action_id: ID

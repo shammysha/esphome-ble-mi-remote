@@ -53,6 +53,7 @@ ACTION_COMBINATION_CLASS: Final = "BleMiRemoteCombinationAction"
 ACTION_CONNECT_WAKE_CLASS: Final = "BleMiRemoteConnectWakeAction"
 ACTION_PLAIN_ADVERT_CLASS: Final = "BleMiRemotePlainAdvertAction"
 ACTION_FAST_WAKE_ADVERT_CLASS: Final = "BleMiRemoteFastWakeAdvertAction"
+ACTION_SPOOF_REMOTE_MAC_ADVERT_CLASS: Final = "BleMiRemoteSpoofRemoteMacAdvertAction"
 
 """NimBLE C++ wrapper library.
 

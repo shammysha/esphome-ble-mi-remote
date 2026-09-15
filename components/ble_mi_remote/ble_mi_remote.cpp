@@ -13,8 +13,21 @@
 #include "HIDKeyboardTypes.h"
 #include "sdkconfig.h"
 #include <string>
+#include <cstring>
 #include <list>
 #include "esphome/core/log.h"
+
+// 2026-09-15, spoofRemoteMacAdvertStart(): ble_hs_id_set_pub() is a real,
+// exported (non-static) NimBLE host function - confirmed by reading its
+// actual definition in the exact ESP-IDF 5.5.5 build this project uses
+// (nimble/host/src/ble_hs_id.c: a plain lock+memcpy+unlock, no guard on
+// when it may be called) - but it's declared in a PRIVATE header
+// (ble_hs_id_priv.h, inside nimble/host/src/, not on any component's
+// public include path), not something esp-nimble-cpp's own wrapper
+// exposes either. Declaring it ourselves rather than forking again - the
+// symbol is real and linkable, the header just isn't meant to be
+// included from outside the host stack's own source tree.
+extern "C" int ble_hs_id_set_pub(const uint8_t *pub_addr);
 
 #define CONSUMER_ID 0x01
 #define KEYBOARD_ID 0x02
@@ -702,6 +715,62 @@ namespace esphome {
 				adv2->setMaxInterval(0);
 				bool stopOk2 = adv2->stop();
 				ESP_LOGI(TAG, "fastWakeAdvertStart: 8s window elapsed, reset interval to default and stopped (stop=%s) - manual re-press needed to resume", stopOk2 ? "OK" : "FAILED");
+			});
+		}
+
+		// See doc comment on the declaration in ble_mi_remote.h. Same
+		// cancel-any-pending-retry reasoning as the other manual test
+		// actions above.
+		void BleMiRemote::spoofRemoteMacAdvertStart() {
+			this->cancel_timeout("ble_mi_remote_reconnect_burst");
+			this->cancel_timeout("ble_mi_remote_fast_wake_burst");
+			this->cancel_timeout("ble_mi_remote_spoof_burst");
+
+			// Save our real address before overriding it - restored in the
+			// timeout callback below. NimBLEAddress::getBase()->val is
+			// already in the same little-endian wire-format byte order
+			// ble_hs_id_set_pub() expects (confirmed by reading
+			// NimBLEAddress's own string constructor, which
+			// std::reverse_copy's a human-typed "aa:bb:...:ff" string into
+			// that same layout) - round-tripping through it here rather
+			// than hand-building a byte array avoids a manual byte-order
+			// mistake that would silently invalidate the whole test.
+			memcpy(this->_orig_pub_addr, NimBLEDevice::getAddress().getBase()->val, 6);
+
+			// The genuine Xiaomi remote's own public MAC - confirmed via
+			// sniffer capture and its "Xiaomi RC" bonding on pub.home (see
+			// project memory). Testing the hypothesis that the TV's
+			// wake-from-off mechanism keys off this specific address (from
+			// its own original pairing), not advertising cadence.
+			NimBLEAddress remoteAddr("18:46:44:c1:4a:ab", BLE_ADDR_PUBLIC);
+			int rc = ble_hs_id_set_pub(remoteAddr.getBase()->val);
+			ESP_LOGI(TAG, "spoofRemoteMacAdvertStart: ble_hs_id_set_pub()=%d, now advertising as %s", rc, NimBLEDevice::getAddress().toString().c_str());
+
+			// Same parameters as fastWakeAdvertStart()'s confirmed-working
+			// round (8 units/5ms, the controller's real floor) - keeping
+			// cadence identical to that already-negative result means
+			// address is the only variable that changed for this test.
+			NimBLEAdvertising *adv = pServer->getAdvertising();
+			adv->setConnectableMode(BLE_GAP_CONN_MODE_UND);
+			adv->setHighDutyCycleDirected(false);
+			adv->setMinInterval(8);
+			adv->setMaxInterval(8);
+			bool stopOk = adv->stop();
+			bool startOk = adv->start(8000);
+			ESP_LOGI(TAG, "spoofRemoteMacAdvertStart: wake-test burst as the remote's own MAC, stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+
+			this->set_timeout("ble_mi_remote_spoof_burst", 8100, [this]() {
+				NimBLEAdvertising *adv2 = pServer->getAdvertising();
+				adv2->setMinInterval(0);
+				adv2->setMaxInterval(0);
+				bool stopOk2 = adv2->stop();
+
+				int rc2 = ble_hs_id_set_pub(this->_orig_pub_addr);
+				ESP_LOGI(TAG,
+				         "spoofRemoteMacAdvertStart: 8s window elapsed, stopped (stop=%s), restored real address %s (ble_hs_id_set_pub()=%d)",
+				         stopOk2 ? "OK" : "FAILED",
+				         NimBLEDevice::getAddress().toString().c_str(),
+				         rc2);
 			});
 		}
 
