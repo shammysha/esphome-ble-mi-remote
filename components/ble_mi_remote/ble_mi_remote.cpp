@@ -664,17 +664,32 @@ namespace esphome {
 			// the directed/undirected switch) but gated on itvl_min != 0 -
 			// fireDirectedBurst() never hits it only because it never calls
 			// setMinInterval() at all, leaving itvl_min at its default 0.
-			// The floor itself is 0x20 (20ms) normally, dropping to 0x5
-			// (3.125ms) when CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL is set (see
-			// __init__.py - a plain sdkconfig toggle, not a fork of
-			// anything). 5 units is still short of the real remote's 3, but
-			// the closest reachable without forking ESP-IDF's own nimble
-			// component. Not yet tested.
-			adv->setMinInterval(5);
-			adv->setMaxInterval(5);
+			// Round 3 used 5 units (3.125ms, the host-side floor once
+			// CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL relaxes
+			// ble_gap_adv_validate()) - host validation passed this time,
+			// but the HCI command still came back rc=560
+			// (BLE_HS_ERR_HCI_BASE 0x200 + BLE_ERR_PARM_OUT_OF_RANGE 0x30) -
+			// a REJECTION FROM THE CONTROLLER ITSELF (the closed-source
+			// BTDM blob, libbtdm_app.a - a separate layer below the
+			// open-source NimBLE host code above, connected via HCI).
+			// Confirmed by disassembling the actual controller function
+			// that returns this code (r_llm_set_adv_param in llm.o,
+			// xtensa-esp32-elf-objdump against the real linked
+			// libbtdm_app.a) rather than guessing further: for every
+			// standard legacy Advertising_Type (0-4, undirected AND
+			// directed alike) it unconditionally requires itvl_min >= 8
+			// (5ms) - a hard-coded floor in the controller binary itself,
+			// independent of any host-side Kconfig/validate() relaxation.
+			// fireDirectedBurst() never hits this because it leaves
+			// itvl_min at 0, which NimBLE's host software substitutes with
+			// its own nonzero default (BLE_GAP_ADV_FAST_INTERVAL1_MIN,
+			// itself 8 units with the same Kconfig flag) before the HCI
+			// command ever reaches the controller.
+			adv->setMinInterval(8);
+			adv->setMaxInterval(8);
 			bool stopOk = adv->stop();
 			bool startOk = adv->start(8000);
-			ESP_LOGI(TAG, "fastWakeAdvertStart: fast undirected wake-test burst (3.125ms interval, 8s), stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
+			ESP_LOGI(TAG, "fastWakeAdvertStart: fast undirected wake-test burst (5ms interval, 8s), stop=%s start=%s", stopOk ? "OK" : "FAILED", startOk ? "OK" : "FAILED");
 
 			this->set_timeout("ble_mi_remote_fast_wake_burst", 8100, [this]() {
 				if (this->_connected) {

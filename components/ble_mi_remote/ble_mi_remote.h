@@ -126,22 +126,24 @@ namespace esphome {
 				// distinct from both startPlainAdvertising() (undirected, but
 				// left at NimBLE's own default interval, tens of ms) and
 				// fireDirectedBurst() (directed ADV_DIRECT_IND, ~3.75ms/1.28s).
-				// That exact 1.875ms interval was rejected on real hardware
-				// by ble_gap_adv_validate() (part of the NimBLE host stack
-				// ESP-IDF bundles, not our esp-nimble-cpp fork) -
-				// "E NimBLE: ble_gap_adv_validate rc=3", start=FAILED. Read
-				// the actual validate() source from the exact ESP-IDF build
-				// this project uses rather than guess further: the floor is
-				// unconditional on conn_mode but only applies when itvl_min
-				// is explicitly nonzero (fireDirectedBurst() never hits it
-				// because it never sets an interval at all), and drops from
-				// 0x20 (20ms) to 0x5 (3.125ms) with the
-				// CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL sdkconfig option (see
-				// __init__.py - a plain toggle, no fork needed). Runs at
-				// 3.125ms (5 units, that lowered floor) now - still not an
-				// exact match to the real remote's 3 units, but the closest
-				// reachable without forking ESP-IDF's own nimble component -
-				// see the implementation for the full account.
+				// That exact 1.875ms interval was rejected on real hardware,
+				// twice, by two DIFFERENT layers - first the NimBLE host
+				// stack's own ble_gap_adv_validate() (worked around with
+				// CONFIG_BT_NIMBLE_HIGH_DUTY_ADV_ITVL, a plain sdkconfig
+				// toggle), then the closed-source BTDM controller binary
+				// itself (libbtdm_app.a) one layer below it, which cannot be
+				// configured around - confirmed by disassembling the real
+				// linked controller (r_llm_set_adv_param in llm.o): it
+				// hard-requires itvl_min >= 8 (5ms) for every standard
+				// legacy advertising type, directed or undirected alike.
+				// fireDirectedBurst() never hits this because it leaves
+				// itvl_min at 0, which the host substitutes with its own
+				// >=8 default before the HCI command ever reaches the
+				// controller. Runs at 5ms (8 units, the controller's real
+				// floor) now - still short of the real remote's 3 units/
+				// 1.875ms, but the genuine hardware limit for this
+				// controller, not a configuration gap - see the
+				// implementation for the full account.
 				// Not yet confirmed this specific pattern is what actually
 				// wakes the TV - this action exists to test that hypothesis in
 				// isolation on real hardware. Deliberately does NOT touch
